@@ -84,7 +84,6 @@ export class Facile extends events.EventEmitter {
 
 		console.log('Facile initialized.');
 
-
 		return this;
 
 	}
