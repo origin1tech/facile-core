@@ -17,5 +17,5 @@ server and leaves the rest up to you.
 
 ## Kits
 
-For those that would like a little better starting point to get your feet
+For those that would like a litle better starting point to get your feet
 wet with what's possible checkout one of the Facile kits!

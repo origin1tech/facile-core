@@ -4,7 +4,8 @@
   "description": "Bare bones Express Framework using Typescript",
   "main": "./dist/index.js",
   "scripts": {
-    "test": "test"
+    "test": "test",
+    "start": "node ./build"
   },
   "repository": {
     "type": "git",

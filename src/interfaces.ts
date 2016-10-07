@@ -1,6 +1,7 @@
 import { Router, Handler, RequestHandler,
 				NextFunction, ErrorRequestHandler,
-				Request, Response } from 'express';
+				Request, Response, Express } from 'express';
+import { Socket, Server } from 'net';
 import { BoomError, Output } from 'boom';
 import { LoggerInstance } from 'winston';
 
@@ -12,6 +13,44 @@ export interface IRequest extends Request {}
 export interface IResponse extends Response {}
 export interface IBoomError extends BoomError {}
 export interface IBoomOutput extends Output  {}
+
+export interface IFacile {
+
+	Boom: IBoom;
+	loggers: ILoggers;
+	log: LoggerInstance;
+	config: IConfig;
+	app: Express;
+	server: Server;
+	routers: IRouters;
+	routes: Array<IRoute>;
+
+	nextSocketId: number;
+	sockets: ISockets;
+
+	middlewares: IMiddlewares;
+	filters: IFilters;
+	models: IModels;
+	controllers: IControllers;
+
+	configure(config?: IConfig): IFacile;
+	start(fn?: Function): IFacile;
+	stop(msg?: string, code?: number): void;
+
+	addRouter(name: string, router?: Router): Router;
+	addMiddleware(name: string, fn: Function, order?: number): IFacile;
+	addFilter(name: string, fn: Function): IFacile;
+	addRoute(method: string | IRoute | Array<string>, url?: string,
+					handlers?: Handler | Array<Handler>,
+					router?: string): IFacile;
+	addRoutes(routes: Array<IRoute>): IFacile;
+	addRoutesMap(router: string | IRoutesMap, routes?: IRoutesMap): IFacile;
+
+	filter(name: string): IFilter;
+	model(name: string): IModel;
+	controller(name: string): IController;
+
+}
 
 /**
  * SSL Certificate Interface.
@@ -25,10 +64,21 @@ export interface ICertificate {
 }
 
 /**
- * Server Options.
+ * Node style callback.
+ * @todo should probably support promise also.
  *
  * @export
- * @interface IOptions
+ * @interface ICallback
+ */
+export interface ICallback {
+	(err?: string | Error, data?: any): void;
+}
+
+/**
+ * Server Configuration.
+ *
+ * @export
+ * @interface IConfig
  */
 export interface IConfig {
 	cwd?: string;
@@ -36,14 +86,53 @@ export interface IConfig {
 	host?: string;
 	port?: number;
 	certificate?: ICertificate | true;
+	maxConnections?: number;
 	env?: string;
 	logger?: LoggerInstance | ILoggers;
+	logLevel?: 'info',
+	build?(facile: IFacile, fn: ICallback);
 }
 
+/**
+ * Interface for configuration flags.
+ *
+ * @export
+ * @interface IFlags
+ */
 export interface IFlags {
 	[name: string]: any;
 }
 
+/**
+ * Map containing socket connections.
+ *
+ * @export
+ * @interface ISockets
+ */
+export interface ISockets {
+	[id: number]: Socket;
+}
+
+/**
+ * Map of app middleware.
+ *
+ * @export
+ * @interface IMiddleware
+ */
+export interface IMiddleware {
+	fn: Function;
+	order?: number;
+}
+
+/**
+ * Map of middleware.
+ *
+ * @export
+ * @interface IMiddlewares
+ */
+export interface IMiddlewares {
+	[name: string]: IMiddleware;
+}
 
 /**
  * Map of Loggers implementation.
@@ -139,4 +228,68 @@ export interface IRoute {
 export interface IRoutesMap {
 	[url: string]: Handler | Array<Handler>;
 }
+
+/**
+ * Interface for Filter.
+ *
+ * @export
+ * @interface IFilter
+ */
+export interface IFilter {
+
+}
+
+/**
+ * Map of IFilters
+ *
+ * @export
+ * @interface IFilters
+ */
+export interface IFilters {
+	[name: string]: IFilters;
+}
+
+/**
+ * Model interface.
+ *
+ * @export
+ * @interface IModel
+ */
+export interface IModel {
+
+}
+
+/**
+ * Map of IModels.
+ *
+ * @export
+ * @interface IModels
+ */
+export interface IModels {
+
+	[name: string]: IModel;
+
+}
+
+/**
+ * Controller Interface.
+ *
+ * @export
+ * @interface IController
+ */
+export interface IController {
+
+}
+
+/**
+ * Map of Controllers.
+ *
+ * @export
+ * @interface IControllers
+ */
+export interface IControllers {
+	[name: string]: IController;
+}
+
+
 
