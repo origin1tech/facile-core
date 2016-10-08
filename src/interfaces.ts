@@ -1,4 +1,4 @@
-import { Router, Handler, RequestHandler,
+import { Router, RequestHandler,
 				NextFunction, ErrorRequestHandler,
 				Request, Response, Express } from 'express';
 import { Socket, Server } from 'net';
@@ -14,39 +14,52 @@ export interface IResponse extends Response {}
 export interface IBoomError extends BoomError {}
 export interface IBoomOutput extends Output  {}
 
+export interface IUtils {
+	extend(...args: any[]): any;
+	addType(key: any, val: any, obj: any): void;
+	maxIn(obj: any, key: string): number;
+	hasIn(obj: any, key: any, val: any): boolean;
+	noop(): void;
+}
+
 export interface IFacile {
 
+	_pkg: any;
+
 	Boom: IBoom;
-	loggers: ILoggers;
-	log: LoggerInstance;
-	config: IConfig;
+	logger: LoggerInstance;
 	app: Express;
 	server: Server;
-	routers: IRouters;
-	routes: Array<IRoute>;
 
-	nextSocketId: number;
-	sockets: ISockets;
+	_config: IConfig;
+	_routers: IRouters;
+	_routes: Array<IRoute>;
 
-	middlewares: IMiddlewares;
-	filters: IFilters;
-	models: IModels;
-	controllers: IControllers;
+	_nextSocketId: number;
+	_sockets: ISockets;
+
+	_middlewares: IMiddlewares;
+	_filters: IFilters;
+	_models: IModels;
+	_controllers: IControllers;
 
 	configure(config?: IConfig): IFacile;
+	listen(): void;
 	start(fn?: Function): IFacile;
 	stop(msg?: string, code?: number): void;
 
+	addConfig(name: string, config: IConfig): IFacile;
 	addRouter(name: string, router?: Router): Router;
 	addMiddleware(name: string, fn: Function, order?: number): IFacile;
 	addFilter(name: string, fn: Function): IFacile;
+	addModel(name: string, model: IModel): IFacile;
+	addController(name: string, controller: IController): IFacile;
 	addRoute(method: string | IRoute | Array<string>, url?: string,
-					handlers?: Handler | Array<Handler>,
+					handlers?: IRequestHandler | Array<IRequestHandler>,
 					router?: string): IFacile;
-	addRoutes(routes: Array<IRoute>): IFacile;
-	addRoutesMap(router: string | IRoutesMap, routes?: IRoutesMap): IFacile;
 
-	filter(name: string): IFilter;
+	config(name: string): IConfig;
+	filter(name: string): IRequestHandler;
 	model(name: string): IModel;
 	controller(name: string): IController;
 
@@ -75,6 +88,18 @@ export interface ICallback {
 }
 
 /**
+ * Express View Settings
+ *
+ * @export
+ * @interface IExpressViews
+ */
+export interface IExpressViews {
+	engine: string;
+	'view engine': string;
+	views: string | string[];
+}
+
+/**
  * Server Configuration.
  *
  * @export
@@ -88,9 +113,21 @@ export interface IConfig {
 	certificate?: ICertificate | true;
 	maxConnections?: number;
 	env?: string;
-	logger?: LoggerInstance | ILoggers;
-	logLevel?: 'info',
+	logger?: LoggerInstance;
+	logLevel?: 'error' | 'warn' | 'info' | 'debug';
+	views?: IExpressViews;
+	database?: any;
 	build?(facile: IFacile, fn: ICallback);
+}
+
+/**
+ * Map of Configs.
+ *
+ * @export
+ * @interface IConfigs
+ */
+export interface IConfigs {
+	[name: string]: IConfig;
 }
 
 /**
@@ -120,7 +157,7 @@ export interface ISockets {
  * @interface IMiddleware
  */
 export interface IMiddleware {
-	fn: Function;
+	fn: IRequestHandler;
 	order?: number;
 }
 
@@ -132,16 +169,6 @@ export interface IMiddleware {
  */
 export interface IMiddlewares {
 	[name: string]: IMiddleware;
-}
-
-/**
- * Map of Loggers implementation.
- *
- * @export
- * @interface ILoggers
- */
-export interface ILoggers {
-	[name: string]: LoggerInstance;
 }
 
 /**
@@ -210,43 +237,49 @@ export interface IRouters {
  */
 export interface IRoute {
 	router?: string;
-	controller?: string;
 	method?: string | Array<string>;
 	url: string | Array<string>;
-	handlers: Handler | Array<Handler>;
+	handlers: IRequestHandler | Array<IRequestHandler>;
 }
 
 /**
- * Interface for creating routes
- * using a map
- *
- * 'post /api/user': [ some handler ]
+ * Interface for Routes by Map.
  *
  * @export
  * @interface IRoutesMap
  */
 export interface IRoutesMap {
-	[url: string]: Handler | Array<Handler>;
+	[url: string]: IRequestHandler | Array<IRequestHandler>;
 }
 
 /**
- * Interface for Filter.
- *
- * @export
- * @interface IFilter
- */
-export interface IFilter {
-
-}
-
-/**
- * Map of IFilters
+ * Map of Filters.
  *
  * @export
  * @interface IFilters
  */
 export interface IFilters {
-	[name: string]: IFilters;
+	[name: string]: IRequestHandler;
+}
+
+/**
+ * Service Interface
+ *
+ * @export
+ * @interface IService
+ */
+export interface IService {
+	//
+}
+
+/**
+ * Map of Services
+ *
+ * @export
+ * @interface IServices
+ */
+export interface IServices {
+	[name: string]: IService;
 }
 
 /**
@@ -256,7 +289,7 @@ export interface IFilters {
  * @interface IModel
  */
 export interface IModel {
-
+	//
 }
 
 /**
@@ -266,9 +299,7 @@ export interface IModel {
  * @interface IModels
  */
 export interface IModels {
-
 	[name: string]: IModel;
-
 }
 
 /**

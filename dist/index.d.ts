@@ -7,38 +7,55 @@
 //   ../boom
 
 declare module 'facile' {
+    import { Facile } from 'facile/core';
+    let facile: Facile;
+    export { facile };
+}
+
+declare module 'facile/core' {
     import * as events from 'events';
     import * as express from 'express';
     import { LoggerInstance } from 'winston';
     import { Server } from 'net';
-    import { IFacile, IConfig, IRouters, IRoute, IRoutesMap, IBoom, ILoggers, IMiddlewares, ISockets, IModels, IControllers, IModel, IController, IFilter, IFilters } from 'facile/interfaces';
+    import { IFacile, IConfig, IRouters, IRoute, IBoom, IMiddlewares, ISockets, IModels, IControllers, IModel, IController, IUtils, IFilters, IConfigs, IRequestHandler, IRoutesMap } from 'facile/interfaces';
     /**
         * RecRent
         *
         * @class RecRent
         */
     export class Facile extends events.EventEmitter implements IFacile {
+            static instance: Facile;
             Boom: IBoom;
-            loggers: ILoggers;
-            log: LoggerInstance;
-            config: IConfig;
+            utils: IUtils;
             app: express.Express;
             server: Server;
-            routers: IRouters;
-            routes: Array<IRoute>;
-            nextSocketId: number;
-            sockets: ISockets;
-            middlewares: IMiddlewares;
-            filters: IFilters;
-            models: IModels;
-            controllers: IControllers;
+            logger: LoggerInstance;
+            _pkg: any;
+            _config: IConfig;
+            _configs: IConfigs;
+            _routers: IRouters;
+            _routes: Array<IRoute>;
+            _nextSocketId: number;
+            _sockets: ISockets;
+            _middlewares: IMiddlewares;
+            _filters: IFilters;
+            _models: IModels;
+            _controllers: IControllers;
             /**
                 * Creates an instance of RecRent.
                 *
                 * @memberOf Facile
                 */
             constructor();
-            configure(config?: IConfig): Facile;
+            /**
+                * Applies Configuration.
+                *
+                * @param {(string | IConfig)} [config]
+                * @returns {Facile}
+                *
+                * @memberOf Facile
+                */
+            configure(config?: string | IConfig): Facile;
             /**
                 * Starts server listening for connections.
                 *
@@ -65,6 +82,16 @@ declare module 'facile' {
                 */
             stop(msg?: string, code?: number): void;
             /**
+                * Adds a Configuration.
+                *
+                * @param {string} name
+                * @param {IConfig} config
+                * @returns {Facile}
+                *
+                * @memberOf Facile
+                */
+            addConfig(name: string | IConfigs, config: IConfig): Facile;
+            /**
                 * Adds/Creates a Router.
                 *
                 * @param {string} name
@@ -73,48 +100,48 @@ declare module 'facile' {
                 *
                 * @memberOf Facile
                 */
-            addRouter(name: string, router?: express.Router): express.Router;
+            addRouter(name: string | IRouters, router?: express.Router): express.Router;
             /**
-                * Registers middleware with Express.
+                * Registers Middleware or Middlewares to Express.
                 *
                 * @param {string} name
-                * @param {Function} fn
+                * @param {IRequestHandler} fn
                 * @param {number} [order]
                 * @returns {Facile}
                 *
                 * @memberOf Facile
                 */
-            addMiddleware(name: string, fn: Function, order?: number): Facile;
+            addMiddleware(name: string | IMiddlewares, fn: IRequestHandler, order?: number): Facile;
             /**
-                * Registers a filter.
+                * Registers Filter or Map of Filters.
                 *
-                * @param {string} name
-                * @param {Function} fn
+                * @param {(string | IFilters)} name
+                * @param {IRequestHandler} fn
                 * @returns {Facile}
                 *
                 * @memberOf Facile
                 */
-            addFilter(name: string, fn: Function): Facile;
+            addFilter(name: string | IFilters, fn: IRequestHandler): Facile;
             /**
-                * Adds Model to map.
+                * Adds Model
                 *
-                * @param {string} name
+                * @param {(string | IModels)} name
                 * @param {IModel} model
                 * @returns {Facile}
                 *
                 * @memberOf Facile
                 */
-            addModel(name: string, model: IModel): Facile;
+            addModel(name: string | IModels, model: IModel): Facile;
             /**
-                * Adds Controller to map.
+                * Adds Controller
                 *
-                * @param {string} name
+                * @param {(string | IControllers)} name
                 * @param {IController} controller
                 * @returns {Facile}
                 *
                 * @memberOf Facile
                 */
-            addController(name: string, controller: IController): Facile;
+            addController(name: string | IControllers, controller: IController): Facile;
             /**
                 * Adds a route to the map.
                 *
@@ -126,34 +153,25 @@ declare module 'facile' {
                 *
                 * @memberOf Facile
                 */
-            addRoute(method: string | IRoute | Array<string>, url?: string, handlers?: express.Handler | Array<express.Handler>, router?: string): Facile;
+            addRoute(method: string | IRoute | Array<string> | IRoutesMap, url?: string, handlers?: IRequestHandler | Array<IRequestHandler>, router?: string): Facile;
             /**
-                * Adds an array of IRoutes.
-                *
-                * @param {Array<IRoute>} routes
-                *
-                * @memberOf Facile
-                */
-            addRoutes(routes: Array<IRoute>): Facile;
-            /**
-                * Adds routes using route map.
-                *
-                * @param {(string | IRoutesMap)} router
-                * @param {IRoutesMap} [routes]
-                * @returns {Facile}
-                *
-                * @memberOf Facile
-                */
-            addRoutesMap(router: string | IRoutesMap, routes?: IRoutesMap): Facile;
-            /**
-                * Returns a Logger my name.
+                * Gets a Router by name.
                 *
                 * @param {string} name
-                * @returns {LoggerInstance}
+                * @returns {express.Router}
                 *
                 * @memberOf Facile
                 */
-            logger(name: string): LoggerInstance;
+            router(name: string): express.Router;
+            /**
+                * Gets a Config by name.
+                *
+                * @param {string} name
+                * @returns {IConfig}
+                *
+                * @memberOf Facile
+                */
+            config(name: string): IConfig;
             /**
                 * Gets a Filter by name.
                 *
@@ -162,7 +180,7 @@ declare module 'facile' {
                 *
                 * @memberOf Facile
                 */
-            filter(name: string): IFilter;
+            filter(name: string): IRequestHandler;
             /**
                 * Gets a Model by name.
                 *
@@ -173,7 +191,7 @@ declare module 'facile' {
                 */
             model(name: string): IModel;
             /**
-                * Gets a controller by name.
+                * Gets a Controller by name.
                 *
                 * @param {string} name
                 * @returns {IController}
@@ -185,7 +203,7 @@ declare module 'facile' {
 }
 
 declare module 'facile/interfaces' {
-    import { Router, Handler, RequestHandler, NextFunction, ErrorRequestHandler, Request, Response, Express } from 'express';
+    import { Router, RequestHandler, NextFunction, ErrorRequestHandler, Request, Response, Express } from 'express';
     import { Socket, Server } from 'net';
     import { BoomError, Output } from 'boom';
     import { LoggerInstance } from 'winston';
@@ -203,31 +221,41 @@ declare module 'facile/interfaces' {
     }
     export interface IBoomOutput extends Output {
     }
+    export interface IUtils {
+            extend(...args: any[]): any;
+            addType(key: any, val: any, obj: any): void;
+            maxIn(obj: any, key: string): number;
+            hasIn(obj: any, key: any, val: any): boolean;
+            noop(): void;
+    }
     export interface IFacile {
+            _pkg: any;
             Boom: IBoom;
-            loggers: ILoggers;
-            log: LoggerInstance;
-            config: IConfig;
+            logger: LoggerInstance;
             app: Express;
             server: Server;
-            routers: IRouters;
-            routes: Array<IRoute>;
-            nextSocketId: number;
-            sockets: ISockets;
-            middlewares: IMiddlewares;
-            filters: IFilters;
-            models: IModels;
-            controllers: IControllers;
+            _config: IConfig;
+            _routers: IRouters;
+            _routes: Array<IRoute>;
+            _nextSocketId: number;
+            _sockets: ISockets;
+            _middlewares: IMiddlewares;
+            _filters: IFilters;
+            _models: IModels;
+            _controllers: IControllers;
             configure(config?: IConfig): IFacile;
+            listen(): void;
             start(fn?: Function): IFacile;
             stop(msg?: string, code?: number): void;
+            addConfig(name: string, config: IConfig): IFacile;
             addRouter(name: string, router?: Router): Router;
             addMiddleware(name: string, fn: Function, order?: number): IFacile;
             addFilter(name: string, fn: Function): IFacile;
-            addRoute(method: string | IRoute | Array<string>, url?: string, handlers?: Handler | Array<Handler>, router?: string): IFacile;
-            addRoutes(routes: Array<IRoute>): IFacile;
-            addRoutesMap(router: string | IRoutesMap, routes?: IRoutesMap): IFacile;
-            filter(name: string): IFilter;
+            addModel(name: string, model: IModel): IFacile;
+            addController(name: string, controller: IController): IFacile;
+            addRoute(method: string | IRoute | Array<string>, url?: string, handlers?: IRequestHandler | Array<IRequestHandler>, router?: string): IFacile;
+            config(name: string): IConfig;
+            filter(name: string): IRequestHandler;
             model(name: string): IModel;
             controller(name: string): IController;
     }
@@ -252,6 +280,17 @@ declare module 'facile/interfaces' {
             (err?: string | Error, data?: any): void;
     }
     /**
+        * Express View Settings
+        *
+        * @export
+        * @interface IExpressViews
+        */
+    export interface IExpressViews {
+            engine: string;
+            'view engine': string;
+            views: string | string[];
+    }
+    /**
         * Server Configuration.
         *
         * @export
@@ -265,9 +304,20 @@ declare module 'facile/interfaces' {
             certificate?: ICertificate | true;
             maxConnections?: number;
             env?: string;
-            logger?: LoggerInstance | ILoggers;
-            logLevel?: 'info';
+            logger?: LoggerInstance;
+            logLevel?: 'error' | 'warn' | 'info' | 'debug';
+            views?: IExpressViews;
+            database?: any;
             build?(facile: IFacile, fn: ICallback): any;
+    }
+    /**
+        * Map of Configs.
+        *
+        * @export
+        * @interface IConfigs
+        */
+    export interface IConfigs {
+            [name: string]: IConfig;
     }
     /**
         * Interface for configuration flags.
@@ -294,7 +344,7 @@ declare module 'facile/interfaces' {
         * @interface IMiddleware
         */
     export interface IMiddleware {
-            fn: Function;
+            fn: IRequestHandler;
             order?: number;
     }
     /**
@@ -305,15 +355,6 @@ declare module 'facile/interfaces' {
         */
     export interface IMiddlewares {
             [name: string]: IMiddleware;
-    }
-    /**
-        * Map of Loggers implementation.
-        *
-        * @export
-        * @interface ILoggers
-        */
-    export interface ILoggers {
-            [name: string]: LoggerInstance;
     }
     /**
         * Boom wrap event signature interface.
@@ -376,39 +417,44 @@ declare module 'facile/interfaces' {
         */
     export interface IRoute {
             router?: string;
-            controller?: string;
             method?: string | Array<string>;
             url: string | Array<string>;
-            handlers: Handler | Array<Handler>;
+            handlers: IRequestHandler | Array<IRequestHandler>;
     }
     /**
-        * Interface for creating routes
-        * using a map
-        *
-        * 'post /api/user': [ some handler ]
+        * Interface for Routes by Map.
         *
         * @export
         * @interface IRoutesMap
         */
     export interface IRoutesMap {
-            [url: string]: Handler | Array<Handler>;
+            [url: string]: IRequestHandler | Array<IRequestHandler>;
     }
     /**
-        * Interface for Filter.
-        *
-        * @export
-        * @interface IFilter
-        */
-    export interface IFilter {
-    }
-    /**
-        * Map of IFilters
+        * Map of Filters.
         *
         * @export
         * @interface IFilters
         */
     export interface IFilters {
-            [name: string]: IFilters;
+            [name: string]: IRequestHandler;
+    }
+    /**
+        * Service Interface
+        *
+        * @export
+        * @interface IService
+        */
+    export interface IService {
+    }
+    /**
+        * Map of Services
+        *
+        * @export
+        * @interface IServices
+        */
+    export interface IServices {
+            [name: string]: IService;
     }
     /**
         * Model interface.

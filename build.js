@@ -59,5 +59,8 @@ watcher.on('error', (f) => {
 	clearTimeout(delay);
 });
 
+// Run initial compilation.
+compile();
+
 console.log(chalk.cyan('\nTypescript watching for changes\n-------------------------------\n'));
 

@@ -1,4 +1,10 @@
 "use strict";
+/**
+ * Base Model Class
+ *
+ * @export
+ * @class Model
+ */
 var Model = (function () {
     function Model() {
     }

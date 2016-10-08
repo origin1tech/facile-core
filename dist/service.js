@@ -1,8 +1,14 @@
 "use strict";
-var Controller = (function () {
-    function Controller() {
+/**
+ * Base Service Class
+ *
+ * @export
+ * @class Service
+ */
+var Service = (function () {
+    function Service() {
     }
-    return Controller;
+    return Service;
 }());
-exports.Controller = Controller;
+exports.Service = Service;
 //# sourceMappingURL=service.js.map
