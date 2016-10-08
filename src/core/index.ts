@@ -38,9 +38,12 @@ let defaults: IConfig = {
 
 
 /**
- * RecRent
+ * Facile Core
  *
- * @class RecRent
+ * @export
+ * @class Facile
+ * @extends {events.EventEmitter}
+ * @implements {IFacile}
  */
 export class Facile extends events.EventEmitter implements IFacile {
 
