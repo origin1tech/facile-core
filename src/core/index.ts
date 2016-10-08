@@ -5,7 +5,7 @@ import * as events from 'events';
 import { resolve, join } from 'path';
 import * as express from 'express';
 import * as Boom from 'boom';
-import { LoggerInstance, Logger, transports} from 'winston';
+import { LoggerInstance, Logger, transports, TransportInstance } from 'winston';
 import { wrap, create, badRequest, unauthorized, forbidden, notFound, notImplemented } from 'boom';
 import { createServer } from 'http';
 import { createServer as createServerHttps } from 'https';
@@ -19,10 +19,10 @@ import * as utils from './utils';
 import { parse } from './commands';
 import { IFacile, ICertificate, IConfig, IRouters, IRoute, IBoom, ICallback,
 				IMiddleware, IMiddlewares, ISockets, IModels, IControllers, IModel, IController,
-				IUtils, IFilters, IConfigs, IRequestHandler, IRoutesMap, IService, IServices } from './interfaces';
+				IUtils, IFilters, IConfigs, IRequestHandler, IRoutesMap, IService, IServices } from '../interfaces';
 
 // Get Facile and App packages.
-let pkg = require('../package.json');
+let pkg = require('../../package.json');
 let appPkg = require(join(process.cwd(), 'package.json'));
 
 // Default config values.
@@ -30,9 +30,9 @@ let defaults: IConfig = {
 	cwd: process.cwd(),
 	pkg: appPkg,
 	env: 'development',
-	logLevel: 'info', // only sets default logger's level.
+	logLevel: 'info',
 	host: '127.0.0.1',
-	port: 3000,
+	port: 8080,
 	maxConnections: 128
 };
 
@@ -139,6 +139,13 @@ export class Facile extends events.EventEmitter implements IFacile {
 		// Setup the Logger.
 		if (this._config.logger)
 			this.logger = this._config.logger;
+
+		// If log level was set Iterate
+		// transports and set level.
+		if (this._config.logLevel)
+			each(this.logger.transports, (t: any) => {
+				t.level = this._config.logLevel;
+			});
 
 		this.logger.debug('Defining Boom error handlers.');
 

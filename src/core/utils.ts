@@ -1,6 +1,6 @@
 
 import { extend as _extend, isPlainObject, max, keys} from 'lodash';
-import { IFacile } from './interfaces';
+import { IFacile } from '../interfaces';
 
 /**
  * Add object to mapped collection.
@@ -26,6 +26,14 @@ export function extendMap(key: any, val: any, obj: any) {
 
 }
 
+/**
+ * Extends object with supplied Type.
+ *
+ * @export
+ * @param {*} Type
+ * @param {*} obj
+ * @param {IFacile} [instance]
+ */
 export function extendType(Type: any, obj: any, instance?: IFacile) {
 
 	// A class object provided.
@@ -54,7 +62,7 @@ export function extendType(Type: any, obj: any, instance?: IFacile) {
  *
  * @export
  * @param {...any[]} args
- * @returns
+ * @returns {*}
  */
 export function extend(...args: any[]) {
 	return _extend.apply(null, args);

@@ -1,0 +1,37 @@
+{
+	"tags":
+	{
+		"allowUnknownTags" : true
+	},
+	"plugins":[
+		 "plugins/markdown"
+		,"/Volumes/DATA/Projects/Resources/TSDoc/template/plugins/TSDoc.js"
+	],
+	"opts":
+	{
+		"template"	:"/Volumes/DATA/Projects/Resources/TSDoc/template",
+		"recurse"	:"true"
+	},
+	"templates" : {
+		"cleverLinks"     : false,
+		"monospaceLinks"  : false
+	},
+	"source":
+	{
+		"includePattern": "(\\.d)?\\.ts$"
+	},
+	"markdown"  : {
+		"parser"   : "gfm",
+		"hardwrap" : true
+	},
+	"tsdoc":{
+		"source"		:"/Volumes/DATA/Projects/WebNode/facile/facile-core/src/",
+		"destination"	:"/Volumes/DATA/Projects/WebNode/facile/facile-core/docs",
+		"tutorials"		:"",
+		"systemName"	: "Facile",
+		"footer"		: "",
+		"copyright"		: "Facile Copyright © 2016 Origin1 Technologies.",
+		"outputSourceFiles" : true,
+		"commentsOnly": true
+	}
+}

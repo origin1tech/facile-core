@@ -3,7 +3,7 @@ import * as events from 'events';
 import * as express from 'express';
 import { LoggerInstance } from 'winston';
 import { Server } from 'net';
-import { IFacile, IConfig, IRouters, IRoute, IBoom, IMiddlewares, ISockets, IModels, IControllers, IModel, IController, IUtils, IFilters, IConfigs, IRequestHandler, IRoutesMap, IService, IServices } from './interfaces';
+import { IFacile, IConfig, IRouters, IRoute, IBoom, IMiddlewares, ISockets, IModels, IControllers, IModel, IController, IUtils, IFilters, IConfigs, IRequestHandler, IRoutesMap, IService, IServices } from '../interfaces';
 /**
  * RecRent
  *

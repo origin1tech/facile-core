@@ -1,4 +1,4 @@
-import { IController, IModel, IService, IFacile } from './interfaces';
+import { IController, IModel, IService, IFacile } from '../interfaces';
 /**
  * Base Controller Class
  *

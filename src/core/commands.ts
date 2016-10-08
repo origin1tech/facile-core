@@ -3,7 +3,7 @@
  */
 
 import * as cmdr from 'commander';
-import { IFacile } from './interfaces';
+import { IFacile } from '../interfaces';
 
 export function parse(facile: IFacile) {
 

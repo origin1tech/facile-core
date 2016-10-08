@@ -16,7 +16,7 @@ var chalk_1 = require('chalk');
 // Internal Dependencies.
 var utils = require('./utils');
 // Get Facile and App packages.
-var pkg = require('../package.json');
+var pkg = require('../../package.json');
 var appPkg = require(path_1.join(process.cwd(), 'package.json'));
 // Default config values.
 var defaults = {
@@ -25,7 +25,7 @@ var defaults = {
     env: 'development',
     logLevel: 'info',
     host: '127.0.0.1',
-    port: 3000,
+    port: 8080,
     maxConnections: 128
 };
 /**
@@ -90,6 +90,7 @@ var Facile = (function (_super) {
      * @memberOf Facile
      */
     Facile.prototype.configure = function (config) {
+        var _this = this;
         // Check if configuration is string.
         // If yes try to load the config.
         if (lodash_1.isString(config))
@@ -99,6 +100,12 @@ var Facile = (function (_super) {
         // Setup the Logger.
         if (this._config.logger)
             this.logger = this._config.logger;
+        // If log level was set Iterate
+        // transports and set level.
+        if (this._config.logLevel)
+            lodash_1.each(this.logger.transports, function (t) {
+                t.level = _this._config.logLevel;
+            });
         this.logger.debug('Defining Boom error handlers.');
         // Expose common Boom events to framework.
         this.Boom = {
