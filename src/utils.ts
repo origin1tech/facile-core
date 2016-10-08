@@ -1,21 +1,51 @@
 
-import { extend as _extend, isPlainObject } from 'lodash';
+import { extend as _extend, isPlainObject, max, keys} from 'lodash';
+import { IFacile } from './interfaces';
 
 /**
- * Helper method adds to specified map.
+ * Add object to mapped collection.
  *
  * @export
  * @param {*} key
  * @param {*} val
- * @param {*} obj
+ * @param {*} [obj]
  */
-export function addType(key: any, val: any, obj: any) {
-	if (typeof key === 'string')
+export function extendMap(key: any, val: any, obj: any) {
+
+	// key and value provided.
+	if (typeof key === 'string') {
 		obj[key] = val;
-	else
+	}
+
+	// Map with name and object provided.
+	else {
 		Object.keys(key).forEach((k) => {
 			obj[k] = key[k];
 		});
+	}
+
+}
+
+export function extendType(Type: any, obj: any, instance?: IFacile) {
+
+	// A class object provided.
+	if (Type.constructor && Type.constructor.name) {
+		if (instance)
+			obj[Type.constructor.name] = new Type(instance);
+		else
+			obj[Type.constructor.name] = Type;
+	}
+
+	// Array of class objects provided.
+	else if (Array.isArray(Type)) {
+		Type.forEach((T) => {
+			if (instance)
+				obj[T.constructor.name] = new T(instance);
+			else
+				obj[T.constructor.name] = T;
+		});
+	}
+
 }
 
 /**
@@ -40,7 +70,7 @@ export function extend(...args: any[]) {
  * @returns {number}
  */
 export function maxIn(obj: any, key: string): number {
-	return _.max(_.keys(obj).map((k) => {
+	return max(keys(obj).map((k) => {
 		return obj[k][key];
 	}));
 }

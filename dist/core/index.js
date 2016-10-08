@@ -446,4 +446,4 @@ var Facile = (function (_super) {
     return Facile;
 }(events.EventEmitter));
 exports.Facile = Facile;
-//# sourceMappingURL=core.js.map
+//# sourceMappingURL=index.js.map

@@ -1,22 +1,43 @@
 "use strict";
 var lodash_1 = require('lodash');
 /**
- * Helper method adds to specified map.
+ * Add object to mapped collection.
  *
  * @export
  * @param {*} key
  * @param {*} val
- * @param {*} obj
+ * @param {*} [obj]
  */
-function addType(key, val, obj) {
-    if (typeof key === 'string')
+function extendMap(key, val, obj) {
+    // key and value provided.
+    if (typeof key === 'string') {
         obj[key] = val;
-    else
+    }
+    else {
         Object.keys(key).forEach(function (k) {
             obj[k] = key[k];
         });
+    }
 }
-exports.addType = addType;
+exports.extendMap = extendMap;
+function extendType(Type, obj, instance) {
+    // A class object provided.
+    if (Type.constructor && Type.constructor.name) {
+        if (instance)
+            obj[Type.constructor.name] = new Type(instance);
+        else
+            obj[Type.constructor.name] = Type;
+    }
+    else if (Array.isArray(Type)) {
+        Type.forEach(function (T) {
+            if (instance)
+                obj[T.constructor.name] = new T(instance);
+            else
+                obj[T.constructor.name] = T;
+        });
+    }
+}
+exports.extendType = extendType;
 /**
  * Wrapper for lodash extend
  * merely for convenience.
@@ -43,7 +64,7 @@ exports.extend = extend;
  * @returns {number}
  */
 function maxIn(obj, key) {
-    return _.max(_.keys(obj).map(function (k) {
+    return lodash_1.max(lodash_1.keys(obj).map(function (k) {
         return obj[k][key];
     }));
 }
