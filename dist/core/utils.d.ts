@@ -1,4 +1,3 @@
-import { IFacile } from '../interfaces';
 /**
  * Add object to mapped collection.
  *
@@ -7,15 +6,23 @@ import { IFacile } from '../interfaces';
  * @param {*} val
  * @param {*} [obj]
  */
-export declare function extendMap(key: any, val: any, obj: any): void;
-export declare function extendType(Type: any, obj: any, instance?: IFacile): void;
+export declare function extendMap(key: any, val: any, obj?: any): void;
+/**
+ * Extends object with supplied Type.
+ *
+ * @export
+ * @param {*} Type
+ * @param {*} obj
+ * @param {IFacile} [instance]
+ */
+export declare function initMap(Type: any, obj: any, instance?: any): void;
 /**
  * Wrapper for lodash extend
  * merely for convenience.
  *
  * @export
  * @param {...any[]} args
- * @returns
+ * @returns {*}
  */
 export declare function extend(...args: any[]): any;
 /**

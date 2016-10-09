@@ -19,8 +19,8 @@ export interface IBoomOutput extends Output {
 }
 export interface IUtils {
     extend(...args: any[]): any;
-    extendMap(key: any, val: any, obj: any): void;
-    extendType(Type: any, obj: any, instance?: IFacile): void;
+    extendMap(key: any, val: any, obj?: any): void;
+    initMap(Type: any, obj: any, instance?: any): void;
     maxIn(obj: any, key: string): number;
     hasIn(obj: any, key: any, val: any): boolean;
     noop(): void;
@@ -40,20 +40,22 @@ export interface IFacile {
     _filters: IFilters;
     _models: IModels;
     _controllers: IControllers;
-    configure(config?: IConfig): IFacile;
-    listen(): void;
-    start(fn?: Function): IFacile;
+    configure(config?: IConfig | boolean, autoStart?: boolean | ICallback, fn?: ICallback): IFacile | void;
+    load(autoStart?: boolean, fn?: ICallback): IFacile | void;
+    start(fn?: ICallback): void;
     stop(msg?: string, code?: number): void;
     addConfig(name: string, config: IConfig): IFacile;
     addRouter(name: string, router?: Router): Router;
     addMiddleware(name: string, fn: Function, order?: number): IFacile;
-    addFilter(name: string, fn: Function): IFacile;
-    addModel(Model: IModel | Array<IModel>, instance?: boolean): IFacile;
-    addController(Controller: IController | Array<IController>, instance?: boolean): IFacile;
+    addService(Service: IService | Array<IService>): IFacile;
+    addFilter(Filter: IFilter | Array<IFilter>): IFacile;
+    addModel(Model: IModel | Array<IModel>): IFacile;
+    addController(Controller: IController | Array<IController>): IFacile;
     addService(Service: IService | Array<IService>, instance?: boolean): IFacile;
     addRoute(method: string | IRoute | Array<string>, url?: string, handlers?: IRequestHandler | Array<IRequestHandler>, router?: string): IFacile;
     config(name: string): IConfig;
-    filter(name: string): IRequestHandler;
+    filter(name: string): IFilter;
+    service(name: string): IService;
     model(name: string): IModel;
     controller(name: string): IController;
 }
@@ -106,7 +108,6 @@ export interface IConfig {
     logLevel?: 'error' | 'warn' | 'info' | 'debug';
     views?: IExpressViews;
     database?: any;
-    build?(facile: IFacile, fn: ICallback): any;
 }
 /**
  * Map of Configs.
@@ -229,13 +230,21 @@ export interface IRoutesMap {
     [url: string]: IRequestHandler | Array<IRequestHandler>;
 }
 /**
+ * Filter Interface.
+ *
+ * @export
+ * @interface IFilter
+ */
+export interface IFilter {
+}
+/**
  * Map of Filters.
  *
  * @export
  * @interface IFilters
  */
 export interface IFilters {
-    [name: string]: IRequestHandler;
+    [name: string]: IFilter;
 }
 /**
  * Service Interface

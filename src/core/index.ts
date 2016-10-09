@@ -11,13 +11,13 @@ import { createServer } from 'http';
 import { createServer as createServerHttps } from 'https';
 import { Server, Socket } from 'net';
 import { readFileSync } from 'fs';
-import { extend, isPlainObject, each, isFunction, isString, maxBy, has } from 'lodash';
+import { extend, isPlainObject, each, isFunction, isString, maxBy, has, isBoolean } from 'lodash';
 import { red, cyan } from 'chalk';
 
 // Internal Dependencies.
 import * as utils from './utils';
 import { parse } from './commands';
-import { IFacile, ICertificate, IConfig, IRouters, IRoute, IBoom, ICallback,
+import { IFacile, ICertificate, IConfig, IRouters, IRoute, IBoom, ICallback, IFilter,
 				IMiddleware, IMiddlewares, ISockets, IModels, IControllers, IModel, IController,
 				IUtils, IFilters, IConfigs, IRequestHandler, IRoutesMap, IService, IServices } from '../interfaces';
 
@@ -35,7 +35,6 @@ let defaults: IConfig = {
 	port: 8080,
 	maxConnections: 128
 };
-
 
 /**
  * Facile Core
@@ -74,7 +73,8 @@ export class Facile extends events.EventEmitter implements IFacile {
 	/**
 	 * Creates an instance of RecRent.
 	 *
-	 * @memberOf Facile
+	 * @constructor
+	 * @memberof Facile
 	 */
 	constructor () {
 
@@ -122,14 +122,26 @@ export class Facile extends events.EventEmitter implements IFacile {
 	///////////////////////////////////////////////////
 
 	/**
-	 * Applies Configuration.
+	 * Configures Facile
+	 * optionally provide boolean to
+	 * auto load and start.
 	 *
-	 * @param {(string | IConfig)} [config]
-	 * @returns {Facile}
+	 * @param {(IConfig | boolean)} [config]
+	 * @param {(boolean | ICallback)} [autoStart]
+	 * @param {ICallback} [fn]
+	 * @returns {(Facile | void)}
 	 *
 	 * @memberOf Facile
 	 */
-	configure(config?: string | IConfig): Facile {
+	configure(config?: IConfig | boolean, autoStart?: boolean | ICallback,
+						fn?: ICallback): Facile | void {
+
+		// Check if config is boolean.
+		if (isBoolean(config)) {
+			fn = autoStart as ICallback;
+			autoStart = config;
+			config = undefined;
+		}
 
 		// Check if configuration is string.
 		// If yes try to load the config.
@@ -175,33 +187,27 @@ export class Facile extends events.EventEmitter implements IFacile {
 		// Emit Configured.
 		this.emit('core:configured', this);
 
-		return this;
+		// No auto start return instance.
+		if (!autoStart)
+			return this;
+
+		// Load controllers, models and services.
+		this.load(autoStart as boolean, fn);
 
 	}
 
 	/**
-	 * Starts server listening for connections.
+	 * Load Controllers, Models & Services.
 	 *
-	 *
-	 * @memberOf Facile
-	 */
-	listen(): void {
-		this.server.listen(this._config.port, this._config.host, (err: Error) => {
-			if (err)
-				throw err;
-		});
-	}
-
-	/**
-	 * Start Server.
-	 *
-	 * @param {Function} [fn]
+	 * @param {boolean} [autoStart]
+	 * @param {ICallback} [fn]
+	 * @returns {(Facile | void)}
 	 *
 	 * @memberOf Facile
 	 */
-	start(fn?: Function): Facile {
+	load(autoStart?: boolean, fn?: ICallback): Facile | void {
 
-		let self = this;
+		this.logger.debug('Ensuring default router.');
 
 		// Ensure Routers exist.
 		this._routers = this._routers || {};
@@ -209,6 +215,42 @@ export class Facile extends events.EventEmitter implements IFacile {
 		// Check for default router.
 		if (!this._routers['default'])
 			this._routers['default'] = this.app._router;
+
+		// Init Services.
+		this.logger.debug('Initialize Services.');
+		this.utils.initMap(this._services, this);
+
+		// Init Models.
+		this.logger.debug('Initialize Models.');
+		this.utils.initMap(this._models, this);
+
+		// Init Controllers.
+		this.logger.debug('Initialize Controllers.');
+		this.utils.initMap(this._controllers, this);
+
+		this.emit('core:loaded');
+
+		// No auto start return instance.
+		if (!autoStart)
+			return this;
+
+		// Start the server.
+		this.start(fn);
+
+	}
+
+	/**
+	 * Start Server.
+	 *
+	 * @param {Function} [fn]
+	 * @method
+	 * @memberof Facile
+	 */
+	start(fn?: Function): void {
+
+		let self = this;
+
+		this.logger.debug('Configuring server protocol and settings.');
 
 		// Create Https if Certificate.
 		if (this._config.certificate)
@@ -231,8 +273,10 @@ export class Facile extends events.EventEmitter implements IFacile {
 			console.log(cyan('\nServer listening at: http://' + addy + ':' + port));
 
 			// Call if callack function provided.
-			if (fn)
+			if (fn) {
+				this.logger.debug('Exec callback on server start/listening.');
 				fn(this);
+			}
 
 		});
 
@@ -245,34 +289,20 @@ export class Facile extends events.EventEmitter implements IFacile {
 
 			// Listen for socket close.
 			socket.on('close', () => {
+
 				this.logger.debug('Socket ' + socketId + ' was closed.');
 				delete this._sockets[socketId];
+
 			});
 
 		});
 
-		// If build function call before
-		// server listen.
-		if (this._config.build)
-			this._config.build(self, (err?: string | Error) => {
-
-				// If error don't start server.
-				if (err !== undefined) {
-					if (isString(err))
-						err = new Error(err);
-					throw err;
-				}
-
-				// All clear fire up server.
-				this.listen();
-
-			});
-
-		// Otherwise just start server and listen.
-		else
-			this.listen();
-
-		return this;
+		// Listen for connections.
+		this.logger.debug('Preparing server to listen for connections.');
+		this.server.listen(this._config.port, this._config.host, (err: Error) => {
+			if (err)
+				throw err;
+		});
 
 	}
 
@@ -413,6 +443,19 @@ export class Facile extends events.EventEmitter implements IFacile {
 	}
 
 	/**
+	 * Registers a Service.
+	 *
+	 * @param {(IService | Array<IService>)} Service
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	addService(Service: IService | Array<IService>): Facile {
+		this.utils.extendMap(Service, this._services);
+		return this;
+	}
+
+	/**
 	 * Registers Filter or Map of Filters.
 	 *
 	 * @param {(string | IFilters)} name
@@ -421,8 +464,8 @@ export class Facile extends events.EventEmitter implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	addFilter(name: string | IFilters, fn: IRequestHandler): Facile {
-		this.utils.extendMap(name, fn, this._filters);
+	addFilter(Filter: IFilter | Array<IFilter>): Facile {
+		this.utils.extendMap(Filter, this._filters);
 		return this;
 	}
 
@@ -434,8 +477,8 @@ export class Facile extends events.EventEmitter implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	addModel(Model: IModel | Array<IModel>, instance?: boolean): Facile {
-		this.utils.extendType(Model, this._models, this);
+	addModel(Model: IModel | Array<IModel>): Facile {
+		this.utils.extendMap(Model, this._models);
 		return this;
 	}
 
@@ -447,21 +490,8 @@ export class Facile extends events.EventEmitter implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	addController(Controller: IController | Array<IController>, instance?: boolean): Facile {
-		this.utils.extendType(Controller, this._controllers, this);
-		return this;
-	}
-
-	/**
-	 * Registers a Service.
-	 *
-	 * @param {(IService | Array<IService>)} Service
-	 * @returns {Facile}
-	 *
-	 * @memberOf Facile
-	 */
-	addService(Service: IService | Array<IService>, instance?: boolean): Facile {
-		this.utils.extendType(Service, this._services, this);
+	addController(Controller: IController | Array<IController>): Facile {
+		this.utils.extendMap(Controller, this._controllers);
 		return this;
 	}
 
@@ -543,6 +573,18 @@ export class Facile extends events.EventEmitter implements IFacile {
 	}
 
 	/**
+	 * Gets a Service by name.
+	 *
+	 * @param {string} name
+	 * @returns {IService}
+	 *
+	 * @memberOf Facile
+	 */
+	service(name: string): IService {
+		return this._services[name];
+	}
+
+	/**
 	 * Gets a Filter by name.
 	 *
 	 * @param {string} name
@@ -550,7 +592,7 @@ export class Facile extends events.EventEmitter implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	filter(name: string): IRequestHandler {
+	filter(name: string): IFilter {
 		return this._filters[name];
 	}
 

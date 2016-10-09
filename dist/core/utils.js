@@ -9,42 +9,68 @@ var lodash_1 = require('lodash');
  * @param {*} [obj]
  */
 function extendMap(key, val, obj) {
+    // Allow map object as second arg.
+    if (!obj) {
+        obj = val;
+        val = undefined;
+    }
     // key and value provided.
-    if (typeof key === 'string') {
+    if (lodash_1.isString(key) && val !== undefined) {
         obj[key] = val;
     }
-    else {
+    else if (key.constructor || (Array.isArray(key) && key[0] && key[0].constructor)) {
+        if (Array.isArray(key))
+            key.forEach(function (klass) {
+                obj[klass.constructor.name] = klass;
+            });
+        else
+            obj[key.constructor.name] = key;
+    }
+    else if (lodash_1.isPlainObject(key)) {
         Object.keys(key).forEach(function (k) {
             obj[k] = key[k];
         });
     }
+    else {
+        throw new Error('Failed to extend map, invalid configuration.');
+    }
 }
 exports.extendMap = extendMap;
-function extendType(Type, obj, instance) {
-    // A class object provided.
-    if (Type.constructor && Type.constructor.name) {
-        if (instance)
-            obj[Type.constructor.name] = new Type(instance);
-        else
-            obj[Type.constructor.name] = Type;
+/**
+ * Extends object with supplied Type.
+ *
+ * @export
+ * @param {*} Type
+ * @param {*} obj
+ * @param {IFacile} [instance]
+ */
+function initMap(Type, obj, instance) {
+    // Check if map instead of single
+    // class was provided.
+    if (!instance) {
+        instance = obj;
+        obj = Type;
+        Type = undefined;
     }
-    else if (Array.isArray(Type)) {
-        Type.forEach(function (T) {
-            if (instance)
-                obj[T.constructor.name] = new T(instance);
-            else
-                obj[T.constructor.name] = T;
+    // Instantiate class and update in map.
+    if (Type) {
+        var name = Type.constructor.name;
+        obj[name] = new Type(instance);
+    }
+    else {
+        lodash_1.each(obj, function (T, k) {
+            obj[k] = new T(instance);
         });
     }
 }
-exports.extendType = extendType;
+exports.initMap = initMap;
 /**
  * Wrapper for lodash extend
  * merely for convenience.
  *
  * @export
  * @param {...any[]} args
- * @returns
+ * @returns {*}
  */
 function extend() {
     var args = [];

@@ -3,11 +3,14 @@ import * as events from 'events';
 import * as express from 'express';
 import { LoggerInstance } from 'winston';
 import { Server } from 'net';
-import { IFacile, IConfig, IRouters, IRoute, IBoom, IMiddlewares, ISockets, IModels, IControllers, IModel, IController, IUtils, IFilters, IConfigs, IRequestHandler, IRoutesMap, IService, IServices } from '../interfaces';
+import { IFacile, IConfig, IRouters, IRoute, IBoom, ICallback, IFilter, IMiddlewares, ISockets, IModels, IControllers, IModel, IController, IUtils, IFilters, IConfigs, IRequestHandler, IRoutesMap, IService, IServices } from '../interfaces';
 /**
- * RecRent
+ * Facile Core
  *
- * @class RecRent
+ * @export
+ * @class Facile
+ * @extends {events.EventEmitter}
+ * @implements {IFacile}
  */
 export declare class Facile extends events.EventEmitter implements IFacile {
     static instance: Facile;
@@ -31,33 +34,41 @@ export declare class Facile extends events.EventEmitter implements IFacile {
     /**
      * Creates an instance of RecRent.
      *
-     * @memberOf Facile
+     * @constructor
+     * @memberof Facile
      */
     constructor();
     /**
-     * Applies Configuration.
+     * Configures Facile
+     * optionally provide boolean to
+     * auto load and start.
      *
-     * @param {(string | IConfig)} [config]
-     * @returns {Facile}
+     * @param {(IConfig | boolean)} [config]
+     * @param {(boolean | ICallback)} [autoStart]
+     * @param {ICallback} [fn]
+     * @returns {(Facile | void)}
      *
      * @memberOf Facile
      */
-    configure(config?: string | IConfig): Facile;
+    configure(config?: IConfig | boolean, autoStart?: boolean | ICallback, fn?: ICallback): Facile | void;
     /**
-     * Starts server listening for connections.
+     * Load Controllers, Models & Services.
      *
+     * @param {boolean} [autoStart]
+     * @param {ICallback} [fn]
+     * @returns {(Facile | void)}
      *
      * @memberOf Facile
      */
-    listen(): void;
+    load(autoStart?: boolean, fn?: ICallback): Facile | void;
     /**
      * Start Server.
      *
      * @param {Function} [fn]
-     *
-     * @memberOf Facile
+     * @method
+     * @memberof Facile
      */
-    start(fn?: Function): Facile;
+    start(fn?: Function): void;
     /**
      * Stops the server.
      *
@@ -100,6 +111,15 @@ export declare class Facile extends events.EventEmitter implements IFacile {
      */
     addMiddleware(name: string | IMiddlewares, fn: IRequestHandler, order?: number): Facile;
     /**
+     * Registers a Service.
+     *
+     * @param {(IService | Array<IService>)} Service
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    addService(Service: IService | Array<IService>): Facile;
+    /**
      * Registers Filter or Map of Filters.
      *
      * @param {(string | IFilters)} name
@@ -108,7 +128,7 @@ export declare class Facile extends events.EventEmitter implements IFacile {
      *
      * @memberOf Facile
      */
-    addFilter(name: string | IFilters, fn: IRequestHandler): Facile;
+    addFilter(Filter: IFilter | Array<IFilter>): Facile;
     /**
      * Registers a Model.
      *
@@ -117,7 +137,7 @@ export declare class Facile extends events.EventEmitter implements IFacile {
      *
      * @memberOf Facile
      */
-    addModel(Model: IModel | Array<IModel>, instance?: boolean): Facile;
+    addModel(Model: IModel | Array<IModel>): Facile;
     /**
      * Registers a Controller.
      *
@@ -126,16 +146,7 @@ export declare class Facile extends events.EventEmitter implements IFacile {
      *
      * @memberOf Facile
      */
-    addController(Controller: IController | Array<IController>, instance?: boolean): Facile;
-    /**
-     * Registers a Service.
-     *
-     * @param {(IService | Array<IService>)} Service
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
-    addService(Service: IService | Array<IService>, instance?: boolean): Facile;
+    addController(Controller: IController | Array<IController>): Facile;
     /**
      * Adds a route to the map.
      *
@@ -167,6 +178,15 @@ export declare class Facile extends events.EventEmitter implements IFacile {
      */
     config(name: string): IConfig;
     /**
+     * Gets a Service by name.
+     *
+     * @param {string} name
+     * @returns {IService}
+     *
+     * @memberOf Facile
+     */
+    service(name: string): IService;
+    /**
      * Gets a Filter by name.
      *
      * @param {string} name
@@ -174,7 +194,7 @@ export declare class Facile extends events.EventEmitter implements IFacile {
      *
      * @memberOf Facile
      */
-    filter(name: string): IRequestHandler;
+    filter(name: string): IFilter;
     /**
      * Gets a Model by name.
      *

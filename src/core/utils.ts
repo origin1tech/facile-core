@@ -1,5 +1,5 @@
 
-import { extend as _extend, isPlainObject, max, keys} from 'lodash';
+import { extend as _extend, isPlainObject, max, keys, each, isString, isFunction } from 'lodash';
 import { IFacile } from '../interfaces';
 
 /**
@@ -10,18 +10,42 @@ import { IFacile } from '../interfaces';
  * @param {*} val
  * @param {*} [obj]
  */
-export function extendMap(key: any, val: any, obj: any) {
+export function extendMap(key: any, val: any, obj?: any) {
+
+	// Allow map object as second arg.
+	if (!obj) {
+		obj = val;
+		val = undefined;
+	}
 
 	// key and value provided.
-	if (typeof key === 'string') {
+	if (isString(key) && val !== undefined) {
 		obj[key] = val;
 	}
 
+	// Check if is class with construtor
+	// or Array of class object.
+	else if (key.constructor || (Array.isArray(key) && key[0] && key[0].constructor)) {
+
+		if (Array.isArray(key))
+			key.forEach((klass) => {
+				obj[klass.constructor.name] = klass;
+			});
+
+		else
+			obj[key.constructor.name] = key;
+
+	}
+
 	// Map with name and object provided.
-	else {
+	else if (isPlainObject(key)) {
 		Object.keys(key).forEach((k) => {
 			obj[k] = key[k];
 		});
+	}
+
+	else {
+		throw new Error('Failed to extend map, invalid configuration.');
 	}
 
 }
@@ -34,23 +58,26 @@ export function extendMap(key: any, val: any, obj: any) {
  * @param {*} obj
  * @param {IFacile} [instance]
  */
-export function extendType(Type: any, obj: any, instance?: IFacile) {
+export function initMap(Type: any, obj: any, instance?: any) {
 
-	// A class object provided.
-	if (Type.constructor && Type.constructor.name) {
-		if (instance)
-			obj[Type.constructor.name] = new Type(instance);
-		else
-			obj[Type.constructor.name] = Type;
+	// Check if map instead of single
+	// class was provided.
+	if (!instance) {
+		instance = obj;
+		obj = Type;
+		Type = undefined;
 	}
 
-	// Array of class objects provided.
-	else if (Array.isArray(Type)) {
-		Type.forEach((T) => {
-			if (instance)
-				obj[T.constructor.name] = new T(instance);
-			else
-				obj[T.constructor.name] = T;
+	// Instantiate class and update in map.
+	if (Type) {
+		let name = Type.constructor.name;
+		obj[name] = new Type(instance);
+	}
+
+	// Otherwise iterate and instantiate all.
+	else {
+		each(obj, (T, k) => {
+			obj[k] = new T(instance);
 		});
 	}
 

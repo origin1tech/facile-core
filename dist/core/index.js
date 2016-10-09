@@ -29,16 +29,20 @@ var defaults = {
     maxConnections: 128
 };
 /**
- * RecRent
+ * Facile Core
  *
- * @class RecRent
+ * @export
+ * @class Facile
+ * @extends {events.EventEmitter}
+ * @implements {IFacile}
  */
 var Facile = (function (_super) {
     __extends(Facile, _super);
     /**
      * Creates an instance of RecRent.
      *
-     * @memberOf Facile
+     * @constructor
+     * @memberof Facile
      */
     function Facile() {
         // Extend class with emitter.
@@ -82,15 +86,25 @@ var Facile = (function (_super) {
     // CONFIGURE & MANAGE SERVER
     ///////////////////////////////////////////////////
     /**
-     * Applies Configuration.
+     * Configures Facile
+     * optionally provide boolean to
+     * auto load and start.
      *
-     * @param {(string | IConfig)} [config]
-     * @returns {Facile}
+     * @param {(IConfig | boolean)} [config]
+     * @param {(boolean | ICallback)} [autoStart]
+     * @param {ICallback} [fn]
+     * @returns {(Facile | void)}
      *
      * @memberOf Facile
      */
-    Facile.prototype.configure = function (config) {
+    Facile.prototype.configure = function (config, autoStart, fn) {
         var _this = this;
+        // Check if config is boolean.
+        if (lodash_1.isBoolean(config)) {
+            fn = autoStart;
+            autoStart = config;
+            config = undefined;
+        }
         // Check if configuration is string.
         // If yes try to load the config.
         if (lodash_1.isString(config))
@@ -125,35 +139,55 @@ var Facile = (function (_super) {
         process.env.NODE_ENV = this._config.env;
         // Emit Configured.
         this.emit('core:configured', this);
-        return this;
+        // No auto start return instance.
+        if (!autoStart)
+            return this;
+        // Load controllers, models and services.
+        this.load(autoStart, fn);
     };
     /**
-     * Starts server listening for connections.
+     * Load Controllers, Models & Services.
      *
+     * @param {boolean} [autoStart]
+     * @param {ICallback} [fn]
+     * @returns {(Facile | void)}
      *
      * @memberOf Facile
      */
-    Facile.prototype.listen = function () {
-        this.server.listen(this._config.port, this._config.host, function (err) {
-            if (err)
-                throw err;
-        });
-    };
-    /**
-     * Start Server.
-     *
-     * @param {Function} [fn]
-     *
-     * @memberOf Facile
-     */
-    Facile.prototype.start = function (fn) {
-        var _this = this;
-        var self = this;
+    Facile.prototype.load = function (autoStart, fn) {
+        this.logger.debug('Ensuring default router.');
         // Ensure Routers exist.
         this._routers = this._routers || {};
         // Check for default router.
         if (!this._routers['default'])
             this._routers['default'] = this.app._router;
+        // Init Services.
+        this.logger.debug('Initialize Services.');
+        this.utils.initMap(this._services, this);
+        // Init Models.
+        this.logger.debug('Initialize Models.');
+        this.utils.initMap(this._models, this);
+        // Init Controllers.
+        this.logger.debug('Initialize Controllers.');
+        this.utils.initMap(this._controllers, this);
+        this.emit('core:loaded');
+        // No auto start return instance.
+        if (!autoStart)
+            return this;
+        // Start the server.
+        this.start(fn);
+    };
+    /**
+     * Start Server.
+     *
+     * @param {Function} [fn]
+     * @method
+     * @memberof Facile
+     */
+    Facile.prototype.start = function (fn) {
+        var _this = this;
+        var self = this;
+        this.logger.debug('Configuring server protocol and settings.');
         // Create Https if Certificate.
         if (this._config.certificate)
             this.server = https_1.createServer(this._config.certificate, this.app);
@@ -166,8 +200,10 @@ var Facile = (function (_super) {
             var address = _this.server.address(), addy = address.address, port = address.port;
             console.log(chalk_1.cyan('\nServer listening at: http://' + addy + ':' + port));
             // Call if callack function provided.
-            if (fn)
+            if (fn) {
+                _this.logger.debug('Exec callback on server start/listening.');
                 fn(_this);
+            }
         });
         // Store connections
         this.server.on('connection', function (socket) {
@@ -180,22 +216,12 @@ var Facile = (function (_super) {
                 delete _this._sockets[socketId];
             });
         });
-        // If build function call before
-        // server listen.
-        if (this._config.build)
-            this._config.build(self, function (err) {
-                // If error don't start server.
-                if (err !== undefined) {
-                    if (lodash_1.isString(err))
-                        err = new Error(err);
-                    throw err;
-                }
-                // All clear fire up server.
-                _this.listen();
-            });
-        else
-            this.listen();
-        return this;
+        // Listen for connections.
+        this.logger.debug('Preparing server to listen for connections.');
+        this.server.listen(this._config.port, this._config.host, function (err) {
+            if (err)
+                throw err;
+        });
     };
     /**
      * Stops the server.
@@ -308,6 +334,18 @@ var Facile = (function (_super) {
         return this;
     };
     /**
+     * Registers a Service.
+     *
+     * @param {(IService | Array<IService>)} Service
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    Facile.prototype.addService = function (Service) {
+        this.utils.extendMap(Service, this._services);
+        return this;
+    };
+    /**
      * Registers Filter or Map of Filters.
      *
      * @param {(string | IFilters)} name
@@ -316,8 +354,8 @@ var Facile = (function (_super) {
      *
      * @memberOf Facile
      */
-    Facile.prototype.addFilter = function (name, fn) {
-        this.utils.extendMap(name, fn, this._filters);
+    Facile.prototype.addFilter = function (Filter) {
+        this.utils.extendMap(Filter, this._filters);
         return this;
     };
     /**
@@ -328,8 +366,8 @@ var Facile = (function (_super) {
      *
      * @memberOf Facile
      */
-    Facile.prototype.addModel = function (Model, instance) {
-        this.utils.extendType(Model, this._models, this);
+    Facile.prototype.addModel = function (Model) {
+        this.utils.extendMap(Model, this._models);
         return this;
     };
     /**
@@ -340,20 +378,8 @@ var Facile = (function (_super) {
      *
      * @memberOf Facile
      */
-    Facile.prototype.addController = function (Controller, instance) {
-        this.utils.extendType(Controller, this._controllers, this);
-        return this;
-    };
-    /**
-     * Registers a Service.
-     *
-     * @param {(IService | Array<IService>)} Service
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
-    Facile.prototype.addService = function (Service, instance) {
-        this.utils.extendType(Service, this._services, this);
+    Facile.prototype.addController = function (Controller) {
+        this.utils.extendMap(Controller, this._controllers);
         return this;
     };
     /**
@@ -416,6 +442,17 @@ var Facile = (function (_super) {
      */
     Facile.prototype.config = function (name) {
         return this._configs[name];
+    };
+    /**
+     * Gets a Service by name.
+     *
+     * @param {string} name
+     * @returns {IService}
+     *
+     * @memberOf Facile
+     */
+    Facile.prototype.service = function (name) {
+        return this._services[name];
     };
     /**
      * Gets a Filter by name.

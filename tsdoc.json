@@ -28,9 +28,9 @@
 		"source"		:"/Volumes/DATA/Projects/WebNode/facile/facile-core/src/",
 		"destination"	:"/Volumes/DATA/Projects/WebNode/facile/facile-core/docs",
 		"tutorials"		:"",
-		"systemName"	: "Facile",
+		"systemName"	: "facile-core",
 		"footer"		: "",
-		"copyright"		: "Facile Copyright © 2016 Origin1 Technologies.",
+		"copyright"		: "facile-core Copyright © 2016 Carey.",
 		"outputSourceFiles" : true,
 		"commentsOnly": true
 	}
