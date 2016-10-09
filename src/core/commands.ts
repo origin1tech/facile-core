@@ -1,12 +1,17 @@
-/**
- * Handles parsing comamnds for Facile.
- */
 
 import * as cmdr from 'commander';
 import { IFacile } from '../interfaces';
 
-export function parse(facile: IFacile) {
+/**
+ * Parses Command Arguments.
+ *
+ * @export
+ * @returns {IFacile}
+ */
+export function parse(): IFacile {
 
-	let ver = facile._pkg.version;
+	let ver = this._pkg.version;
+
+	return this;
 
 }

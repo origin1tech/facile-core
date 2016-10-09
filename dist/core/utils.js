@@ -113,6 +113,10 @@ function hasIn(obj, key, val) {
     return _.some(obj, filter);
 }
 exports.hasIn = hasIn;
+function validateRoute(route) {
+    route.method = route.method || 'GET';
+}
+exports.validateRoute = validateRoute;
 /**
  * Function for non operation.
  *

@@ -1,3 +1,4 @@
+import { IRoute } from '../interfaces';
 /**
  * Add object to mapped collection.
  *
@@ -46,6 +47,7 @@ export declare function maxIn(obj: any, key: string): number;
  * @returns {boolean}
  */
 export declare function hasIn(obj: any, key: any, val: any): boolean;
+export declare function validateRoute(route: IRoute): void;
 /**
  * Function for non operation.
  *

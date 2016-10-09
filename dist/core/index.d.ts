@@ -50,17 +50,7 @@ export declare class Facile extends events.EventEmitter implements IFacile {
      *
      * @memberOf Facile
      */
-    configure(config?: IConfig | boolean, autoStart?: boolean | ICallback, fn?: ICallback): Facile | void;
-    /**
-     * Load Controllers, Models & Services.
-     *
-     * @param {boolean} [autoStart]
-     * @param {ICallback} [fn]
-     * @returns {(Facile | void)}
-     *
-     * @memberOf Facile
-     */
-    load(autoStart?: boolean, fn?: ICallback): Facile | void;
+    configure(config?: IConfig | boolean, autoStart?: boolean | ICallback, fn?: ICallback): Facile;
     /**
      * Start Server.
      *
@@ -68,7 +58,7 @@ export declare class Facile extends events.EventEmitter implements IFacile {
      * @method
      * @memberof Facile
      */
-    start(fn?: Function): void;
+    start(fn?: Function): Facile;
     /**
      * Stops the server.
      *
@@ -158,7 +148,7 @@ export declare class Facile extends events.EventEmitter implements IFacile {
      *
      * @memberOf Facile
      */
-    addRoute(method: string | IRoute | Array<string> | IRoutesMap, url?: string, handlers?: IRequestHandler | Array<IRequestHandler>, router?: string): Facile;
+    addRoute(method: string | string[] | IRoutesMap | IRoute[], url?: string, handler?: IRequestHandler, filters?: IRequestHandler | IRequestHandler[], router?: string): Facile;
     /**
      * Gets a Router by name.
      *

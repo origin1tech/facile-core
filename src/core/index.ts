@@ -13,13 +13,15 @@ import { Server, Socket } from 'net';
 import { readFileSync } from 'fs';
 import { extend, isPlainObject, each, isFunction, isString, maxBy, has, isBoolean } from 'lodash';
 import { red, cyan } from 'chalk';
+import * as cons from 'consolidate';
 
 // Internal Dependencies.
 import * as utils from './utils';
 import { parse } from './commands';
 import { IFacile, ICertificate, IConfig, IRouters, IRoute, IBoom, ICallback, IFilter,
 				IMiddleware, IMiddlewares, ISockets, IModels, IControllers, IModel, IController,
-				IUtils, IFilters, IConfigs, IRequestHandler, IRoutesMap, IService, IServices } from '../interfaces';
+				IUtils, IFilters, IConfigs, IRequestHandler, IRoutesMap, IService, IServices,
+				IViewConfig } from '../interfaces';
 
 // Get Facile and App packages.
 let pkg = require('../../package.json');
@@ -33,7 +35,16 @@ let defaults: IConfig = {
 	logLevel: 'info',
 	host: '127.0.0.1',
 	port: 8080,
-	maxConnections: 128
+	maxConnections: 128,
+	views: {
+		layout: 'index',
+		engine: {
+			name: 'ejs',
+			renderer: cons.ejs
+		},
+		'view engine': 'ejs',
+		views: '/'
+	}
 };
 
 /**
@@ -134,7 +145,7 @@ export class Facile extends events.EventEmitter implements IFacile {
 	 * @memberOf Facile
 	 */
 	configure(config?: IConfig | boolean, autoStart?: boolean | ICallback,
-						fn?: ICallback): Facile | void {
+						fn?: ICallback): Facile {
 
 		// Check if config is boolean.
 		if (isBoolean(config)) {
@@ -192,50 +203,7 @@ export class Facile extends events.EventEmitter implements IFacile {
 			return this;
 
 		// Load controllers, models and services.
-		this.load(autoStart as boolean, fn);
-
-	}
-
-	/**
-	 * Load Controllers, Models & Services.
-	 *
-	 * @param {boolean} [autoStart]
-	 * @param {ICallback} [fn]
-	 * @returns {(Facile | void)}
-	 *
-	 * @memberOf Facile
-	 */
-	load(autoStart?: boolean, fn?: ICallback): Facile | void {
-
-		this.logger.debug('Ensuring default router.');
-
-		// Ensure Routers exist.
-		this._routers = this._routers || {};
-
-		// Check for default router.
-		if (!this._routers['default'])
-			this._routers['default'] = this.app._router;
-
-		// Init Services.
-		this.logger.debug('Initialize Services.');
-		this.utils.initMap(this._services, this);
-
-		// Init Models.
-		this.logger.debug('Initialize Models.');
-		this.utils.initMap(this._models, this);
-
-		// Init Controllers.
-		this.logger.debug('Initialize Controllers.');
-		this.utils.initMap(this._controllers, this);
-
-		this.emit('core:loaded');
-
-		// No auto start return instance.
-		if (!autoStart)
-			return this;
-
-		// Start the server.
-		this.start(fn);
+		return this.start(fn);
 
 	}
 
@@ -246,7 +214,7 @@ export class Facile extends events.EventEmitter implements IFacile {
 	 * @method
 	 * @memberof Facile
 	 */
-	start(fn?: Function): void {
+	start(fn?: Function): Facile {
 
 		let self = this;
 
@@ -303,6 +271,8 @@ export class Facile extends events.EventEmitter implements IFacile {
 			if (err)
 				throw err;
 		});
+
+		return this;
 
 	}
 
@@ -506,39 +476,43 @@ export class Facile extends events.EventEmitter implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	addRoute(method: string | IRoute | Array<string> | IRoutesMap, url?: string,
-					handlers?: IRequestHandler | Array<IRequestHandler>, router?: string): Facile {
+	addRoute(method: string | string[] | IRoutesMap | IRoute[],
+					url?: string,
+					handler?: IRequestHandler,
+					filters?: IRequestHandler | IRequestHandler[],
+					router?: string): Facile {
 
 		let route: IRoute;
 
-		// Check if method is IRoute object.
-		// MUST use "as" to tell typescript
-		// to use that type.
-		if (isPlainObject(method)) {
-			route = method as IRoute;
+		// Handle array of route objects.
+		if (Array.isArray(method)) {
+			let routes = method as Array<IRoute>;
+			routes.forEach((r) => {
+				this._routes.push(r);
+			});
 		}
 
-		// Otherwise define the route.
+		// Http Method or array of Methods passed.
+		else if (isString(method) || (Array.isArray(method) && isString(method[0]))) {
+
+		}
+
+		// Handle Routes map.
+		else if (isPlainObject(method)) {
+			let routes = method as IRoutesMap;
+
+		}
+
 		else {
-
-			let _method;
-
-			if (Array.isArray(method))
-				_method = method as string[];
-			else
-				_method = method as string;
-
-			route = {
-				router: router || 'default',
-				method: _method,
-				url: url,
-				handlers: handlers
-			};
-
+			throw new Error('Invalid route configuration could not add route.');
 		}
 
-		// Add the Route.
-		this._routes.push(route);
+		// route = {
+		// 	router: router || 'default',
+		// 	method: _method,
+		// 	url: url,
+		// 	handler: handlers
+		// };
 
 		return this;
 

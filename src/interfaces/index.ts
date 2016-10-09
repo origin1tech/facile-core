@@ -1,9 +1,11 @@
+import * as events from 'events';
 import { Router, RequestHandler,
 				NextFunction, ErrorRequestHandler,
 				Request, Response, Express } from 'express';
 import { Socket, Server } from 'net';
 import { BoomError, Output } from 'boom';
 import { LoggerInstance } from 'winston';
+
 
 // Re-export Interfaces for Convenience.
 export interface IRequestHandler extends RequestHandler {}
@@ -23,7 +25,7 @@ export interface IUtils {
 	noop(): void;
 }
 
-export interface IFacile {
+export interface IFacile extends events.EventEmitter {
 
 	_pkg: any;
 
@@ -44,9 +46,8 @@ export interface IFacile {
 	_models: IModels;
 	_controllers: IControllers;
 
-	configure(config?: IConfig | boolean, autoStart?: boolean | ICallback, fn?: ICallback): IFacile | void;
-	load(autoStart?: boolean, fn?: ICallback): IFacile | void;
-	start(fn?: ICallback): void;
+	configure(config?: IConfig | boolean, autoStart?: boolean | ICallback, fn?: ICallback): IFacile;
+	start(fn?: ICallback): IFacile;
 	stop(msg?: string, code?: number): void;
 
 	addConfig(name: string, config: IConfig): IFacile;
@@ -57,8 +58,10 @@ export interface IFacile {
 	addModel(Model: IModel | Array<IModel>): IFacile;
 	addController(Controller: IController | Array<IController>): IFacile;
 	addService(Service: IService | Array<IService>, instance?: boolean): IFacile;
-	addRoute(method: string | IRoute | Array<string>, url?: string,
-					handlers?: IRequestHandler | Array<IRequestHandler>,
+	addRoute(method: string | string[] | IRoutesMap | IRoute[],
+					url?: string,
+					handler?: IRequestHandler,
+					filters?: IRequestHandler | IRequestHandler[],
 					router?: string): IFacile;
 
 	config(name: string): IConfig;
@@ -92,15 +95,31 @@ export interface ICallback {
 }
 
 /**
+ * Name and renderer for views.
+ * @todo create custon interface
+ * for renderer. consolidate should
+ * but does not export the interface
+ * in typings.
+ *
+ * @export
+ * @interface IViewEngine
+ */
+export interface IViewEngine {
+	name: string;
+	renderer: string | Function;
+}
+
+/**
  * Express View Settings
  *
  * @export
  * @interface IExpressViews
  */
-export interface IExpressViews {
-	engine: string;
-	'view engine': string;
-	views: string | string[];
+export interface IViewConfig {
+	layout?: string;
+	engine?: IViewEngine;
+	'view engine'?: string;
+	views?: string | string[];
 }
 
 /**
@@ -119,7 +138,7 @@ export interface IConfig {
 	env?: string;
 	logger?: LoggerInstance;
 	logLevel?: 'error' | 'warn' | 'info' | 'debug';
-	views?: IExpressViews;
+	views?: IViewConfig;
 	database?: any;
 }
 
@@ -239,10 +258,13 @@ export interface IRouters {
  * @interface IRoute
  */
 export interface IRoute {
-	router?: string;
 	method?: string | Array<string>;
 	url: string | Array<string>;
-	handlers: IRequestHandler | Array<IRequestHandler>;
+	handler: IRequestHandler;
+	filters?: IRequestHandler | Array<IRequestHandler>;
+	view?: string;
+	redirect?: string;
+	router?: string;
 }
 
 /**

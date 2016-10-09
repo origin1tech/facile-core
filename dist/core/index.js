@@ -13,6 +13,7 @@ var http_1 = require('http');
 var https_1 = require('https');
 var lodash_1 = require('lodash');
 var chalk_1 = require('chalk');
+var cons = require('consolidate');
 // Internal Dependencies.
 var utils = require('./utils');
 // Get Facile and App packages.
@@ -26,7 +27,16 @@ var defaults = {
     logLevel: 'info',
     host: '127.0.0.1',
     port: 8080,
-    maxConnections: 128
+    maxConnections: 128,
+    views: {
+        layout: 'index',
+        engine: {
+            name: 'ejs',
+            renderer: cons.ejs
+        },
+        'view engine': 'ejs',
+        views: '/'
+    }
 };
 /**
  * Facile Core
@@ -143,39 +153,7 @@ var Facile = (function (_super) {
         if (!autoStart)
             return this;
         // Load controllers, models and services.
-        this.load(autoStart, fn);
-    };
-    /**
-     * Load Controllers, Models & Services.
-     *
-     * @param {boolean} [autoStart]
-     * @param {ICallback} [fn]
-     * @returns {(Facile | void)}
-     *
-     * @memberOf Facile
-     */
-    Facile.prototype.load = function (autoStart, fn) {
-        this.logger.debug('Ensuring default router.');
-        // Ensure Routers exist.
-        this._routers = this._routers || {};
-        // Check for default router.
-        if (!this._routers['default'])
-            this._routers['default'] = this.app._router;
-        // Init Services.
-        this.logger.debug('Initialize Services.');
-        this.utils.initMap(this._services, this);
-        // Init Models.
-        this.logger.debug('Initialize Models.');
-        this.utils.initMap(this._models, this);
-        // Init Controllers.
-        this.logger.debug('Initialize Controllers.');
-        this.utils.initMap(this._controllers, this);
-        this.emit('core:loaded');
-        // No auto start return instance.
-        if (!autoStart)
-            return this;
-        // Start the server.
-        this.start(fn);
+        return this.start(fn);
     };
     /**
      * Start Server.
@@ -222,6 +200,7 @@ var Facile = (function (_super) {
             if (err)
                 throw err;
         });
+        return this;
     };
     /**
      * Stops the server.
@@ -393,29 +372,30 @@ var Facile = (function (_super) {
      *
      * @memberOf Facile
      */
-    Facile.prototype.addRoute = function (method, url, handlers, router) {
+    Facile.prototype.addRoute = function (method, url, handler, filters, router) {
+        var _this = this;
         var route;
-        // Check if method is IRoute object.
-        // MUST use "as" to tell typescript
-        // to use that type.
-        if (lodash_1.isPlainObject(method)) {
-            route = method;
+        // Handle array of route objects.
+        if (Array.isArray(method)) {
+            var routes = method;
+            routes.forEach(function (r) {
+                _this._routes.push(r);
+            });
+        }
+        else if (lodash_1.isString(method) || (Array.isArray(method) && lodash_1.isString(method[0]))) {
+        }
+        else if (lodash_1.isPlainObject(method)) {
+            var routes = method;
         }
         else {
-            var _method = void 0;
-            if (Array.isArray(method))
-                _method = method;
-            else
-                _method = method;
-            route = {
-                router: router || 'default',
-                method: _method,
-                url: url,
-                handlers: handlers
-            };
+            throw new Error('Invalid route configuration could not add route.');
         }
-        // Add the Route.
-        this._routes.push(route);
+        // route = {
+        // 	router: router || 'default',
+        // 	method: _method,
+        // 	url: url,
+        // 	handler: handlers
+        // };
         return this;
     };
     ///////////////////////////////////////////////////

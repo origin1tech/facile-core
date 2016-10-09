@@ -1,8 +1,8 @@
 import { IFacile } from '../interfaces';
 /**
- * Parses Command Arguments.
+ * Initializes Server
  *
  * @export
  * @returns {IFacile}
  */
-export declare function parse(): IFacile;
+export declare function init(): IFacile;

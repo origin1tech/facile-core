@@ -65,17 +65,7 @@ declare module 'facile/core' {
                 *
                 * @memberOf Facile
                 */
-            configure(config?: IConfig | boolean, autoStart?: boolean | ICallback, fn?: ICallback): Facile | void;
-            /**
-                * Load Controllers, Models & Services.
-                *
-                * @param {boolean} [autoStart]
-                * @param {ICallback} [fn]
-                * @returns {(Facile | void)}
-                *
-                * @memberOf Facile
-                */
-            load(autoStart?: boolean, fn?: ICallback): Facile | void;
+            configure(config?: IConfig | boolean, autoStart?: boolean | ICallback, fn?: ICallback): Facile;
             /**
                 * Start Server.
                 *
@@ -83,7 +73,7 @@ declare module 'facile/core' {
                 * @method
                 * @memberof Facile
                 */
-            start(fn?: Function): void;
+            start(fn?: Function): Facile;
             /**
                 * Stops the server.
                 *
@@ -173,7 +163,7 @@ declare module 'facile/core' {
                 *
                 * @memberOf Facile
                 */
-            addRoute(method: string | IRoute | Array<string> | IRoutesMap, url?: string, handlers?: IRequestHandler | Array<IRequestHandler>, router?: string): Facile;
+            addRoute(method: string | string[] | IRoutesMap | IRoute[], url?: string, handler?: IRequestHandler, filters?: IRequestHandler | IRequestHandler[], router?: string): Facile;
             /**
                 * Gets a Router by name.
                 *
@@ -232,6 +222,7 @@ declare module 'facile/core' {
 }
 
 declare module 'facile/interfaces' {
+    import * as events from 'events';
     import { Router, RequestHandler, NextFunction, ErrorRequestHandler, Request, Response, Express } from 'express';
     import { Socket, Server } from 'net';
     import { BoomError, Output } from 'boom';
@@ -258,7 +249,7 @@ declare module 'facile/interfaces' {
             hasIn(obj: any, key: any, val: any): boolean;
             noop(): void;
     }
-    export interface IFacile {
+    export interface IFacile extends events.EventEmitter {
             _pkg: any;
             Boom: IBoom;
             logger: LoggerInstance;
@@ -273,9 +264,8 @@ declare module 'facile/interfaces' {
             _filters: IFilters;
             _models: IModels;
             _controllers: IControllers;
-            configure(config?: IConfig | boolean, autoStart?: boolean | ICallback, fn?: ICallback): IFacile | void;
-            load(autoStart?: boolean, fn?: ICallback): IFacile | void;
-            start(fn?: ICallback): void;
+            configure(config?: IConfig | boolean, autoStart?: boolean | ICallback, fn?: ICallback): IFacile;
+            start(fn?: ICallback): IFacile;
             stop(msg?: string, code?: number): void;
             addConfig(name: string, config: IConfig): IFacile;
             addRouter(name: string, router?: Router): Router;
@@ -285,7 +275,7 @@ declare module 'facile/interfaces' {
             addModel(Model: IModel | Array<IModel>): IFacile;
             addController(Controller: IController | Array<IController>): IFacile;
             addService(Service: IService | Array<IService>, instance?: boolean): IFacile;
-            addRoute(method: string | IRoute | Array<string>, url?: string, handlers?: IRequestHandler | Array<IRequestHandler>, router?: string): IFacile;
+            addRoute(method: string | string[] | IRoutesMap | IRoute[], url?: string, handler?: IRequestHandler, filters?: IRequestHandler | IRequestHandler[], router?: string): IFacile;
             config(name: string): IConfig;
             filter(name: string): IFilter;
             service(name: string): IService;
@@ -313,15 +303,30 @@ declare module 'facile/interfaces' {
             (err?: string | Error, data?: any): void;
     }
     /**
+        * Name and renderer for views.
+        * @todo create custon interface
+        * for renderer. consolidate should
+        * but does not export the interface
+        * in typings.
+        *
+        * @export
+        * @interface IViewEngine
+        */
+    export interface IViewEngine {
+            name: string;
+            renderer: string | Function;
+    }
+    /**
         * Express View Settings
         *
         * @export
         * @interface IExpressViews
         */
-    export interface IExpressViews {
-            engine: string;
-            'view engine': string;
-            views: string | string[];
+    export interface IViewConfig {
+            layout?: string;
+            engine?: IViewEngine;
+            'view engine'?: string;
+            views?: string | string[];
     }
     /**
         * Server Configuration.
@@ -339,7 +344,7 @@ declare module 'facile/interfaces' {
             env?: string;
             logger?: LoggerInstance;
             logLevel?: 'error' | 'warn' | 'info' | 'debug';
-            views?: IExpressViews;
+            views?: IViewConfig;
             database?: any;
     }
     /**
@@ -448,10 +453,13 @@ declare module 'facile/interfaces' {
         * @interface IRoute
         */
     export interface IRoute {
-            router?: string;
             method?: string | Array<string>;
             url: string | Array<string>;
-            handlers: IRequestHandler | Array<IRequestHandler>;
+            handler: IRequestHandler;
+            filters?: IRequestHandler | Array<IRequestHandler>;
+            view?: string;
+            redirect?: string;
+            router?: string;
     }
     /**
         * Interface for Routes by Map.

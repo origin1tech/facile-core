@@ -1,9 +1,13 @@
-/**
- * Handles parsing comamnds for Facile.
- */
 "use strict";
-function parse(facile) {
-    var ver = facile._pkg.version;
+/**
+ * Parses Command Arguments.
+ *
+ * @export
+ * @returns {IFacile}
+ */
+function parse() {
+    var ver = this._pkg.version;
+    return this;
 }
 exports.parse = parse;
 //# sourceMappingURL=commands.js.map

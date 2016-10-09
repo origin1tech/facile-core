@@ -1,6 +1,6 @@
 
 import { extend as _extend, isPlainObject, max, keys, each, isString, isFunction } from 'lodash';
-import { IFacile } from '../interfaces';
+import { IFacile, IRoute } from '../interfaces';
 
 /**
  * Add object to mapped collection.
@@ -126,6 +126,10 @@ export function hasIn(obj: any, key: any, val: any): boolean {
 	if (isPlainObject(key))
 		filter = key;
 	return _.some(obj, filter);
+}
+
+export function validateRoute(route: IRoute) {
+	route.method = route.method || 'GET';
 }
 
 /**
