@@ -1,6 +1,6 @@
 
 import { extend as _extend, isPlainObject, max, keys, each, isString, isFunction } from 'lodash';
-import { IFacile, IRoute } from '../interfaces';
+import { IFacile, IRoute, IRequestHandler } from '../interfaces';
 
 /**
  * Add object to mapped collection.
@@ -128,8 +128,63 @@ export function hasIn(obj: any, key: any, val: any): boolean {
 	return _.some(obj, filter);
 }
 
-export function validateRoute(route: IRoute) {
+/**
+ * Parses a key/value Route.
+ * When using IRoutesMap the
+ * url needs to be parsed into
+ * an IRoute configuration.
+ *
+ * @export
+ * @param {string} url
+ * @param {(IRequestHandler | Array<IRequestHandler> | string | IRoute)} handler
+ * @returns {IRoute}
+ */
+export function parseRoute(url: string,
+													handler: IRequestHandler | Array<IRequestHandler> | string | IRoute): IRoute {
+
+	let route: IRoute;
+
+	let arr = url.trim().split(' ');
+	if (arr.length === 1)
+		arr.unshift('GET');
+
+	route = {
+		method: arr[0],
+		url: arr[1]
+	};
+
+	// If handler is Route object extend it.
+	if (isPlainObject(handler)) {
+		route = _extend({}, route, handler);
+	}
+	// Set last handler as primary handler
+	// set others to filters property.
+	else if (Array.isArray(handler)) {
+		let last = handler.pop();
+		route.handler = last;
+		route.filters = handler;
+	}
+	else {
+		route.handler = handler as IRequestHandler;
+	}
+
+	return route;
+
+}
+
+/**
+ * Validates Route configuration.
+ * When invalid route.valid will
+ * equal false.
+ *
+ * @export
+ * @param {IRoute} route
+ * @returns {IRoute}
+ */
+export function validateRoute(route: IRoute): IRoute {
 	route.method = route.method || 'GET';
+	route.valid = true;
+	return route;
 }
 
 /**

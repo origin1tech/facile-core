@@ -1,4 +1,4 @@
-import { IRoute } from '../interfaces';
+import { IRoute, IRequestHandler } from '../interfaces';
 /**
  * Add object to mapped collection.
  *
@@ -47,7 +47,28 @@ export declare function maxIn(obj: any, key: string): number;
  * @returns {boolean}
  */
 export declare function hasIn(obj: any, key: any, val: any): boolean;
-export declare function validateRoute(route: IRoute): void;
+/**
+ * Parses a key/value Route.
+ * When using IRoutesMap the
+ * url needs to be parsed into
+ * an IRoute configuration.
+ *
+ * @export
+ * @param {string} url
+ * @param {(IRequestHandler | Array<IRequestHandler> | string | IRoute)} handler
+ * @returns {IRoute}
+ */
+export declare function parseRoute(url: string, handler: IRequestHandler | Array<IRequestHandler> | string | IRoute): IRoute;
+/**
+ * Validates Route configuration.
+ * When invalid route.valid will
+ * equal false.
+ *
+ * @export
+ * @param {IRoute} route
+ * @returns {IRoute}
+ */
+export declare function validateRoute(route: IRoute): IRoute;
 /**
  * Function for non operation.
  *

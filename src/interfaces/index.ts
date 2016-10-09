@@ -22,6 +22,8 @@ export interface IUtils {
 	initMap(Type: any, obj: any, instance?: any): void;
 	maxIn(obj: any, key: string): number;
 	hasIn(obj: any, key: any, val: any): boolean;
+	parseRoute(url: string, handler: IRequestHandler | Array<IRequestHandler>): IRoute;
+	validateRoute(route: IRoute): IRoute;
 	noop(): void;
 }
 
@@ -259,12 +261,13 @@ export interface IRouters {
  */
 export interface IRoute {
 	method?: string | Array<string>;
-	url: string | Array<string>;
-	handler: IRequestHandler;
+	url?: string | Array<string>;
+	handler?: IRequestHandler;
 	filters?: IRequestHandler | Array<IRequestHandler>;
 	view?: string;
 	redirect?: string;
 	router?: string;
+	valid?: boolean;
 }
 
 /**
@@ -274,7 +277,7 @@ export interface IRoute {
  * @interface IRoutesMap
  */
 export interface IRoutesMap {
-	[url: string]: IRequestHandler | Array<IRequestHandler>;
+	[url: string]: IRequestHandler | Array<IRequestHandler> | string | IRoute;
 }
 
 /**

@@ -373,19 +373,32 @@ var Facile = (function (_super) {
      * @memberOf Facile
      */
     Facile.prototype.addRoute = function (method, url, handler, filters, router) {
-        var _this = this;
-        var route;
+        var self = this;
+        // Helper function to validate
+        // the route and log if invalid.
+        function validate(route) {
+            // Validate the route.
+            route = self.utils.validateRoute(route);
+            // Push the route to the collection
+            // if is valid.
+            if (route.valid)
+                self._routes.push(route);
+            else
+                self.logger.warn("Failed to add route \"" + route.url + "\", the configuration is invalid.", route);
+        }
         // Handle array of route objects.
         if (Array.isArray(method)) {
             var routes = method;
             routes.forEach(function (r) {
-                _this._routes.push(r);
+                validate(r);
             });
         }
         else if (lodash_1.isString(method) || (Array.isArray(method) && lodash_1.isString(method[0]))) {
         }
         else if (lodash_1.isPlainObject(method)) {
             var routes = method;
+            lodash_1.each(routes, function (v, k) {
+            });
         }
         else {
             throw new Error('Invalid route configuration could not add route.');

@@ -113,8 +113,54 @@ function hasIn(obj, key, val) {
     return _.some(obj, filter);
 }
 exports.hasIn = hasIn;
+/**
+ * Parses a key/value Route.
+ * When using IRoutesMap the
+ * url needs to be parsed into
+ * an IRoute configuration.
+ *
+ * @export
+ * @param {string} url
+ * @param {(IRequestHandler | Array<IRequestHandler> | string | IRoute)} handler
+ * @returns {IRoute}
+ */
+function parseRoute(url, handler) {
+    var route;
+    var arr = url.trim().split(' ');
+    if (arr.length === 1)
+        arr.unshift('GET');
+    route = {
+        method: arr[0],
+        url: arr[1]
+    };
+    // If handler is Route object extend it.
+    if (lodash_1.isPlainObject(handler)) {
+        route = lodash_1.extend({}, route, handler);
+    }
+    else if (Array.isArray(handler)) {
+        var last = handler.pop();
+        route.handler = last;
+        route.filters = handler;
+    }
+    else {
+        route.handler = handler;
+    }
+    return route;
+}
+exports.parseRoute = parseRoute;
+/**
+ * Validates Route configuration.
+ * When invalid route.valid will
+ * equal false.
+ *
+ * @export
+ * @param {IRoute} route
+ * @returns {IRoute}
+ */
 function validateRoute(route) {
     route.method = route.method || 'GET';
+    route.valid = true;
+    return route;
 }
 exports.validateRoute = validateRoute;
 /**
