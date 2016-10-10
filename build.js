@@ -47,9 +47,8 @@ let del = () => {
 
 // Build out the docs.
 let docs = () => {
-	console.log('');
-	sh.exec('tsdoc', {}, (e) => {
-		console.log(chalk.cyan('Documentation: ') + 'successfully created.\n');
+	let proc = sh.exec('tsdoc', {}, (err) => {
+		console.log(chalk.cyan('Documentation: ') + 'completed.\n');
 		process.exit();
 	});
 };

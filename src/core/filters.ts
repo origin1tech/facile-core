@@ -10,10 +10,26 @@ export function init(): IInit {
 
 	let that: IFacile = this;
 
-	that.logger.debug('Initializing Filters');
+	function handleFilters() {
 
-	that.emit('init:filters');
+		that.logger.debug('Initializing Filters');
 
-	return that.init();
+		// Init code here.
+
+		if (that._config.auto)
+			that.execAfter('init:filters', () => {
+				that.emit('init:models');
+			});
+		else
+			return that.init();
+
+	}
+
+	if (that._config.auto)
+		that.execBefore('init:filters', () => {
+			handleFilters();
+		});
+	else
+		return handleFilters();
 
 }

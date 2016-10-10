@@ -19,9 +19,9 @@ exports.config = {
             name: 'ejs',
             renderer: cons.ejs
         },
-        'view engine': 'ejs',
+        // 'view engine': 'ejs',
         views: '/'
     },
-    auto: false
+    auto: undefined
 };
 //# sourceMappingURL=defaults.js.map

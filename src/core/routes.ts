@@ -10,10 +10,26 @@ export function init(): IInit {
 
 	let that: IFacile = this;
 
-	that.logger.debug('Initializing Routes');
+	function handleRoutes() {
 
-	that.emit('init:done');
+		that.logger.debug('Initializing Routes');
 
-	return that.init();
+		// Init code here.
+
+		if (that._config.auto)
+			that.execAfter('init:routes', () => {
+				that.emit('init:done');
+			});
+		else
+			return that.init();
+
+	}
+
+	if (that._config.auto)
+		that.execBefore('init:routes', () => {
+			handleRoutes();
+		});
+	else
+		return handleRoutes();
 
 }

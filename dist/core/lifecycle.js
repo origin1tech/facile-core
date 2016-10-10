@@ -5,9 +5,9 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var events_1 = require('events');
-var Lifecycle = (function (_super) {
-    __extends(Lifecycle, _super);
-    function Lifecycle() {
+var Events = (function (_super) {
+    __extends(Events, _super);
+    function Events() {
         _super.call(this);
         this._events = [];
         this._events = [
@@ -21,18 +21,18 @@ var Lifecycle = (function (_super) {
             'init:done'
         ];
     }
-    Lifecycle.prototype.before = function (name, event) {
+    Events.prototype.before = function (name, event) {
         var key = this._before[name] = this._before[name] || {};
         var arr = key['before'] = key['before'] || [];
         arr.push(function (cb) {
             event(cb);
         });
     };
-    Lifecycle.prototype.after = function (name, event) {
+    Events.prototype.after = function (name, event) {
         var key = this._after[name] = this._after[name] || {};
         var arr = key['after'] = key['after'] || [];
     };
-    return Lifecycle;
+    return Events;
 }(events_1.EventEmitter));
-exports.Lifecycle = Lifecycle;
+exports.Events = Events;
 //# sourceMappingURL=lifecycle.js.map

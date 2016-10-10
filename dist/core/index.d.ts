@@ -1,28 +1,33 @@
 /// <reference types="node" />
 import * as express from 'express';
-import { LoggerInstance } from 'winston';
 import { Server } from 'net';
-import { Lifecycle } from './lifecycle';
-import { IFacile, IConfig, IRouters, IRoute, IBoom, ICallback, IFilter, IMiddlewares, ISockets, IModels, IControllers, IModel, IController, IUtils, IFilters, IConfigs, IRequestHandler, IRoutesMap, IService, IServices, IInit } from '../interfaces';
+import { Core } from './core';
+import { IFacile, IConfig, IRouters, IRoute, IBoom, IFilter, IMiddlewares, ISockets, IModels, IControllers, IModel, IController, IFilters, IConfigs, IRequestHandler, IRoutesMap, IService, IServices, IInit } from '../interfaces';
 /**
  * Facile Core
  *
  * @export
  * @class Facile
- * @extends {events.EventEmitter}
+ * @extends {Events}
  * @implements {IFacile}
  */
-export declare class Facile extends Lifecycle implements IFacile {
+export declare class Facile extends Core implements IFacile {
+    /**
+     * Singleton instance of Facile
+     *
+     * @static
+     * @member {Facile} Facile.staticProperty
+     * @memberOf Facile
+     */
     static instance: Facile;
+    /**
+     * Exposes Boom to Facile
+     * @member {IBoom} Facile.publicProperty
+     * @memberOf Facile
+     */
     Boom: IBoom;
-    utils: IUtils;
     app: express.Express;
     server: Server;
-    logger: LoggerInstance;
-    _auto: boolean;
-    _pkg: any;
-    _config: IConfig;
-    _configs: IConfigs;
     _routers: IRouters;
     _routes: Array<IRoute>;
     _nextSocketId: number;
@@ -33,38 +38,34 @@ export declare class Facile extends Lifecycle implements IFacile {
     _models: IModels;
     _controllers: IControllers;
     /**
-     * Creates an instance of RecRent.
-     *
+     * Facile constructor.
      * @constructor
      * @memberof Facile
      */
     constructor();
     /**
-     * Configures Facile
-     * optionally provide boolean to
-     * auto load and start.
-     *
-     * @param {(IConfig | boolean)} [config]
-     * @param {(boolean | ICallback)} [autoStart]
-     * @param {ICallback} [fn]
-     * @returns {(Facile | void)}
-     *
+     * Configure
+       *
+     * @method configure
+     * @param {(string | IConfig)} [config]
+     * @returns {Facile}
      * @memberOf Facile
      */
-    configure(config?: IConfig | boolean, init?: boolean | ICallback, fn?: ICallback): Facile;
+    configure(config?: string | IConfig): Facile;
     /**
      * Returns Initialization Methods
      *
+     * @method init
      * @returns {IInit}
-     *
      * @memberOf Facile
      */
     init(): IInit;
     /**
-     * Initializes Lifecycle Events.
+     * Enables Lifecycle Listeners.
      *
      * Events
      *
+     * core:configure
      * init
      * init:server
      * init:services
@@ -73,16 +74,18 @@ export declare class Facile extends Lifecycle implements IFacile {
      * init:controllers
      * init:routes
      * init:done
-     * core:listening
+     * core:start
+     * core:listen
      *
+     * @method enableHooks
      * @returns {Facile}
-     *
      * @memberOf Facile
      */
-    hooks(): Facile;
+    enableEvents(): Facile;
     /**
      * Start Listening for Connections
      *
+     * @method
      * @returns {Facile}
      *
      * @memberOf Facile
@@ -91,14 +94,16 @@ export declare class Facile extends Lifecycle implements IFacile {
     /**
      * Start Server.
      *
+     * @method
      * @param {Function} [fn]
      * @method
      * @memberof Facile
      */
-    start(init?: boolean | Function, fn?: Function): Facile;
+    start(config?: string | IConfig | Function, fn?: Function): Facile;
     /**
      * Stops the server.
      *
+     * @method
      * @param {string} [msg]
      * @param {number} [code]
      * @returns {void}
@@ -109,6 +114,7 @@ export declare class Facile extends Lifecycle implements IFacile {
     /**
      * Adds a Configuration.
      *
+     * @method
      * @param {string} name
      * @param {IConfig} config
      * @returns {Facile}
@@ -119,6 +125,7 @@ export declare class Facile extends Lifecycle implements IFacile {
     /**
      * Adds/Creates a Router.
      *
+     * @method
      * @param {string} name
      * @param {express.Router} [router]
      * @returns {express.Router}
@@ -129,6 +136,7 @@ export declare class Facile extends Lifecycle implements IFacile {
     /**
      * Registers Middleware or Middlewares to Express.
      *
+     * @method
      * @param {string} name
      * @param {IRequestHandler} fn
      * @param {number} [order]
@@ -140,6 +148,7 @@ export declare class Facile extends Lifecycle implements IFacile {
     /**
      * Registers a Service.
      *
+     * @method
      * @param {(IService | Array<IService>)} Service
      * @returns {Facile}
      *
@@ -149,6 +158,7 @@ export declare class Facile extends Lifecycle implements IFacile {
     /**
      * Registers Filter or Map of Filters.
      *
+     * @method
      * @param {(string | IFilters)} name
      * @param {IRequestHandler} fn
      * @returns {Facile}
@@ -159,6 +169,7 @@ export declare class Facile extends Lifecycle implements IFacile {
     /**
      * Registers a Model.
      *
+     * @method
      * @param {(IModel | Array<IModel>)} Model
      * @returns {Facile}
      *
@@ -168,6 +179,7 @@ export declare class Facile extends Lifecycle implements IFacile {
     /**
      * Registers a Controller.
      *
+     * @method
      * @param {(IController | Array<IController>)} Controller
      * @returns {Facile}
      *
@@ -177,6 +189,7 @@ export declare class Facile extends Lifecycle implements IFacile {
     /**
      * Adds a route to the map.
      *
+     * @method
      * @param {(string | IRoute)} method
      * @param {string} url
      * @param {(express.Handler | Array<express.Handler>)} handlers
@@ -189,6 +202,7 @@ export declare class Facile extends Lifecycle implements IFacile {
     /**
      * Gets a Router by name.
      *
+     * @method
      * @param {string} name
      * @returns {express.Router}
      *
@@ -198,6 +212,7 @@ export declare class Facile extends Lifecycle implements IFacile {
     /**
      * Gets a Config by name.
      *
+     * @method
      * @param {string} name
      * @returns {IConfig}
      *
@@ -207,6 +222,7 @@ export declare class Facile extends Lifecycle implements IFacile {
     /**
      * Gets a Service by name.
      *
+     * @method
      * @param {string} name
      * @returns {IService}
      *
@@ -216,6 +232,7 @@ export declare class Facile extends Lifecycle implements IFacile {
     /**
      * Gets a Filter by name.
      *
+     * @method
      * @param {string} name
      * @returns {IFilter}
      *
@@ -225,6 +242,7 @@ export declare class Facile extends Lifecycle implements IFacile {
     /**
      * Gets a Model by name.
      *
+     * @method
      * @param {string} name
      * @returns {IModel}
      *
@@ -234,10 +252,20 @@ export declare class Facile extends Lifecycle implements IFacile {
     /**
      * Gets a Controller by name.
      *
+     * @method
      * @param {string} name
      * @returns {IController}
      *
      * @memberOf Facile
      */
     controller(name: string): IController;
+    /**
+     * Wrapper for utils extend.
+     *
+     * @param {...any[]} args
+     * @returns {*}
+     *
+     * @memberOf Facile
+     */
+    extend(...args: any[]): any;
 }

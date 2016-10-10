@@ -7,9 +7,22 @@
  */
 function init() {
     var that = this;
-    that.logger.debug('Initializing Services');
-    that.emit('init:filters');
-    return that.init();
+    function handleServices() {
+        that.logger.debug('Initializing Services');
+        // Init code here.
+        if (that._config.auto)
+            that.execAfter('init:services', function () {
+                that.emit('init:filters');
+            });
+        else
+            return that.init();
+    }
+    if (that._config.auto)
+        that.execBefore('init:services', function () {
+            handleServices();
+        });
+    else
+        return handleServices();
 }
 exports.init = init;
 //# sourceMappingURL=services.js.map

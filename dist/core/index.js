@@ -7,13 +7,11 @@ var __extends = (this && this.__extends) || function (d, b) {
 var express = require('express');
 var Boom = require('boom');
 var winston_1 = require('winston');
-var http_1 = require('http');
-var https_1 = require('https');
 var lodash_1 = require('lodash');
 var chalk_1 = require('chalk');
 // Internal Dependencies.
 var utils = require('./utils');
-var lifecycle_1 = require('./lifecycle');
+var core_1 = require('./core');
 var defaults = require('./defaults');
 var server = require('./server');
 var services = require('./services');
@@ -28,22 +26,19 @@ var packages = defaults.packages;
  *
  * @export
  * @class Facile
- * @extends {events.EventEmitter}
+ * @extends {Events}
  * @implements {IFacile}
  */
 var Facile = (function (_super) {
     __extends(Facile, _super);
     /**
-     * Creates an instance of RecRent.
-     *
+     * Facile constructor.
      * @constructor
      * @memberof Facile
      */
     function Facile() {
         // Extend class with emitter.
         _super.call(this);
-        this._auto = false;
-        this._configs = {};
         this._routers = {};
         this._nextSocketId = 0;
         this._services = {};
@@ -55,8 +50,6 @@ var Facile = (function (_super) {
             return Facile.instance;
         // Set Facile's package.json to variable.
         this._pkg = packages.pkg;
-        // Expose Facile utils.
-        this.utils = utils;
         // Create the default logger.
         // This will likely be overwritten.
         var defaultLogger = new winston_1.Logger({
@@ -82,28 +75,15 @@ var Facile = (function (_super) {
     // CONFIGURE & MANAGE SERVER
     ///////////////////////////////////////////////////
     /**
-     * Configures Facile
-     * optionally provide boolean to
-     * auto load and start.
-     *
-     * @param {(IConfig | boolean)} [config]
-     * @param {(boolean | ICallback)} [autoStart]
-     * @param {ICallback} [fn]
-     * @returns {(Facile | void)}
-     *
+     * Configure
+       *
+     * @method configure
+     * @param {(string | IConfig)} [config]
+     * @returns {Facile}
      * @memberOf Facile
      */
-    Facile.prototype.configure = function (config, init, fn) {
+    Facile.prototype.configure = function (config) {
         var _this = this;
-        // Check if config is boolean.
-        if (lodash_1.isBoolean(config)) {
-            fn = init;
-            init = config;
-            config = undefined;
-        }
-        // If auto hooks enabled ensure init is false.
-        if (this._auto)
-            init = false;
         // Check if configuration is string.
         // If yes try to load the config.
         if (lodash_1.isString(config))
@@ -136,45 +116,78 @@ var Facile = (function (_super) {
         this._config.env = this._config.env || 'development';
         // Set Node environment.
         process.env.NODE_ENV = this._config.env;
-        // Check for auto init hooks/listeners.
-        if (this._config.auto)
-            this.hooks();
-        // Emit Configured.
-        this.emit('init', this);
-        if (!init)
+        // Ensure config auto has value.
+        this._config.auto = this._config.auto !== false ? true : false;
+        // If auto enable event listeners.
+        if (this._config.auto) {
+            this.enableEvents();
+            this.emit('core:configured');
+        }
+        else
             return this;
-        // Load controllers, models and services.
-        return this.start(true, fn);
     };
     /**
      * Returns Initialization Methods
      *
+     * @method init
      * @returns {IInit}
-     *
      * @memberOf Facile
      */
     Facile.prototype.init = function () {
         var self = this;
-        function configured() {
-            self.emit('init:server');
-            return self.init();
+        // Ensure configuration.
+        if (!this._config) {
+            this.logger.warn('Failed to initialize please run facile.configure() first...exiting.');
+            process.exit();
         }
-        // Used when individually calling
-        // inits on done returns back to
-        // main context for chaining to
-        // start.
+        /**
+         * Used internally to trigger
+         * init events after configuration.
+         *
+         * @private
+         * @method run
+         * @returns {IInit}
+         * @memberOf Facile
+         */
+        function run() {
+            if (self._config.auto)
+                self.execBefore('init', function () {
+                    self.emit('init:server');
+                });
+            else
+                return inits;
+        }
+        /**
+         * Used internally to trigger
+         * init done event.
+         *
+         * @member done
+         * @private
+         * @returns {IFacile}
+         * @memberOf Facile
+         */
         function done() {
-            self.emit('core:start');
-            return self;
+            if (self._config.auto)
+                self.execAfter('init', function () {
+                    self.emit('core:start');
+                });
+            else
+                return self;
         }
-        // Iterates all inits then
-        // calls done to return to
-        // main context.
+        /**
+         * Used internally to trigger
+         * all initialization events.
+         *
+         * @private
+         * @member all
+         * @returns {IFacile}
+         * @memberOf Facile
+         */
         function all() {
             return done();
         }
         var inits = {
-            configured: configured.bind(this),
+            run: run.bind(this),
             server: server.init.bind(this),
             services: services.init.bind(this),
             filters: filters.init.bind(this),
@@ -184,13 +197,14 @@ var Facile = (function (_super) {
             all: all.bind(this),
             done: done.bind(this)
         };
-        return inits;
+        return run();
     };
     /**
-     * Initializes Lifecycle Events.
+     * Enables Lifecycle Listeners.
      *
      * Events
      *
+     * core:configure
      * init
      * init:server
      * init:services
@@ -199,15 +213,18 @@ var Facile = (function (_super) {
      * init:controllers
      * init:routes
      * init:done
-     * core:listening
+     * core:start
+     * core:listen
      *
+     * @method enableHooks
      * @returns {Facile}
-     *
      * @memberOf Facile
      */
-    Facile.prototype.hooks = function () {
+    Facile.prototype.enableEvents = function () {
+        var _this = this;
         var init = this.init();
-        this.on('init', init.configured);
+        this.on('core:configured', function () { _this.emit('init'); });
+        this.on('init', init.run);
         this.on('init:server', init.server);
         this.on('init:services', init.services);
         this.on('init:filters', init.filters);
@@ -217,87 +234,98 @@ var Facile = (function (_super) {
         this.on('core:start', this.start);
         this.on('core:listen', this.listen);
         // Set flag indicating that
-        // lifecycle hooks are auto firing.
-        this._auto = true;
+        // init hooks are listening
+        // in case called manually.
+        this._config.auto = true;
         return this;
     };
     /**
      * Start Listening for Connections
      *
+     * @method
      * @returns {Facile}
      *
      * @memberOf Facile
      */
     Facile.prototype.listen = function () {
-        // Listen for connections.
-        this.logger.debug('Preparing server to listen for connections.');
-        this.server.listen(this._config.port, this._config.host, function (err) {
-            if (err)
-                throw err;
-        });
-        return this;
+        var that = this;
+        function handleListen() {
+            // Listen for connections.
+            this.logger.debug('Server preparing to listen.');
+            this.server.listen(this._config.port, this._config.host, function (err) {
+                if (err)
+                    throw err;
+            });
+            return that;
+        }
+        if (this._config.auto)
+            this.execBefore('core:listen', function () {
+                handleListen();
+            });
+        else
+            return handleListen();
     };
     /**
      * Start Server.
      *
+     * @method
      * @param {Function} [fn]
      * @method
      * @memberof Facile
      */
-    Facile.prototype.start = function (init, fn) {
-        var _this = this;
-        var self = this;
-        // Allow callback as first arg.
-        if (lodash_1.isFunction(init)) {
-            fn = init;
-            init = undefined;
+    Facile.prototype.start = function (config, fn) {
+        var that = this;
+        // Allow callback as first argument.
+        if (lodash_1.isFunction(config)) {
+            fn = config;
+            config = undefined;
         }
-        // If auto hooks enabled ensure init is false.
-        if (this._auto)
-            init = false;
-        // Check if should auto init.
-        if (init) {
-            // After init just return
-            // start to fire up server.
-            return this.start(fn);
+        // Can't start without a config.
+        if (!this._config) {
+            // If no _config and no config throw error.
+            if (!config)
+                throw new Error('Attempted to start but not configured or no config was supplied.');
+            var _config = config;
+            // If Auto return the config as
+            // auto events listeners will fire
+            // start.
+            if (_config.auto !== false)
+                return this.configure(config);
+            // Otherwise just configure.
+            this.configure(config);
         }
-        this.logger.debug('Configuring server protocol and settings.');
-        // Create Https if Certificate.
-        if (this._config.certificate)
-            this.server = https_1.createServer(this._config.certificate, this.app);
-        else
-            this.server = http_1.createServer(this.app);
-        // Limit server connections.
-        this.server.maxConnections = this._config.maxConnections;
-        // Listener callback on server listening.
-        this.server.on('listening', function () {
-            _this.emit('core:listening');
-            var address = _this.server.address(), addy = address.address, port = address.port;
-            console.log(chalk_1.cyan('\nServer listening at: http://' + addy + ':' + port));
-            // Call if callack function provided.
-            if (fn) {
-                _this.logger.debug('Exec callback on server start/listening.');
-                fn(_this);
-            }
-        });
-        // Store connections
-        this.server.on('connection', function (socket) {
-            // Save the connection.
-            var socketId = _this._nextSocketId++;
-            _this._sockets[socketId] = socket;
-            // Listen for socket close.
-            socket.on('close', function () {
-                _this.logger.debug('Socket ' + socketId + ' was closed.');
-                delete _this._sockets[socketId];
+        function handleStart() {
+            that.logger.debug('Starting server preparing for connections.');
+            // On listening Handle Callback.
+            that.server.on('listening', function () {
+                var address = that.server.address(), addy = address.address, port = address.port;
+                console.log(chalk_1.cyan('\nServer listening at: http://' + addy + ':' + port));
+                // Call if callack function provided.
+                if (fn) {
+                    that.logger.debug('Exec callback on server start/listening.');
+                    fn(that);
+                }
+                if (that._config.auto)
+                    that.execAfter('core:listen');
             });
-        });
-        if (!this._auto)
-            this.listen();
-        return this;
+            if (that._config.auto)
+                that.execAfter('core:start', function () {
+                    that.emit('core:listen');
+                });
+            else
+                return that;
+        }
+        if (this._config.auto)
+            this.execBefore('core:start', function () {
+                handleStart();
+            });
+        else
+            return handleStart();
     };
     /**
      * Stops the server.
      *
+     * @method
      * @param {string} [msg]
      * @param {number} [code]
      * @returns {void}
@@ -329,6 +357,7 @@ var Facile = (function (_super) {
     /**
      * Adds a Configuration.
      *
+     * @method
      * @param {string} name
      * @param {IConfig} config
      * @returns {Facile}
@@ -336,12 +365,13 @@ var Facile = (function (_super) {
      * @memberOf Facile
      */
     Facile.prototype.addConfig = function (name, config) {
-        this.utils.extendMap(name, config, this._configs);
+        utils.extendMap(name, config, this._configs);
         return this;
     };
     /**
      * Adds/Creates a Router.
      *
+     * @method
      * @param {string} name
      * @param {express.Router} [router]
      * @returns {express.Router}
@@ -367,6 +397,7 @@ var Facile = (function (_super) {
     /**
      * Registers Middleware or Middlewares to Express.
      *
+     * @method
      * @param {string} name
      * @param {IRequestHandler} fn
      * @param {number} [order]
@@ -389,7 +420,7 @@ var Facile = (function (_super) {
         lodash_1.each(middlewares, function (v, k) {
             // No order generate.
             if (v.order === undefined) {
-                var max = _this.utils.maxIn(_this._middlewares, 'order') || 0;
+                var max = utils.maxIn(_this._middlewares, 'order') || 0;
                 v.order = max;
                 if (max > 0)
                     v.order += 1;
@@ -398,7 +429,7 @@ var Facile = (function (_super) {
                 var tmpOrder = v.order;
                 // Prevents two middlewares with
                 // same order value.
-                while (_this.utils.hasIn(_this._middlewares, 'order', tmpOrder)) {
+                while (utils.hasIn(_this._middlewares, 'order', tmpOrder)) {
                     tmpOrder += .1;
                 }
                 v.order = tmpOrder;
@@ -411,18 +442,20 @@ var Facile = (function (_super) {
     /**
      * Registers a Service.
      *
+     * @method
      * @param {(IService | Array<IService>)} Service
      * @returns {Facile}
      *
      * @memberOf Facile
      */
     Facile.prototype.addService = function (Service) {
-        this.utils.extendMap(Service, this._services);
+        utils.extendMap(Service, this._services);
         return this;
     };
     /**
      * Registers Filter or Map of Filters.
      *
+     * @method
      * @param {(string | IFilters)} name
      * @param {IRequestHandler} fn
      * @returns {Facile}
@@ -430,36 +463,39 @@ var Facile = (function (_super) {
      * @memberOf Facile
      */
     Facile.prototype.addFilter = function (Filter) {
-        this.utils.extendMap(Filter, this._filters);
+        utils.extendMap(Filter, this._filters);
         return this;
     };
     /**
      * Registers a Model.
      *
+     * @method
      * @param {(IModel | Array<IModel>)} Model
      * @returns {Facile}
      *
      * @memberOf Facile
      */
     Facile.prototype.addModel = function (Model) {
-        this.utils.extendMap(Model, this._models);
+        utils.extendMap(Model, this._models);
         return this;
     };
     /**
      * Registers a Controller.
      *
+     * @method
      * @param {(IController | Array<IController>)} Controller
      * @returns {Facile}
      *
      * @memberOf Facile
      */
     Facile.prototype.addController = function (Controller) {
-        this.utils.extendMap(Controller, this._controllers);
+        utils.extendMap(Controller, this._controllers);
         return this;
     };
     /**
      * Adds a route to the map.
      *
+     * @method
      * @param {(string | IRoute)} method
      * @param {string} url
      * @param {(express.Handler | Array<express.Handler>)} handlers
@@ -469,13 +505,12 @@ var Facile = (function (_super) {
      * @memberOf Facile
      */
     Facile.prototype.addRoute = function (route) {
-        var _this = this;
         var self = this;
         // Helper function to validate
         // the route and log if invalid.
         function validate(_route) {
             // Validate the route.
-            _route = self.utils.validateRoute(route);
+            _route = utils.validateRoute(route);
             // Push the route to the collection
             // if is valid.
             if (_route.valid)
@@ -493,7 +528,7 @@ var Facile = (function (_super) {
         else if (lodash_1.isPlainObject(route)) {
             var routes_2 = route;
             lodash_1.each(routes_2, function (v, k) {
-                var r = _this.utils.parseRoute(k, v);
+                var r = utils.parseRoute(k, v);
                 validate(r);
             });
         }
@@ -508,6 +543,7 @@ var Facile = (function (_super) {
     /**
      * Gets a Router by name.
      *
+     * @method
      * @param {string} name
      * @returns {express.Router}
      *
@@ -519,6 +555,7 @@ var Facile = (function (_super) {
     /**
      * Gets a Config by name.
      *
+     * @method
      * @param {string} name
      * @returns {IConfig}
      *
@@ -530,6 +567,7 @@ var Facile = (function (_super) {
     /**
      * Gets a Service by name.
      *
+     * @method
      * @param {string} name
      * @returns {IService}
      *
@@ -541,6 +579,7 @@ var Facile = (function (_super) {
     /**
      * Gets a Filter by name.
      *
+     * @method
      * @param {string} name
      * @returns {IFilter}
      *
@@ -552,6 +591,7 @@ var Facile = (function (_super) {
     /**
      * Gets a Model by name.
      *
+     * @method
      * @param {string} name
      * @returns {IModel}
      *
@@ -563,6 +603,7 @@ var Facile = (function (_super) {
     /**
      * Gets a Controller by name.
      *
+     * @method
      * @param {string} name
      * @returns {IController}
      *
@@ -571,7 +612,22 @@ var Facile = (function (_super) {
     Facile.prototype.controller = function (name) {
         return this._controllers[name];
     };
+    /**
+     * Wrapper for utils extend.
+     *
+     * @param {...any[]} args
+     * @returns {*}
+     *
+     * @memberOf Facile
+     */
+    Facile.prototype.extend = function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i - 0] = arguments[_i];
+        }
+        return lodash_1.extend.apply(null, args);
+    };
     return Facile;
-}(lifecycle_1.Lifecycle));
+}(core_1.Core));
 exports.Facile = Facile;
 //# sourceMappingURL=index.js.map

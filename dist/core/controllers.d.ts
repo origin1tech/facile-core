@@ -2,6 +2,7 @@ import { IInit } from '../interfaces';
 /**
  * Initializes Controllers
  *
+ * @method
  * @export
  * @returns {IFacile}
  */

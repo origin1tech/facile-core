@@ -18,7 +18,9 @@
 	},
 	"source":
 	{
-		"includePattern": "(\\.d)?\\.ts$"
+		"includePattern": "(\\.d)?\\.ts$",
+		"excludePattern": "typings",
+		"exclude": ["./src/core/events.ts", "./src/core/defaults.ts"]
 	},
 	"markdown"  : {
 		"parser"   : "gfm",
@@ -28,9 +30,9 @@
 		"source"		:"/Volumes/DATA/Projects/WebNode/facile/facile-core/src/",
 		"destination"	:"/Volumes/DATA/Projects/WebNode/facile/facile-core/docs",
 		"tutorials"		:"",
-		"systemName"	: "facile-core",
-		"footer"		: "",
-		"copyright"		: "facile-core Copyright © 2016 Carey.",
+		"systemName"	: "Facile Core",
+		"footer"		: "The barebones framework!",
+		"copyright"		: "Facile Copyright © 2016 Origin1 Technologies.",
 		"outputSourceFiles" : true,
 		"commentsOnly": true
 	}

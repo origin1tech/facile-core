@@ -3,12 +3,12 @@ import * as cons from 'consolidate';
 import { join } from 'path';
 import { IConfig } from '../interfaces';
 
-export const packages = {
+export let packages: any = {
 	pkg: require('../../package.json'),
 	appPkg: require(join(process.cwd(), 'package.json'))
 };
 
-export const config: IConfig = {
+export let config: IConfig = {
 
 	cwd: process.cwd(),
 	pkg: packages.appPkg,
@@ -23,9 +23,9 @@ export const config: IConfig = {
 			name: 'ejs',
 			renderer: cons.ejs
 		},
-		'view engine': 'ejs',
+		// 'view engine': 'ejs',
 		views: '/'
 	},
-	auto: false
+	auto: undefined
 
 };

@@ -1,7 +1,7 @@
 /// <reference types="node" />
-import { ILifecycle } from '../interfaces';
+import { IEvents } from '../interfaces';
 import { EventEmitter } from 'events';
-export declare class Lifecycle extends EventEmitter implements ILifecycle {
+export declare class Events extends EventEmitter implements IEvents {
     _events: string[];
     _before: any;
     _after: any;

@@ -1,10 +1,12 @@
 
-import { extend as _extend, isPlainObject, max, keys, each, isString, isFunction } from 'lodash';
+import { extend as _extend, isPlainObject, max, keys,
+				each, isString, isFunction, padEnd, truncate as _truncate } from 'lodash';
 import { IFacile, IRoute, IRequestHandler } from '../interfaces';
 
 /**
  * Add object to mapped collection.
  *
+ * @member utils
  * @export
  * @param {*} key
  * @param {*} val
@@ -53,6 +55,7 @@ export function extendMap(key: any, val: any, obj?: any) {
 /**
  * Extends object with supplied Type.
  *
+ * @member utils
  * @export
  * @param {*} Type
  * @param {*} obj
@@ -84,21 +87,10 @@ export function initMap(Type: any, obj: any, instance?: any) {
 }
 
 /**
- * Wrapper for lodash extend
- * merely for convenience.
- *
- * @export
- * @param {...any[]} args
- * @returns {*}
- */
-export function extend(...args: any[]) {
-	return _extend.apply(null, args);
-}
-
-/**
  * Gets max value in object
  * of objects by property.
  *
+ * @member utils
  * @export
  * @param {*} obj
  * @param {string} key
@@ -114,6 +106,7 @@ export function maxIn(obj: any, key: string): number {
  * Checks if object contains
  * property with value.
  *
+ * @member utils
  * @export
  * @param {*} obj
  * @param {*} key
@@ -134,6 +127,7 @@ export function hasIn(obj: any, key: any, val: any): boolean {
  * url needs to be parsed into
  * an IRoute configuration.
  *
+ * @member utils
  * @export
  * @param {string} url
  * @param {(IRequestHandler | Array<IRequestHandler> | string | IRoute)} handler
@@ -176,7 +170,7 @@ export function parseRoute(url: string,
  * Validates Route configuration.
  * When invalid route.valid will
  * equal false.
- *
+ * @member utils
  * @export
  * @param {IRoute} route
  * @returns {IRoute}
@@ -215,7 +209,52 @@ export function validateRoute(route: IRoute): IRoute {
 /**
  * Function for non operation.
  *
+ * @member utils
  * @export
  */
 export function noop () {}
 
+/**
+ * Truncates a string using lodash _.truncate
+ *
+ * @member utils
+ * @export
+ * @param {string} str
+ * @param {number} length
+ * @param {string} [omission='...']
+ * @returns {string}
+ */
+export function truncate(str: string, length: number, omission: string = '...'): string {
+	return _truncate(str, {
+		length: length,
+		omission: omission,
+		separator: ' '
+	});
+}
+
+/**
+ * Gets function name.
+ *
+ * @member utils
+ * @export
+ * @param {Function} fn
+ * @returns {string}
+ */
+export function functionName(fn: Function): string {
+
+	// Match:
+	// - ^          the beginning of the string
+	// - function   the word 'function'
+	// - \s+        at least some white space
+	// - ([\w\$]+)  capture one or more valid JavaScript identifier characters
+	// - \s*        optionally followed by white space (in theory there won't be any here,
+	//              so if performance is an issue this can be omitted[1]
+	// - \(         followed by an opening brace
+	//
+
+	let result = /^function\s+([\w\$]+)\s*\(/.exec(fn.toString());
+
+	// Ignores match on anonymous functions.
+	return  result  ?  result[ 1 ]  :  '';
+
+}

@@ -1,6 +1,3 @@
 import { IConfig } from '../interfaces';
-export declare const packages: {
-    pkg: any;
-    appPkg: any;
-};
-export declare const config: IConfig;
+export declare let packages: any;
+export declare let config: IConfig;

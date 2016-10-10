@@ -27,9 +27,10 @@ export interface IUtils {
     parseRoute(url: string, handler: IRequestHandler | Array<IRequestHandler> | string | IRoute): IRoute;
     validateRoute(route: IRoute): IRoute;
     noop(): void;
+    truncate(str: string, length: number, omission: string): string;
 }
 export interface IInit {
-    configured(): IInit;
+    run(): IInit;
     server(): IInit;
     services(): IInit;
     filters(): IInit;
@@ -39,31 +40,39 @@ export interface IInit {
     all(): IFacile;
     done(): IFacile;
 }
-export interface ILifecycle extends EventEmitter {
-    before(name: string, fn: Function): void;
-    after(name: string, fn: Function): void;
-}
-export interface IFacile extends ILifecycle {
-    _pkg: any;
-    Boom: IBoom;
+export interface ICore extends EventEmitter {
     logger: LoggerInstance;
+    _pkg: any;
+    _config: IConfig;
+    _configs: IConfigs;
+    beforeEvents: any;
+    afterEvents: any;
+    before(name: string, event: ICallback): ICore;
+    after(name: string, event: ICallback): ICore;
+    hasBefore(name: string): boolean;
+    hasAfter(name: string): boolean;
+    execBefore(name: string, fn?: ICallbackResult): void;
+    execAfter(name: string, fn?: ICallbackResult): void;
+    execEvents(name: string, type: string, fn?: ICallbackResult): void;
+}
+export interface IFacile extends ICore {
+    Boom: IBoom;
     app: Express;
     server: Server;
-    _auto: boolean;
-    _config: IConfig;
     _routers: IRouters;
     _routes: Array<IRoute>;
     _nextSocketId: number;
     _sockets: ISockets;
+    _services: IServices;
     _middlewares: IMiddlewares;
     _filters: IFilters;
     _models: IModels;
     _controllers: IControllers;
-    configure(config?: IConfig | boolean, auto?: boolean | ICallback, fn?: ICallback): IFacile;
+    configure(config?: string | IConfig): IFacile;
     init(): IInit;
-    hooks(): IFacile;
+    enableEvents(): IFacile;
     listen(): IFacile;
-    start(auto?: boolean, fn?: ICallback): IFacile;
+    start(config?: string | IConfig | Function, fn?: Function): IFacile;
     stop(msg?: string, code?: number): void;
     addConfig(name: string, config: IConfig): IFacile;
     addRouter(name: string, router?: Router): Router;
@@ -79,6 +88,7 @@ export interface IFacile extends ILifecycle {
     service(name: string): IService;
     model(name: string): IModel;
     controller(name: string): IController;
+    extend(...args: any[]): any;
 }
 /**
  * SSL Certificate Interface.
@@ -97,8 +107,11 @@ export interface ICertificate {
  * @export
  * @interface ICallback
  */
-export interface ICallback {
+export interface ICallbackResult {
     (err?: string | Error, data?: any): void;
+}
+export interface ICallback {
+    (done: ICallbackResult): void;
 }
 /**
  * Name and renderer for views.
