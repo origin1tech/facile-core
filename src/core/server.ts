@@ -1,4 +1,5 @@
-import { IFacile } from '../interfaces';
+import { IFacile, IInit } from '../interfaces';
+import { each, sortBy } from 'lodash';
 
 /**
  * Initializes Server
@@ -6,21 +7,28 @@ import { IFacile } from '../interfaces';
  * @export
  * @returns {IFacile}
  */
-export function init(): IFacile {
+export function init(): IInit {
 
-	this.logger.debug('Initializing Server');
+	let that: IFacile = this;
 
-	this.logger.debug('Ensuring default router.');
+	that.logger.debug('Ensuring default router.');
 
 	// Ensure Routers exist.
-	this._routers = this._routers || {};
+	that._routers = that._routers || {};
 
 	// Check for default router.
-	if (!this._routers['default'])
-		this._routers['default'] = this.app._router;
+	if (!that._routers['default'])
+		that._routers['default'] = that.app._router;
 
-	this.emit('server:init');
+	// Sort & Iterate Middleware.
+	that.logger.debug('Initializing middleware.');
+	this._middlewares = sortBy(this._middlewares, 'order');
+	each(this._middlewares, (v, k) => {
+		that.app.use(v.fn);
+	});
 
-	return this;
+	that.emit('init:services');
+
+	return that.init();
 
 }

@@ -1,9 +1,9 @@
 /// <reference types="node" />
-import * as events from 'events';
 import * as express from 'express';
 import { LoggerInstance } from 'winston';
 import { Server } from 'net';
-import { IFacile, IConfig, IRouters, IRoute, IBoom, ICallback, IFilter, IMiddlewares, ISockets, IModels, IControllers, IModel, IController, IUtils, IFilters, IConfigs, IRequestHandler, IRoutesMap, IService, IServices } from '../interfaces';
+import { Lifecycle } from './lifecycle';
+import { IFacile, IConfig, IRouters, IRoute, IBoom, ICallback, IFilter, IMiddlewares, ISockets, IModels, IControllers, IModel, IController, IUtils, IFilters, IConfigs, IRequestHandler, IRoutesMap, IService, IServices, IInit } from '../interfaces';
 /**
  * Facile Core
  *
@@ -12,13 +12,14 @@ import { IFacile, IConfig, IRouters, IRoute, IBoom, ICallback, IFilter, IMiddlew
  * @extends {events.EventEmitter}
  * @implements {IFacile}
  */
-export declare class Facile extends events.EventEmitter implements IFacile {
+export declare class Facile extends Lifecycle implements IFacile {
     static instance: Facile;
     Boom: IBoom;
     utils: IUtils;
     app: express.Express;
     server: Server;
     logger: LoggerInstance;
+    _auto: boolean;
     _pkg: any;
     _config: IConfig;
     _configs: IConfigs;
@@ -50,7 +51,43 @@ export declare class Facile extends events.EventEmitter implements IFacile {
      *
      * @memberOf Facile
      */
-    configure(config?: IConfig | boolean, autoStart?: boolean | ICallback, fn?: ICallback): Facile;
+    configure(config?: IConfig | boolean, init?: boolean | ICallback, fn?: ICallback): Facile;
+    /**
+     * Returns Initialization Methods
+     *
+     * @returns {IInit}
+     *
+     * @memberOf Facile
+     */
+    init(): IInit;
+    /**
+     * Initializes Lifecycle Events.
+     *
+     * Events
+     *
+     * init
+     * init:server
+     * init:services
+     * init:filters
+     * init:models
+     * init:controllers
+     * init:routes
+     * init:done
+     * core:listening
+     *
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    hooks(): Facile;
+    /**
+     * Start Listening for Connections
+     *
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    listen(): Facile;
     /**
      * Start Server.
      *
@@ -58,7 +95,7 @@ export declare class Facile extends events.EventEmitter implements IFacile {
      * @method
      * @memberof Facile
      */
-    start(fn?: Function): Facile;
+    start(init?: boolean | Function, fn?: Function): Facile;
     /**
      * Stops the server.
      *
@@ -99,7 +136,7 @@ export declare class Facile extends events.EventEmitter implements IFacile {
      *
      * @memberOf Facile
      */
-    addMiddleware(name: string | IMiddlewares, fn: IRequestHandler, order?: number): Facile;
+    addMiddleware(name: string | IMiddlewares, fn?: IRequestHandler, order?: number): Facile;
     /**
      * Registers a Service.
      *
@@ -148,7 +185,7 @@ export declare class Facile extends events.EventEmitter implements IFacile {
      *
      * @memberOf Facile
      */
-    addRoute(method: string | string[] | IRoutesMap | IRoute[], url?: string, handler?: IRequestHandler, filters?: IRequestHandler | IRequestHandler[], router?: string): Facile;
+    addRoute(route: IRoute | IRoutesMap | IRoute[]): Facile;
     /**
      * Gets a Router by name.
      *

@@ -1,5 +1,2 @@
-declare var sync: any;
 
-declare module 'sync' {
-	export = sync;
-}
+/// <reference path="typings/vscode/vscode.d.ts" />

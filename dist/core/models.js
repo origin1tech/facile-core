@@ -6,9 +6,10 @@
  * @returns {IFacile}
  */
 function init() {
-    this.logger.debug('Initializing Models');
-    this.emit('models:init');
-    return this;
+    var that = this;
+    that.logger.debug('Initializing Models');
+    that.emit('init:controllers');
+    return that.init();
 }
 exports.init = init;
 //# sourceMappingURL=models.js.map

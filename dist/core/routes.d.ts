@@ -1,8 +1,8 @@
-import { IFacile } from '../interfaces';
+import { IInit } from '../interfaces';
 /**
  * Initializes Routes
  *
  * @export
  * @returns {IFacile}
  */
-export declare function init(): IFacile;
+export declare function init(): IInit;

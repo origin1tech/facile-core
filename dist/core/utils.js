@@ -128,7 +128,7 @@ function parseRoute(url, handler) {
     var route;
     var arr = url.trim().split(' ');
     if (arr.length === 1)
-        arr.unshift('GET');
+        arr.unshift('get');
     route = {
         method: arr[0],
         url: arr[1]
@@ -158,8 +158,24 @@ exports.parseRoute = parseRoute;
  * @returns {IRoute}
  */
 function validateRoute(route) {
-    route.method = route.method || 'GET';
     route.valid = true;
+    // Normalize if method is array.
+    if (Array.isArray(route.method)) {
+        var methods_1 = [];
+        route.method.forEach(function (m, k) {
+            methods_1.push(m.toUpperCase());
+        });
+        route.method = methods_1;
+    }
+    else {
+        var method = route.method;
+        route.method = (method || 'GET').toUpperCase();
+    }
+    // Ensure default router.
+    route.router = route.router || 'default';
+    // Mehod, Handler and Url path are required.
+    if (!route.method || !route.handler || !route.url)
+        route.valid = false;
     return route;
 }
 exports.validateRoute = validateRoute;

@@ -1,4 +1,4 @@
-import { IFacile } from '../interfaces';
+import { IFacile, IInit } from '../interfaces';
 
 /**
  * Initializes Models
@@ -6,12 +6,14 @@ import { IFacile } from '../interfaces';
  * @export
  * @returns {IFacile}
  */
-export function init(): IFacile {
+export function init(): IInit {
 
-	this.logger.debug('Initializing Models');
+	let that: IFacile = this;
 
-	this.emit('models:init');
+	that.logger.debug('Initializing Models');
 
-	return this;
+	that.emit('init:controllers');
+
+	return that.init();
 
 }

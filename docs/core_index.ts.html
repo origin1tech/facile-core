@@ -317,7 +317,6 @@
             <pre class="sunlight-highlight-javascript ">
 // External Dependencies.
 import * as vscode from 'vscode';
-import * as events from 'events';
 import { resolve, join } from 'path';
 import * as express from 'express';
 import * as Boom from 'boom';
@@ -329,39 +328,26 @@ import { Server, Socket } from 'net';
 import { readFileSync } from 'fs';
 import { extend, isPlainObject, each, isFunction, isString, maxBy, has, isBoolean } from 'lodash';
 import { red, cyan } from 'chalk';
-import * as cons from 'consolidate';
+
 
 // Internal Dependencies.
 import * as utils from './utils';
-import { parse } from './commands';
+import { Lifecycle } from './lifecycle';
+import * as defaults from './defaults';
 import { IFacile, ICertificate, IConfig, IRouters, IRoute, IBoom, ICallback, IFilter,
 				IMiddleware, IMiddlewares, ISockets, IModels, IControllers, IModel, IController,
 				IUtils, IFilters, IConfigs, IRequestHandler, IRoutesMap, IService, IServices,
-				IViewConfig } from '../interfaces';
+				IViewConfig, IInit } from '../interfaces';
+
+import * as server from './server';
+import * as services from './services';
+import * as filters from './filters';
+import * as models from './models';
+import * as controllers from './controllers';
+import * as routes from './routes';
 
 // Get Facile and App packages.
-let pkg = require('../../package.json');
-let appPkg = require(join(process.cwd(), 'package.json'));
-
-// Default config values.
-let defaults: IConfig = {
-	cwd: process.cwd(),
-	pkg: appPkg,
-	env: 'development',
-	logLevel: 'info',
-	host: '127.0.0.1',
-	port: 8080,
-	maxConnections: 128,
-	views: {
-		layout: 'index',
-		engine: {
-			name: 'ejs',
-			renderer: cons.ejs
-		},
-		'view engine': 'ejs',
-		views: '/'
-	}
-};
+let packages = defaults.packages;
 
 /**
  * Facile Core
@@ -371,7 +357,7 @@ let defaults: IConfig = {
  * @extends {events.EventEmitter}
  * @implements {IFacile}
  */
-export class Facile extends events.EventEmitter implements IFacile {
+export class Facile extends Lifecycle implements IFacile {
 
 	static instance: Facile;
 
@@ -381,6 +367,7 @@ export class Facile extends events.EventEmitter implements IFacile {
 	server: Server;
 	logger: LoggerInstance;
 
+	_auto: boolean = false;
 	_pkg: any;
 	_config: IConfig;
 	_configs: IConfigs = {};
@@ -412,7 +399,7 @@ export class Facile extends events.EventEmitter implements IFacile {
 			return Facile.instance;
 
 		// Set Facile's package.json to variable.
-		this._pkg = pkg;
+		this._pkg = packages.pkg;
 
 		// Expose Facile utils.
 		this.utils = utils;
@@ -460,15 +447,19 @@ export class Facile extends events.EventEmitter implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	configure(config?: IConfig | boolean, autoStart?: boolean | ICallback,
+	configure(config?: IConfig | boolean, init?: boolean | ICallback,
 						fn?: ICallback): Facile {
 
 		// Check if config is boolean.
 		if (isBoolean(config)) {
-			fn = autoStart as ICallback;
-			autoStart = config;
+			fn = init as ICallback;
+			init = config as boolean;
 			config = undefined;
 		}
+
+		// If auto hooks enabled ensure init is false.
+		if (this._auto)
+			init = false;
 
 		// Check if configuration is string.
 		// If yes try to load the config.
@@ -476,7 +467,7 @@ export class Facile extends events.EventEmitter implements IFacile {
 			config = this.config(config);
 
 		// Extend options with defaults.
-		this._config = extend({}, defaults, config);
+		this._config = extend({}, defaults.config, config);
 
 		// Setup the Logger.
 		if (this._config.logger)
@@ -511,15 +502,138 @@ export class Facile extends events.EventEmitter implements IFacile {
 		// Set Node environment.
 		process.env.NODE_ENV = this._config.env;
 
-		// Emit Configured.
-		this.emit('core:configured', this);
+		// Check for auto init hooks/listeners.
+		if (this._config.auto)
+			this.hooks();
 
-		// No auto start return instance.
-		if (!autoStart)
+		// Emit Configured.
+		this.emit('init', this);
+
+		if (!init)
 			return this;
 
 		// Load controllers, models and services.
-		return this.start(fn);
+		return this.start(true, fn);
+
+	}
+
+	/**
+	 * Returns Initialization Methods
+	 *
+	 * @returns {IInit}
+	 *
+	 * @memberOf Facile
+	 */
+	init(): IInit {
+
+		let self = this;
+
+		function configured(): IInit {
+			self.emit('init:server');
+			return self.init();
+		}
+
+		// Used when individually calling
+		// inits on done returns back to
+		// main context for chaining to
+		// start.
+		function done(): IFacile {
+			self.emit('core:start');
+			return self;
+		}
+
+		// Iterates all inits then
+		// calls done to return to
+		// main context.
+		function all(): IFacile {
+			return done();
+		}
+
+		let inits: IInit = {
+
+			configured: 	configured.bind(this),
+			server: 			server.init.bind(this),
+			services: 		services.init.bind(this),
+			filters: 			filters.init.bind(this),
+			models: 			models.init.bind(this),
+			controllers: 	controllers.init.bind(this),
+			routes: 			routes.init.bind(this),
+			all: 					all.bind(this),
+			done: 				done.bind(this)
+
+		};
+
+		return inits;
+
+	}
+
+	/**
+	 * Initializes Lifecycle Events.
+	 *
+	 * Events
+	 *
+	 * init
+	 * init:server
+	 * init:services
+	 * init:filters
+	 * init:models
+	 * init:controllers
+	 * init:routes
+	 * init:done
+	 * core:listening
+	 *
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	hooks(): Facile {
+
+		let init = this.init();
+
+		this.on('init', init.configured);
+
+		this.on('init:server', init.server);
+
+		this.on('init:services', init.services);
+
+		this.on('init:filters', init.filters);
+
+		this.on('init:models', init.models);
+
+		this.on('init:controllers', init.controllers);
+
+		this.on('init:routes', init.routes);
+
+		this.on('core:start', this.start);
+
+		this.on('core:listen', this.listen);
+
+		// Set flag indicating that
+		// lifecycle hooks are auto firing.
+		this._auto = true;
+
+		return this;
+
+	}
+
+	/**
+	 * Start Listening for Connections
+	 *
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	listen(): Facile {
+
+		// Listen for connections.
+		this.logger.debug('Preparing server to listen for connections.');
+
+		this.server.listen(this._config.port, this._config.host, (err: Error) => {
+			if (err)
+				throw err;
+		});
+
+		return this;
 
 	}
 
@@ -530,9 +644,28 @@ export class Facile extends events.EventEmitter implements IFacile {
 	 * @method
 	 * @memberof Facile
 	 */
-	start(fn?: Function): Facile {
+	start(init?: boolean | Function, fn?: Function): Facile {
 
 		let self = this;
+
+		// Allow callback as first arg.
+		if (isFunction(init)) {
+			fn = init;
+			init = undefined;
+		}
+
+		// If auto hooks enabled ensure init is false.
+		if (this._auto)
+			init = false;
+
+		// Check if should auto init.
+		if (init) {
+
+			// After init just return
+			// start to fire up server.
+			return this.start(fn);
+
+		}
 
 		this.logger.debug('Configuring server protocol and settings.');
 
@@ -549,6 +682,8 @@ export class Facile extends events.EventEmitter implements IFacile {
 
 		// Listener callback on server listening.
 		this.server.on('listening', () => {
+
+			this.emit('core:listening');
 
 			let address = this.server.address(),
 					addy = address.address,
@@ -581,12 +716,8 @@ export class Facile extends events.EventEmitter implements IFacile {
 
 		});
 
-		// Listen for connections.
-		this.logger.debug('Preparing server to listen for connections.');
-		this.server.listen(this._config.port, this._config.host, (err: Error) => {
-			if (err)
-				throw err;
-		});
+		if (!this._auto)
+			this.listen();
 
 		return this;
 
@@ -683,7 +814,7 @@ export class Facile extends events.EventEmitter implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	addMiddleware(name: string | IMiddlewares, fn: IRequestHandler, order?: number): Facile {
+	addMiddleware(name: string | IMiddlewares, fn?: IRequestHandler, order?: number): Facile {
 
 		let middlewares: IMiddlewares = {};
 
@@ -703,7 +834,10 @@ export class Facile extends events.EventEmitter implements IFacile {
 
 			// No order generate.
 			if (v.order === undefined) {
-					v.order = this.utils.maxIn(this._middlewares, 'order') + 1;
+				let max = this.utils.maxIn(this._middlewares, 'order') || 0;
+				v.order = max;
+				if (max > 0)
+					v.order += 1;
 			}
 			// Use specified order
 			// check if exists, if true
@@ -792,63 +926,48 @@ export class Facile extends events.EventEmitter implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	addRoute(method: string | string[] | IRoutesMap | IRoute[],
-					url?: string,
-					handler?: IRequestHandler,
-					filters?: IRequestHandler | IRequestHandler[],
-					router?: string): Facile {
+	addRoute(route: IRoute | IRoutesMap | IRoute[]): Facile {
 
 		let self = this;
 
 		// Helper function to validate
 		// the route and log if invalid.
-		function validate(route: IRoute) {
+		function validate(_route: IRoute) {
 
 			// Validate the route.
-			route = self.utils.validateRoute(route);
+			_route = self.utils.validateRoute(route);
 
 			// Push the route to the collection
 			// if is valid.
-			if (route.valid)
-				self._routes.push(route);
+			if (_route.valid)
+				self._routes.push(_route);
 
 			// Otherwise log a warning.
 			else
-				self.logger.warn(`Failed to add route "${route.url}", the configuration is invalid.`, route);
+				self.logger.warn(`Failed to add route "${_route.url}", the configuration is invalid.`, route);
 
 		}
 
 		// Handle array of route objects.
-		if (Array.isArray(method)) {
-			let routes = method as Array&lt;IRoute>;
+		if (Array.isArray(route)) {
+			let routes = route as Array&lt;IRoute>;
 			routes.forEach((r) => {
 				validate(r);
 			});
 		}
 
-		// Http Method or array of Methods passed.
-		else if (isString(method) || (Array.isArray(method) &amp;&amp; isString(method[0]))) {
-
-		}
-
 		// Handle Routes map.
-		else if (isPlainObject(method)) {
-			let routes = method as IRoutesMap;
+		else if (isPlainObject(route)) {
+			let routes = route as IRoutesMap;
 			each(routes, (v, k) => {
-
+				let r = this.utils.parseRoute(k, v);
+				validate(r);
 			});
 		}
 
 		else {
-			throw new Error('Invalid route configuration could not add route.');
+			validate(route);
 		}
-
-		// route = {
-		// 	router: router || 'default',
-		// 	method: _method,
-		// 	url: url,
-		// 	handler: handlers
-		// };
 
 		return this;
 
@@ -952,7 +1071,7 @@ export class Facile extends events.EventEmitter implements IFacile {
 									
 						<span class="jsdoc-message">
 						Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a>
-						on Sun Oct 09 2016 16:50:18 GMT-0700 (PDT) using the <a href="https://github.com/xperiments/TSDoc">TSDoc template</a>.
+						on Mon Oct 10 2016 08:03:24 GMT-0700 (PDT) using the <a href="https://github.com/xperiments/TSDoc">TSDoc template</a>.
 						</span>
 				</footer>
 			</div>

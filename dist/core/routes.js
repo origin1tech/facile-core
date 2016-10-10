@@ -6,9 +6,10 @@
  * @returns {IFacile}
  */
 function init() {
-    this.logger.debug('Initializing Routes');
-    this.emit('routes:init');
-    return this;
+    var that = this;
+    that.logger.debug('Initializing Routes');
+    that.emit('init:done');
+    return that.init();
 }
 exports.init = init;
 //# sourceMappingURL=routes.js.map

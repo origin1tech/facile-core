@@ -4,6 +4,7 @@ let watch = require('node-watch');
 let chalk = require('chalk');
 let fs = require('fs');
 let glob = require('glob');
+let argv = process.argv.splice(2);
 
 let compiling = false;
 let delay;
@@ -44,23 +45,44 @@ let del = () => {
 	});
 };
 
+// Build out the docs.
+let docs = () => {
+	console.log('');
+	sh.exec('tsdoc', {}, (e) => {
+		console.log(chalk.cyan('Documentation: ') + 'successfully created.\n');
+		process.exit();
+	});
+};
+
+// Build out docs only.
+if (argv.indexOf('--docs') !== -1) {
+	docs();
+}
+
+// Otherwise compile and watch for changes.
+else {
+
 // Create directory watcher.
 let watcher = watch('src', { recursive: true });
 
-// Watch for changes.
-watcher.on('change', (f) => {
-	console.log(chalk.magenta('changed: ') + f);
+	// Watch for changes.
+	watcher.on('change', (f) => {
+		console.log(chalk.magenta('changed: ') + f);
+		compile();
+	});
+
+	// Watch for errors.
+	watcher.on('error', (f) => {
+		console.log(chalk.red('failed: ') + f);
+		clearTimeout(delay);
+	});
+
+	// Run initial compilation.
 	compile();
-});
 
-// Watch for errors.
-watcher.on('error', (f) => {
-	console.log(chalk.red('failed: ') + f);
-	clearTimeout(delay);
-});
+	console.log(chalk.cyan('\nTypescript watching for changes\n-------------------------------\n'));
 
-// Run initial compilation.
-compile();
+}
 
-console.log(chalk.cyan('\nTypescript watching for changes\n-------------------------------\n'));
+
 

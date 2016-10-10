@@ -6,9 +6,10 @@
  * @returns {IFacile}
  */
 function init() {
-    this.logger.debug('Initializing Services');
-    this.emit('services:init');
-    return this;
+    var that = this;
+    that.logger.debug('Initializing Services');
+    that.emit('init:filters');
+    return that.init();
 }
 exports.init = init;
 //# sourceMappingURL=services.js.map

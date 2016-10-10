@@ -1,4 +1,4 @@
-import { IFacile } from '../interfaces';
+import { IFacile, IInit } from '../interfaces';
 
 /**
  * Initializes Routes
@@ -6,12 +6,14 @@ import { IFacile } from '../interfaces';
  * @export
  * @returns {IFacile}
  */
-export function init(): IFacile {
+export function init(): IInit {
 
-	this.logger.debug('Initializing Routes');
+	let that: IFacile = this;
 
-	this.emit('routes:init');
+	that.logger.debug('Initializing Routes');
 
-	return this;
+	that.emit('init:done');
+
+	return that.init();
 
 }

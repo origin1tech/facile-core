@@ -6,9 +6,10 @@
  * @returns {IFacile}
  */
 function init() {
-    this.logger.debug('Initializing Filters');
-    this.emit('filters:init');
-    return this;
+    var that = this;
+    that.logger.debug('Initializing Filters');
+    that.emit('init:filters');
+    return that.init();
 }
 exports.init = init;
 //# sourceMappingURL=filters.js.map

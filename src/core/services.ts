@@ -1,4 +1,4 @@
-import { IFacile } from '../interfaces';
+import { IFacile, IInit } from '../interfaces';
 
 /**
  * Initializes Services
@@ -6,12 +6,14 @@ import { IFacile } from '../interfaces';
  * @export
  * @returns {IFacile}
  */
-export function init(): IFacile {
+export function init(): IInit {
 
-	this.logger.debug('Initializing Services');
+	let that: IFacile = this;
 
-	this.emit('services:init');
+	that.logger.debug('Initializing Services');
 
-	return this;
+	that.emit('init:filters');
+
+	return that.init();
 
 }

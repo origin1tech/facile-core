@@ -1,4 +1,4 @@
-import * as events from 'events';
+import { EventEmitter }from 'events';
 import { Router, RequestHandler,
 				NextFunction, ErrorRequestHandler,
 				Request, Response, Express } from 'express';
@@ -22,12 +22,29 @@ export interface IUtils {
 	initMap(Type: any, obj: any, instance?: any): void;
 	maxIn(obj: any, key: string): number;
 	hasIn(obj: any, key: any, val: any): boolean;
-	parseRoute(url: string, handler: IRequestHandler | Array<IRequestHandler>): IRoute;
+	parseRoute(url: string, handler: IRequestHandler | Array<IRequestHandler> | string | IRoute): IRoute;
 	validateRoute(route: IRoute): IRoute;
 	noop(): void;
 }
 
-export interface IFacile extends events.EventEmitter {
+export interface IInit {
+	configured(): IInit;
+	server(): IInit;
+	services(): IInit;
+	filters(): IInit;
+	models(): IInit;
+	controllers(): IInit;
+	routes(): IInit;
+	all(): IFacile;
+	done(): IFacile;
+}
+
+export interface ILifecycle extends EventEmitter {
+	before(name: string, fn: Function): void;
+	after(name: string, fn: Function): void;
+}
+
+export interface IFacile extends ILifecycle {
 
 	_pkg: any;
 
@@ -35,6 +52,7 @@ export interface IFacile extends events.EventEmitter {
 	logger: LoggerInstance;
 	app: Express;
 	server: Server;
+	_auto: boolean;
 
 	_config: IConfig;
 	_routers: IRouters;
@@ -48,13 +66,16 @@ export interface IFacile extends events.EventEmitter {
 	_models: IModels;
 	_controllers: IControllers;
 
-	configure(config?: IConfig | boolean, autoStart?: boolean | ICallback, fn?: ICallback): IFacile;
-	start(fn?: ICallback): IFacile;
+	configure(config?: IConfig | boolean, auto?: boolean | ICallback, fn?: ICallback): IFacile;
+	init(): IInit;
+	hooks(): IFacile;
+	listen(): IFacile;
+	start(auto?: boolean, fn?: ICallback): IFacile;
 	stop(msg?: string, code?: number): void;
 
 	addConfig(name: string, config: IConfig): IFacile;
 	addRouter(name: string, router?: Router): Router;
-	addMiddleware(name: string, fn: Function, order?: number): IFacile;
+	addMiddleware(name: string, fn?: IRequestHandler, order?: number): IFacile;
 	addService(Service: IService | Array<IService>): IFacile;
 	addFilter(Filter: IFilter | Array<IFilter>): IFacile;
 	addModel(Model: IModel | Array<IModel>): IFacile;
@@ -142,6 +163,7 @@ export interface IConfig {
 	logLevel?: 'error' | 'warn' | 'info' | 'debug';
 	views?: IViewConfig;
 	database?: any;
+	auto?: boolean;
 }
 
 /**

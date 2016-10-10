@@ -146,7 +146,7 @@ export function parseRoute(url: string,
 
 	let arr = url.trim().split(' ');
 	if (arr.length === 1)
-		arr.unshift('GET');
+		arr.unshift('get');
 
 	route = {
 		method: arr[0],
@@ -182,9 +182,34 @@ export function parseRoute(url: string,
  * @returns {IRoute}
  */
 export function validateRoute(route: IRoute): IRoute {
-	route.method = route.method || 'GET';
+
 	route.valid = true;
+
+	// Normalize if method is array.
+	if (Array.isArray(route.method)) {
+		let methods = [];
+		route.method.forEach((m, k) => {
+			methods.push(m.toUpperCase());
+		});
+		route.method = methods;
+	}
+
+	// Otherwise normalize single method.
+	else {
+		let method: string = route.method as string;
+		route.method = (method || 'GET').toUpperCase();
+	}
+
+	// Ensure default router.
+	route.router = route.router || 'default';
+
+	// Mehod, Handler and Url path are required.
+	if (!route.method || !route.handler || !route.url)
+		route.valid = false;
+
+
 	return route;
+
 }
 
 /**
