@@ -49,21 +49,11 @@ export class Facile extends Core implements IFacile {
 	 */
 	static instance: Facile;
 
-	/**
-	 * Exposes Boom to Facile
-	 * @member {IBoom} Facile.publicProperty
-	 * @memberOf Facile
-	 */
-	Boom: IBoom;
-
-	app: express.Express;
-	server: Server;
-
 	_routers: IRouters = {};
 	_routes: Array<IRoute>;
 
 	_nextSocketId: number = 0;
-	_sockets: ISockets;
+	_sockets: ISockets = {};
 
 	_services: IServices = {};
 	_middlewares: IMiddlewares = {};
@@ -105,6 +95,7 @@ export class Facile extends Core implements IFacile {
 		this.logger = defaultLogger;
 
 		// Create Express app.
+		this.express = express;
 		this.app = express();
 
 		// Set the instance.
@@ -175,7 +166,9 @@ export class Facile extends Core implements IFacile {
 		// If auto enable event listeners.
 		if (this._config.auto) {
 			this.enableEvents();
-			this.emit('core:configured');
+			this.execAfter('core:configure', () => {
+				this.emit('init');
+			});
 		}
 		else
 			return this;
@@ -281,7 +274,6 @@ export class Facile extends Core implements IFacile {
 	 * init:routes
 	 * init:done
 	 * core:start
-	 * core:listen
 	 *
 	 * @method enableHooks
 	 * @returns {Facile}
@@ -290,8 +282,6 @@ export class Facile extends Core implements IFacile {
 	enableEvents(): Facile {
 
 		let init = this.init();
-
-		this.on('core:configured', () => { this.emit('init'); });
 
 		this.on('init', init.run);
 
@@ -330,28 +320,15 @@ export class Facile extends Core implements IFacile {
 	 */
 	listen(): Facile {
 
-		let that: Facile = this;
+		// Listen for connections.
+		this.logger.debug('Server preparing to listen.');
 
-		function handleListen(): Facile {
+		this.server.listen(this._config.port, this._config.host, (err: Error) => {
+			if (err)
+				throw err;
+		});
 
-			// Listen for connections.
-			this.logger.debug('Server preparing to listen.');
-
-			this.server.listen(this._config.port, this._config.host, (err: Error) => {
-				if (err)
-					throw err;
-			});
-
-			return that;
-
-		}
-
-		if (this._config.auto)
-			this.execBefore('core:listen', () => {
-				handleListen();
-			});
-		else
-			return handleListen();
+		return this;
 
 	}
 
@@ -419,10 +396,10 @@ export class Facile extends Core implements IFacile {
 
 			if (that._config.auto)
 				that.execAfter('core:start', () => {
-					that.emit('core:listen');
+					that.listen();
 				});
 			else
-				return that;
+				return that.listen();
 
 		}
 
@@ -530,7 +507,7 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	addMiddleware(name: string | IMiddlewares, fn?: IRequestHandler, order?: number): Facile {
+	addMiddleware(name: string | IMiddlewares, fn?: any, order?: number): Facile {
 
 		let middlewares: IMiddlewares = {};
 

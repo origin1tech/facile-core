@@ -41,6 +41,7 @@ var Facile = (function (_super) {
         _super.call(this);
         this._routers = {};
         this._nextSocketId = 0;
+        this._sockets = {};
         this._services = {};
         this._middlewares = {};
         this._filters = {};
@@ -66,6 +67,7 @@ var Facile = (function (_super) {
         // and set as "log" instance.
         this.logger = defaultLogger;
         // Create Express app.
+        this.express = express;
         this.app = express();
         // Set the instance.
         Facile.instance = this;
@@ -121,7 +123,9 @@ var Facile = (function (_super) {
         // If auto enable event listeners.
         if (this._config.auto) {
             this.enableEvents();
-            this.emit('core:configured');
+            this.execAfter('core:configure', function () {
+                _this.emit('init');
+            });
         }
         else
             return this;
@@ -214,16 +218,13 @@ var Facile = (function (_super) {
      * init:routes
      * init:done
      * core:start
-     * core:listen
      *
      * @method enableHooks
      * @returns {Facile}
      * @memberOf Facile
      */
     Facile.prototype.enableEvents = function () {
-        var _this = this;
         var init = this.init();
-        this.on('core:configured', function () { _this.emit('init'); });
         this.on('init', init.run);
         this.on('init:server', init.server);
         this.on('init:services', init.services);
@@ -248,22 +249,13 @@ var Facile = (function (_super) {
      * @memberOf Facile
      */
     Facile.prototype.listen = function () {
-        var that = this;
-        function handleListen() {
-            // Listen for connections.
-            this.logger.debug('Server preparing to listen.');
-            this.server.listen(this._config.port, this._config.host, function (err) {
-                if (err)
-                    throw err;
-            });
-            return that;
-        }
-        if (this._config.auto)
-            this.execBefore('core:listen', function () {
-                handleListen();
-            });
-        else
-            return handleListen();
+        // Listen for connections.
+        this.logger.debug('Server preparing to listen.');
+        this.server.listen(this._config.port, this._config.host, function (err) {
+            if (err)
+                throw err;
+        });
+        return this;
     };
     /**
      * Start Server.
@@ -310,10 +302,10 @@ var Facile = (function (_super) {
             });
             if (that._config.auto)
                 that.execAfter('core:start', function () {
-                    that.emit('core:listen');
+                    that.listen();
                 });
             else
-                return that;
+                return that.listen();
         }
         if (this._config.auto)
             this.execBefore('core:start', function () {

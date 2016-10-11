@@ -38,6 +38,9 @@ function init() {
             var viewEng = viewConfig['view engine'];
             viewEng = viewConfig['view engine'] = viewEng || eng.name;
             that.app.set('view engine', viewEng);
+            // Set views path.
+            if (viewConfig.views)
+                that.app.set('views', viewConfig.views);
         }
         ////////////////////////////////
         // Configure Middleware

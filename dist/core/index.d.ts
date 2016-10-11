@@ -1,8 +1,6 @@
-/// <reference types="node" />
 import * as express from 'express';
-import { Server } from 'net';
 import { Core } from './core';
-import { IFacile, IConfig, IRouters, IRoute, IBoom, IFilter, IMiddlewares, ISockets, IModels, IControllers, IModel, IController, IFilters, IConfigs, IRequestHandler, IRoutesMap, IService, IServices, IInit } from '../interfaces';
+import { IFacile, IConfig, IRouters, IRoute, IFilter, IMiddlewares, ISockets, IModels, IControllers, IModel, IController, IFilters, IConfigs, IRoutesMap, IService, IServices, IInit } from '../interfaces';
 /**
  * Facile Core
  *
@@ -20,14 +18,6 @@ export declare class Facile extends Core implements IFacile {
      * @memberOf Facile
      */
     static instance: Facile;
-    /**
-     * Exposes Boom to Facile
-     * @member {IBoom} Facile.publicProperty
-     * @memberOf Facile
-     */
-    Boom: IBoom;
-    app: express.Express;
-    server: Server;
     _routers: IRouters;
     _routes: Array<IRoute>;
     _nextSocketId: number;
@@ -75,7 +65,6 @@ export declare class Facile extends Core implements IFacile {
      * init:routes
      * init:done
      * core:start
-     * core:listen
      *
      * @method enableHooks
      * @returns {Facile}
@@ -144,7 +133,7 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    addMiddleware(name: string | IMiddlewares, fn?: IRequestHandler, order?: number): Facile;
+    addMiddleware(name: string | IMiddlewares, fn?: any, order?: number): Facile;
     /**
      * Registers a Service.
      *

@@ -1,9 +1,13 @@
-import { IFacile, ICore, ICallbackResult, ICallback, IConfig, IConfigs } from '../interfaces';
+
 import { LoggerInstance, Logger, transports, TransportInstance } from 'winston';
-import { isFunction } from 'lodash';
+import { Express } from 'express';
+import { Server, Socket } from 'net';
+import { isFunction, each } from 'lodash';
 import { EventEmitter } from 'events';
 import { series as asyncSeries } from 'async';
 import { truncate } from './utils';
+import { IFacile, ICore, ICallbackResult, ICallback,
+				IConfig, IConfigs, IListenersMap, IBoom } from '../interfaces';
 
 /**
  * Facile Core
@@ -15,11 +19,16 @@ import { truncate } from './utils';
  */
 export class Core extends EventEmitter implements ICore {
 
+	Boom: IBoom;
+	express: any;
+	app: Express;
+	server: Server;
 	logger: LoggerInstance;
 
 	_pkg: any;
 	_config: IConfig;
 	_configs: IConfigs = {};
+	_listeners: IListenersMap;
 
 	beforeEvents: any = {};
 	afterEvents: any = {};
@@ -34,22 +43,23 @@ export class Core extends EventEmitter implements ICore {
 
 		super();
 
-		let events = [
-			'init',
-			'init:server',
-			'init:services',
-			'init:filters',
-			'init:models',
-			'init:controllers',
-			'init:routes',
-			'init:done',
-			'core:listening'
-		];
+		this._listeners = {
+			'core:configure': { before: false, after: true },
+			'init': { before: true, after: true },
+			'init:server': { before: true, after: true },
+			'init:services': { before: true, after: true },
+			'init:filters': { before: true, after: true },
+			'init:models': { before: true, after: true },
+			'init:controllers': { before: true, after: true },
+			'init:routes': { before: true, after: true },
+			'init:done': { before: true, after: true },
+			'core:start': { before: true, after: true },
+		};
 
 		// For each event initialize object.
-		events.forEach((ev) => {
-			this.beforeEvents[ev] = [];
-			this.afterEvents[ev] = [];
+		each(this._listeners, (v, k) => {
+			this.beforeEvents[k] = [];
+			this.afterEvents[k] = [];
 		});
 
 	}
@@ -65,6 +75,11 @@ export class Core extends EventEmitter implements ICore {
 	 * @memberOf Core
 	 */
 	before(name: string, event: ICallback): Core {
+
+		if (!this._listeners[name].before) {
+			this.logger.warn('Listener: ' + name + ' has no event "before".');
+			return this;
+		}
 
 		// Get var to collection.
 		let arr = this.beforeEvents[name];
@@ -87,6 +102,11 @@ export class Core extends EventEmitter implements ICore {
 	 * @memberOf Core
 	 */
 	after(name: string, event: ICallback): Core {
+
+		if (!this._listeners[name].after) {
+			this.logger.warn('Listener: ' + name + ' has no event "after".');
+			return this;
+		}
 
 		// Get var to collection.
 		let arr = this.afterEvents[name];

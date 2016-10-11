@@ -40,11 +40,21 @@ export interface IInit {
 	done(): IFacile;
 }
 
+export interface IListenersMap {
+	[name: string]: { before: boolean, after: boolean };
+}
+
 export interface ICore extends EventEmitter {
+
+	Boom: IBoom;
+	express: any;
+	app: Express;
+	server: Server;
 	logger: LoggerInstance;
 	_pkg: any;
 	_config: IConfig;
 	_configs: IConfigs;
+	_listeners: IListenersMap;
 	beforeEvents: any;
 	afterEvents: any;
 	before(name: string, event: ICallback): ICore;
@@ -54,13 +64,10 @@ export interface ICore extends EventEmitter {
 	execBefore(name: string, fn?: ICallbackResult): void;
 	execAfter(name: string, fn?: ICallbackResult): void;
 	execEvents(name: string, type: string, fn?: ICallbackResult): void;
+
 }
 
 export interface IFacile extends ICore {
-
-	Boom: IBoom;
-	app: Express;
-	server: Server;
 
 	_routers: IRouters;
 	_routes: Array<IRoute>;
@@ -83,7 +90,7 @@ export interface IFacile extends ICore {
 
 	addConfig(name: string, config: IConfig): IFacile;
 	addRouter(name: string, router?: Router): Router;
-	addMiddleware(name: string, fn?: IRequestHandler, order?: number): IFacile;
+	addMiddleware(name: string, fn?: any, order?: number): IFacile;
 	addService(Service: IService | Array<IService>): IFacile;
 	addFilter(Filter: IFilter | Array<IFilter>): IFacile;
 	addModel(Model: IModel | Array<IModel>): IFacile;
@@ -155,7 +162,7 @@ export interface IViewConfig {
 	layout?: string;
 	engine?: IViewEngine;
 	'view engine'?: string;
-	views?: string | string[];
+	views?: string | string[] | boolean;
 }
 
 /**
@@ -216,7 +223,7 @@ export interface ISockets {
  * @interface IMiddleware
  */
 export interface IMiddleware {
-	fn: IRequestHandler;
+	fn: any;
 	order?: number;
 }
 

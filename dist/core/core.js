@@ -4,6 +4,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
+var lodash_1 = require('lodash');
 var events_1 = require('events');
 var async_1 = require('async');
 /**
@@ -28,21 +29,22 @@ var Core = (function (_super) {
         this._configs = {};
         this.beforeEvents = {};
         this.afterEvents = {};
-        var events = [
-            'init',
-            'init:server',
-            'init:services',
-            'init:filters',
-            'init:models',
-            'init:controllers',
-            'init:routes',
-            'init:done',
-            'core:listening'
-        ];
+        this._listeners = {
+            'core:configure': { before: false, after: true },
+            'init': { before: true, after: true },
+            'init:server': { before: true, after: true },
+            'init:services': { before: true, after: true },
+            'init:filters': { before: true, after: true },
+            'init:models': { before: true, after: true },
+            'init:controllers': { before: true, after: true },
+            'init:routes': { before: true, after: true },
+            'init:done': { before: true, after: true },
+            'core:start': { before: true, after: true },
+        };
         // For each event initialize object.
-        events.forEach(function (ev) {
-            _this.beforeEvents[ev] = [];
-            _this.afterEvents[ev] = [];
+        lodash_1.each(this._listeners, function (v, k) {
+            _this.beforeEvents[k] = [];
+            _this.afterEvents[k] = [];
         });
     }
     /**
@@ -56,6 +58,10 @@ var Core = (function (_super) {
      * @memberOf Core
      */
     Core.prototype.before = function (name, event) {
+        if (!this._listeners[name].before) {
+            this.logger.warn('Listener: ' + name + ' has no event "before".');
+            return this;
+        }
         // Get var to collection.
         var arr = this.beforeEvents[name];
         // Add the event.
@@ -73,6 +79,10 @@ var Core = (function (_super) {
      * @memberOf Core
      */
     Core.prototype.after = function (name, event) {
+        if (!this._listeners[name].after) {
+            this.logger.warn('Listener: ' + name + ' has no event "after".');
+            return this;
+        }
         // Get var to collection.
         var arr = this.afterEvents[name];
         // Add the event.

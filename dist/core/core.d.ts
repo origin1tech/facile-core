@@ -1,7 +1,9 @@
 /// <reference types="node" />
-import { ICore, ICallbackResult, ICallback, IConfig, IConfigs } from '../interfaces';
 import { LoggerInstance } from 'winston';
+import { Express } from 'express';
+import { Server } from 'net';
 import { EventEmitter } from 'events';
+import { ICore, ICallbackResult, ICallback, IConfig, IConfigs, IListenersMap, IBoom } from '../interfaces';
 /**
  * Facile Core
  *
@@ -11,10 +13,15 @@ import { EventEmitter } from 'events';
  * @implements {IEvents}
  */
 export declare class Core extends EventEmitter implements ICore {
+    Boom: IBoom;
+    express: any;
+    app: Express;
+    server: Server;
     logger: LoggerInstance;
     _pkg: any;
     _config: IConfig;
     _configs: IConfigs;
+    _listeners: IListenersMap;
     beforeEvents: any;
     afterEvents: any;
     /**
