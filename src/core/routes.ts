@@ -4,32 +4,33 @@ import { IFacile, IInit } from '../interfaces';
  * Initializes Routes
  *
  * @export
+ * @param {Function} [fn]
  * @returns {IFacile}
  */
-export function init(): IInit {
-
-	let that: IFacile = this;
+export function init(fn?: Function): IInit {
 
 	function handleRoutes() {
 
-		that.logger.debug('Initializing Routes');
+		this.logger.debug('Initializing Routes');
 
 		// Init code here.
 
-		if (that._config.auto)
-			that.execAfter('init:routes', () => {
-				that.emit('init:done');
+		if (this._config.auto)
+			this.execAfter('init:routes', () => {
+				this.emit('init:done');
 			});
+		else if (fn)
+			fn();
 		else
-			return that.init();
+			return this._inits;
 
 	}
 
-	if (that._config.auto)
-		that.execBefore('init:routes', () => {
-			handleRoutes();
+	if (this._config.auto)
+		this.execBefore('init:routes', () => {
+			handleRoutes.call(this);
 		});
 	else
-		return handleRoutes();
+		return handleRoutes.call(this);
 
 }

@@ -281,13 +281,34 @@
 				
 				
 					    <li id="navTitle_Classes" class="nav-header navTitle">
-                            <a class="handCursor" data-toggle="collapse" data-id="T_Classes" data-target="#collapse_Classes">Classes<span class="badge badge-info pull-right">5</span></a>
+                            <a class="handCursor" data-toggle="collapse" data-id="T_Classes" data-target="#collapse_Classes">Classes<span class="badge badge-info pull-right">6</span></a>
                         </li>
                         <li id="navContents_Classes">
                             <div id="collapse_Classes" class="collapse">
                                 <ul class="nav nav-list" style="width:100%;margin-left:-8px;">
-                                    <li><a href="Controller.html">Controller</a></li><li><a href="Facile.html">Facile</a></li><li><a href="Filter.html">Filter</a></li><li><a href="Model.html">Model</a></li><li><a href="Service.html">Service</a></li>
+                                    <li><a href="Controller.html">Controller</a></li><li><a href="Core.html">Core</a></li><li><a href="Facile.html">Facile</a></li><li><a href="Filter.html">Filter</a></li><li><a href="Model.html">Model</a></li><li><a href="Service.html">Service</a></li>
                             
+                                    </ul>
+                                </div>
+                            </li>
+                        
+					    <li id="navTitle_Global" class="nav-header navTitle">
+                            <a class="handCursor" data-toggle="collapse" data-id="T_Global" data-target="#collapse_Global">Global<span class="badge badge-info pull-right">1</span></a>
+                        </li>
+                        <li id="navContents_Global">
+                            <div id="collapse_Global" class="collapse">
+                                <ul class="nav nav-list" style="width:100%;margin-left:-8px;">
+                                    
+                                        <?j
+                                    <li>
+                                        
+                                        
+                                        	<a href="global.html#utils">utils</a>
+                                        
+                                    </li>
+                                    
+                             <li class="divider"></li>
+                        
                                     </ul>
                                 </div>
                             </li>
@@ -297,7 +318,7 @@
 		</div>
 
 		<script>
-			var searchMembers = [{"realName":"Controller","link":"Controller"},{"realName":"Facile","link":"Facile"},{"realName":"Filter","link":"Filter"},{"realName":"Model","link":"Model"},{"realName":"Service","link":"Service"}];
+			var searchMembers = [{"realName":"Controller","link":"Controller"},{"realName":"Core","link":"Core"},{"realName":"Facile","link":"Facile"},{"realName":"Filter","link":"Filter"},{"realName":"Model","link":"Model"},{"realName":"Service","link":"Service"}];
 		</script>
     </aside>
 	</div>
@@ -420,7 +441,7 @@
         <h3 class="subsection-title">Extends</h3>
 
         <ul>
-            <li>events.EventEmitter</li>
+            <li>Events</li>
         </ul>
     
 
@@ -441,27 +462,69 @@
         <dl>
             
 <dt>
-    <a name=".publicProperty"></a><h4 class="name" id=".publicProperty"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">P</span> publicProperty<span class="type-signature"> :<a href="IBoom.html">IBoom</a></span></h4>
+    <a name=".extend"></a><h4 class="name" id=".extend"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">P</span> extend<span class="type-signature"></span></h4>
     
     
 </dt>
 <dd>
     
     <div class="description">
-        <p>Exposes Boom to Facile</p>
+        <p>Convenience wrapper for lodash extend.</p>
     </div>
     
     
     
-        <h5>Type:</h5>
-        <ul>
-            <li>
-                
-<span class="param-type"><a href="IBoom.html">IBoom</a></span>
 
+    
+<dl class="details">
+    
 
-            </li>
-        </ul>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_index.ts.html">core/index.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <a name=".extendConfig"></a><h4 class="name" id=".extendConfig"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">P</span> extendConfig<span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>Extends configuration files.</p>
+    </div>
+    
+    
     
 
     
@@ -573,7 +636,7 @@
 <dt>
     <a name="configure"></a>
 
-    <h4 class="name" id=".configure"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> configure( config: <span class="paramSignature">IConfig</span>, autoStart: <span class="paramSignature">boolean</span>, fn: <span class="paramSignature">ICallback</span> ) &rarr; { <span class='paramSignature'>Facile</span> }
+    <h4 class="name" id=".configure"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> configure( config: <span class="paramSignature">string</span> ) &rarr; { <span class='paramSignature'>Facile</span> }
 
     
 
@@ -585,7 +648,7 @@
     
     
     <div class="description">
-        <p>Configures Facile<br>optionally provide boolean to<br>auto load and start.</p>
+        <p>Configure</p>
     </div>
     
 
@@ -629,79 +692,10 @@
             <td class="type">
             
                 
+<span class="param-type">string</span>
+|
+
 <span class="param-type"><a href="IConfig.html">IConfig</a></span>
-|
-
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>autoStart</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-|
-
-<span class="param-type"><a href="ICallback.html">ICallback</a></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>fn</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="ICallback.html">ICallback</a></span>
 
 
             
@@ -728,6 +722,172 @@
 	</tbody>
 </table>
 
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_index.ts.html">core/index.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <span>Returns:</span>
+    
+            
+
+
+        
+    
+    
+</dd>
+
+ 
+        
+            
+<dt>
+    <a name="enableHooks"></a>
+
+    <h4 class="name" id=".enableHooks"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> enableHooks(  ) &rarr; { <span class='paramSignature'>Facile</span> }
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Enables Lifecycle Listeners.</p>
+<p>Events</p>
+<p>core:configure<br>init<br>init:server<br>init:services<br>init:filters<br>init:models<br>init:controllers<br>init:routes<br>init:done<br>core:start</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_index.ts.html">core/index.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <span>Returns:</span>
+    
+            
+
+
+        
+    
+    
+</dd>
+
+ 
+        
+            
+<dt>
+    <a name="init"></a>
+
+    <h4 class="name" id=".init"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> init(  ) &rarr; { <span class='paramSignature'>IInit</span> }
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Returns Initialization Methods</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
     
     
     
@@ -845,7 +1005,7 @@
 									
 						<span class="jsdoc-message">
 						Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a>
-						on Mon Oct 10 2016 09:20:13 GMT-0700 (PDT) using the <a href="https://github.com/xperiments/TSDoc">TSDoc template</a>.
+						on Tue Oct 11 2016 06:48:11 GMT-0700 (PDT) using the <a href="https://github.com/xperiments/TSDoc">TSDoc template</a>.
 						</span>
 				</footer>
 			</div>

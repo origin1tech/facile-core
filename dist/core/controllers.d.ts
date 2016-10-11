@@ -2,8 +2,8 @@ import { IInit } from '../interfaces';
 /**
  * Initializes Controllers
  *
- * @method
  * @export
+ * @param {Function} [fn]
  * @returns {IFacile}
  */
-export declare function init(): IInit;
+export declare function init(fn?: Function): IInit;

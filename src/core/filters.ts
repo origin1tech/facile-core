@@ -4,32 +4,35 @@ import { IFacile, IInit } from '../interfaces';
  * Initializes Filters
  *
  * @export
+ * @param {Function} [fn]
  * @returns {IFacile}
  */
-export function init(): IInit {
-
-	let that: IFacile = this;
+export function init(fn?: Function): IInit {
 
 	function handleFilters() {
 
-		that.logger.debug('Initializing Filters');
+		this.logger.debug('Initializing Filters');
 
 		// Init code here.
 
-		if (that._config.auto)
-			that.execAfter('init:filters', () => {
-				that.emit('init:models');
+		if (this._config.auto)
+			this.execAfter('init:filters', () => {
+				this.emit('init:models');
 			});
-		else
-			return that.init();
+		else if (fn)
+			fn();
+		else {
+			console.log('hit3');
+			return this._inits;
+		}
 
 	}
 
-	if (that._config.auto)
-		that.execBefore('init:filters', () => {
-			handleFilters();
+	if (this._config.auto)
+		this.execBefore('init:filters', () => {
+			handleFilters.call(this);
 		});
 	else
-		return handleFilters();
+		return handleFilters.call(this);
 
 }

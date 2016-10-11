@@ -2,8 +2,8 @@
 import { Facile } from './core';
 
 // Create Instance & Export.
-export let facile = new Facile();
-
+let facile = new Facile();
+export { facile, Facile }
 export * from './interfaces';
 export * from './types';
 

@@ -7,7 +7,7 @@ import { EventEmitter } from 'events';
 import { series as asyncSeries } from 'async';
 import { truncate } from './utils';
 import { IFacile, ICore, ICallbackResult, ICallback,
-				IConfig, IConfigs, IListenersMap, IBoom } from '../interfaces';
+				IConfig, IConfigs, IListenersMap, IBoom, IInit } from '../interfaces';
 
 /**
  * Facile Core
@@ -28,10 +28,15 @@ export class Core extends EventEmitter implements ICore {
 	_pkg: any;
 	_config: IConfig;
 	_configs: IConfigs = {};
+	_inits: IInit;
 	_listeners: IListenersMap;
 
-	beforeEvents: any = {};
-	afterEvents: any = {};
+	_beforeEvents: any = {};
+	_afterEvents: any = {};
+	_configured: boolean;
+	_initialized: boolean = false;
+	_started: boolean = false;
+	_autoInit: boolean = false;
 
 	/**
 	 * Creates an instance of Core.
@@ -44,7 +49,6 @@ export class Core extends EventEmitter implements ICore {
 		super();
 
 		this._listeners = {
-			'core:configure': { before: false, after: true },
 			'init': { before: true, after: true },
 			'init:server': { before: true, after: true },
 			'init:services': { before: true, after: true },
@@ -54,12 +58,13 @@ export class Core extends EventEmitter implements ICore {
 			'init:routes': { before: true, after: true },
 			'init:done': { before: true, after: true },
 			'core:start': { before: true, after: true },
+			'core:listening': { before: true, after: false }
 		};
 
 		// For each event initialize object.
 		each(this._listeners, (v, k) => {
-			this.beforeEvents[k] = [];
-			this.afterEvents[k] = [];
+			this._beforeEvents[k] = [];
+			this._afterEvents[k] = [];
 		});
 
 	}
@@ -82,7 +87,7 @@ export class Core extends EventEmitter implements ICore {
 		}
 
 		// Get var to collection.
-		let arr = this.beforeEvents[name];
+		let arr = this._beforeEvents[name];
 
 		// Add the event.
 		arr.push(event);
@@ -109,7 +114,7 @@ export class Core extends EventEmitter implements ICore {
 		}
 
 		// Get var to collection.
-		let arr = this.afterEvents[name];
+		let arr = this._afterEvents[name];
 
 		// Add the event.
 		arr.push(event);
@@ -128,7 +133,7 @@ export class Core extends EventEmitter implements ICore {
 	 * @memberOf Core
 	 */
 	hasBefore(name: string): boolean {
-		return this.beforeEvents[name] && this.beforeEvents[name].length;
+		return this._beforeEvents[name] && this._beforeEvents[name].length;
 	}
 
 	/**
@@ -141,7 +146,7 @@ export class Core extends EventEmitter implements ICore {
 	 * @memberOf Core
 	 */
 	hasAfter(name: string): boolean {
-		return this.afterEvents[name] && this.afterEvents[name].length;
+		return this._afterEvents[name] && this._afterEvents[name].length;
 	}
 
 	/**
@@ -154,7 +159,7 @@ export class Core extends EventEmitter implements ICore {
 	 * @memberOf Core
 	 */
 	execBefore(name: string, fn?: ICallbackResult): void {
-		this.execEvents(name, this.beforeEvents, fn);
+		this.execEvents(name, this._beforeEvents, fn);
 	}
 
 	/**
@@ -167,7 +172,7 @@ export class Core extends EventEmitter implements ICore {
 	 * @memberOf Core
 	 */
 	execAfter(name: string, fn?: ICallbackResult): void {
-		this.execEvents(name, this.afterEvents, fn);
+		this.execEvents(name, this._afterEvents, fn);
 	}
 
 	/**
@@ -210,9 +215,10 @@ export class Core extends EventEmitter implements ICore {
 
 		// Execute events in series.
 		asyncSeries(events, (err) => {
-			if (!err)
-				this.logger.error(err.message, err);
-			fn();
+			if (err)
+				this.logger.error(err.message || 'Unknown error', err);
+			if (isFunction(fn))
+				fn();
 		});
 
 	}

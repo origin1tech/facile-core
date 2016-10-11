@@ -3,26 +3,30 @@
  * Initializes Models
  *
  * @export
+ * @param {Function} [fn]
  * @returns {IFacile}
  */
-function init() {
-    var that = this;
+function init(fn) {
+    var _this = this;
     function handleModels() {
-        that.logger.debug('Initializing Models');
+        var _this = this;
+        this.logger.debug('Initializing Models');
         // Init code here.
-        if (that._config.auto)
-            that.execAfter('init:models', function () {
-                that.emit('init:controllers');
+        if (this._config.auto)
+            this.execAfter('init:models', function () {
+                _this.emit('init:controllers');
             });
+        else if (fn)
+            fn();
         else
-            return that.init();
+            return this._inits;
     }
-    if (that._config.auto)
-        that.execBefore('init:models', function () {
-            handleModels();
+    if (this._config.auto)
+        this.execBefore('init:models', function () {
+            handleModels.call(_this);
         });
     else
-        return handleModels();
+        return handleModels.call(this);
 }
 exports.init = init;
 //# sourceMappingURL=models.js.map

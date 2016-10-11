@@ -3,26 +3,30 @@
  * Initializes Services
  *
  * @export
+ * @param {Function} [fn]
  * @returns {IFacile}
  */
-function init() {
-    var that = this;
+function init(fn) {
+    var _this = this;
     function handleServices() {
-        that.logger.debug('Initializing Services');
+        var _this = this;
+        this.logger.debug('Initializing Services');
         // Init code here.
-        if (that._config.auto)
-            that.execAfter('init:services', function () {
-                that.emit('init:filters');
+        if (this._config.auto)
+            this.execAfter('init:services', function () {
+                _this.emit('init:filters');
             });
+        else if (fn)
+            fn();
         else
-            return that.init();
+            return this._inits;
     }
-    if (that._config.auto)
-        that.execBefore('init:services', function () {
-            handleServices();
+    if (this._config.auto)
+        this.execBefore('init:services', function () {
+            handleServices.call(_this);
         });
     else
-        return handleServices();
+        return handleServices.call(this);
 }
 exports.init = init;
 //# sourceMappingURL=services.js.map

@@ -8,7 +8,8 @@
 
 declare module 'facile' {
     import { Facile } from 'facile/core';
-    export let facile: Facile;
+    let facile: Facile;
+    export { facile, Facile };
     export * from 'facile/interfaces';
     export * from 'facile/types';
 }
@@ -67,11 +68,19 @@ declare module 'facile/core' {
                 */
             init(): IInit;
             /**
+                * Initializies all registered components
+                * in series using async.series.
+                *
+                * @member initAll
+                * @returns {Facile}
+                * @memberOf Facile
+                */
+            initAll(): Facile;
+            /**
                 * Enables Lifecycle Listeners.
                 *
                 * Events
                 *
-                * core:configure
                 * init
                 * init:server
                 * init:services
@@ -86,7 +95,7 @@ declare module 'facile/core' {
                 * @returns {Facile}
                 * @memberOf Facile
                 */
-            enableEvents(): Facile;
+            enableListeners(): Facile;
             /**
                 * Start Listening for Connections
                 *
@@ -95,7 +104,7 @@ declare module 'facile/core' {
                 *
                 * @memberOf Facile
                 */
-            listen(): Facile;
+            listen(): void;
             /**
                 * Start Server.
                 *
@@ -265,14 +274,25 @@ declare module 'facile/core' {
                 */
             controller(name: string): IController;
             /**
-                * Wrapper for utils extend.
+                * Convenience wrapper for lodash extend.
                 *
+                * @member extend
                 * @param {...any[]} args
                 * @returns {*}
                 *
                 * @memberOf Facile
                 */
             extend(...args: any[]): any;
+            /**
+                * Extends configuration files.
+                *
+                * @member extendConfig
+                * @param {...any[]} configs
+                * @returns {IConfig}
+                *
+                * @memberOf Facile
+                */
+            extendConfig(...configs: any[]): IConfig;
     }
 }
 
@@ -315,7 +335,6 @@ declare module 'facile/interfaces' {
             models(): IInit;
             controllers(): IInit;
             routes(): IInit;
-            all(): IFacile;
             done(): IFacile;
     }
     export interface IListenersMap {
@@ -333,9 +352,14 @@ declare module 'facile/interfaces' {
             _pkg: any;
             _config: IConfig;
             _configs: IConfigs;
+            _inits: IInit;
             _listeners: IListenersMap;
-            beforeEvents: any;
-            afterEvents: any;
+            _beforeEvents: any;
+            _afterEvents: any;
+            _configured: boolean;
+            _initialized: boolean;
+            _started: boolean;
+            _autoInit: boolean;
             before(name: string, event: ICallback): ICore;
             after(name: string, event: ICallback): ICore;
             hasBefore(name: string): boolean;
@@ -356,8 +380,9 @@ declare module 'facile/interfaces' {
             _controllers: IControllers;
             configure(config?: string | IConfig): IFacile;
             init(): IInit;
-            enableEvents(): IFacile;
-            listen(): IFacile;
+            initAll(): IFacile;
+            enableListeners(): IFacile;
+            listen(): void;
             start(config?: string | IConfig | Function, fn?: Function): IFacile;
             stop(msg?: string, code?: number): void;
             addConfig(name: string, config: IConfig): IFacile;
@@ -369,12 +394,14 @@ declare module 'facile/interfaces' {
             addController(Controller: IController | Array<IController>): IFacile;
             addService(Service: IService | Array<IService>, instance?: boolean): IFacile;
             addRoute(method: string | string[] | IRoutesMap | IRoute[], url?: string, handler?: IRequestHandler, filters?: IRequestHandler | IRequestHandler[], router?: string): IFacile;
+            router(name: string): Router;
             config(name: string): IConfig;
             filter(name: string): IFilter;
             service(name: string): IService;
             model(name: string): IModel;
             controller(name: string): IController;
             extend(...args: any[]): any;
+            extendConfig(...configs: any[]): IConfig;
     }
     /**
         * SSL Certificate Interface.
@@ -651,7 +678,7 @@ declare module 'facile/core/core' {
     import { Express } from 'express';
     import { Server } from 'net';
     import { EventEmitter } from 'events';
-    import { ICore, ICallbackResult, ICallback, IConfig, IConfigs, IListenersMap, IBoom } from 'facile/interfaces';
+    import { ICore, ICallbackResult, ICallback, IConfig, IConfigs, IListenersMap, IBoom, IInit } from 'facile/interfaces';
     /**
         * Facile Core
         *
@@ -669,9 +696,14 @@ declare module 'facile/core/core' {
             _pkg: any;
             _config: IConfig;
             _configs: IConfigs;
+            _inits: IInit;
             _listeners: IListenersMap;
-            beforeEvents: any;
-            afterEvents: any;
+            _beforeEvents: any;
+            _afterEvents: any;
+            _configured: boolean;
+            _initialized: boolean;
+            _started: boolean;
+            _autoInit: boolean;
             /**
                 * Creates an instance of Core.
                 *

@@ -3,26 +3,30 @@
  * Initializes Routes
  *
  * @export
+ * @param {Function} [fn]
  * @returns {IFacile}
  */
-function init() {
-    var that = this;
+function init(fn) {
+    var _this = this;
     function handleRoutes() {
-        that.logger.debug('Initializing Routes');
+        var _this = this;
+        this.logger.debug('Initializing Routes');
         // Init code here.
-        if (that._config.auto)
-            that.execAfter('init:routes', function () {
-                that.emit('init:done');
+        if (this._config.auto)
+            this.execAfter('init:routes', function () {
+                _this.emit('init:done');
             });
+        else if (fn)
+            fn();
         else
-            return that.init();
+            return this._inits;
     }
-    if (that._config.auto)
-        that.execBefore('init:routes', function () {
-            handleRoutes();
+    if (this._config.auto)
+        this.execBefore('init:routes', function () {
+            handleRoutes.call(_this);
         });
     else
-        return handleRoutes();
+        return handleRoutes.call(this);
 }
 exports.init = init;
 //# sourceMappingURL=routes.js.map

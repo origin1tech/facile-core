@@ -27,10 +27,12 @@ var Core = (function (_super) {
         var _this = this;
         _super.call(this);
         this._configs = {};
-        this.beforeEvents = {};
-        this.afterEvents = {};
+        this._beforeEvents = {};
+        this._afterEvents = {};
+        this._initialized = false;
+        this._started = false;
+        this._autoInit = false;
         this._listeners = {
-            'core:configure': { before: false, after: true },
             'init': { before: true, after: true },
             'init:server': { before: true, after: true },
             'init:services': { before: true, after: true },
@@ -40,11 +42,12 @@ var Core = (function (_super) {
             'init:routes': { before: true, after: true },
             'init:done': { before: true, after: true },
             'core:start': { before: true, after: true },
+            'core:listening': { before: true, after: false }
         };
         // For each event initialize object.
         lodash_1.each(this._listeners, function (v, k) {
-            _this.beforeEvents[k] = [];
-            _this.afterEvents[k] = [];
+            _this._beforeEvents[k] = [];
+            _this._afterEvents[k] = [];
         });
     }
     /**
@@ -63,7 +66,7 @@ var Core = (function (_super) {
             return this;
         }
         // Get var to collection.
-        var arr = this.beforeEvents[name];
+        var arr = this._beforeEvents[name];
         // Add the event.
         arr.push(event);
         return this;
@@ -84,7 +87,7 @@ var Core = (function (_super) {
             return this;
         }
         // Get var to collection.
-        var arr = this.afterEvents[name];
+        var arr = this._afterEvents[name];
         // Add the event.
         arr.push(event);
         return this;
@@ -99,7 +102,7 @@ var Core = (function (_super) {
      * @memberOf Core
      */
     Core.prototype.hasBefore = function (name) {
-        return this.beforeEvents[name] && this.beforeEvents[name].length;
+        return this._beforeEvents[name] && this._beforeEvents[name].length;
     };
     /**
      * Checks if after listeners exist for event.
@@ -111,7 +114,7 @@ var Core = (function (_super) {
      * @memberOf Core
      */
     Core.prototype.hasAfter = function (name) {
-        return this.afterEvents[name] && this.afterEvents[name].length;
+        return this._afterEvents[name] && this._afterEvents[name].length;
     };
     /**
      * Executes before event listeners.
@@ -123,7 +126,7 @@ var Core = (function (_super) {
      * @memberOf Core
      */
     Core.prototype.execBefore = function (name, fn) {
-        this.execEvents(name, this.beforeEvents, fn);
+        this.execEvents(name, this._beforeEvents, fn);
     };
     /**
      * Executes after event listeners.
@@ -135,7 +138,7 @@ var Core = (function (_super) {
      * @memberOf Core
      */
     Core.prototype.execAfter = function (name, fn) {
-        this.execEvents(name, this.afterEvents, fn);
+        this.execEvents(name, this._afterEvents, fn);
     };
     /**
      * Executes lifecyle events for
@@ -176,9 +179,10 @@ var Core = (function (_super) {
         var events = type[name];
         // Execute events in series.
         async_1.series(events, function (err) {
-            if (!err)
-                _this.logger.error(err.message, err);
-            fn();
+            if (err)
+                _this.logger.error(err.message || 'Unknown error', err);
+            if (lodash_1.isFunction(fn))
+                fn();
         });
     };
     return Core;

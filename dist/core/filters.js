@@ -3,26 +3,32 @@
  * Initializes Filters
  *
  * @export
+ * @param {Function} [fn]
  * @returns {IFacile}
  */
-function init() {
-    var that = this;
+function init(fn) {
+    var _this = this;
     function handleFilters() {
-        that.logger.debug('Initializing Filters');
+        var _this = this;
+        this.logger.debug('Initializing Filters');
         // Init code here.
-        if (that._config.auto)
-            that.execAfter('init:filters', function () {
-                that.emit('init:models');
+        if (this._config.auto)
+            this.execAfter('init:filters', function () {
+                _this.emit('init:models');
             });
-        else
-            return that.init();
+        else if (fn)
+            fn();
+        else {
+            console.log('hit3');
+            return this._inits;
+        }
     }
-    if (that._config.auto)
-        that.execBefore('init:filters', function () {
-            handleFilters();
+    if (this._config.auto)
+        this.execBefore('init:filters', function () {
+            handleFilters.call(_this);
         });
     else
-        return handleFilters();
+        return handleFilters.call(this);
 }
 exports.init = init;
 //# sourceMappingURL=filters.js.map

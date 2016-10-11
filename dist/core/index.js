@@ -6,6 +6,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var express = require('express');
 var Boom = require('boom');
+var async_1 = require('async');
 var winston_1 = require('winston');
 var lodash_1 = require('lodash');
 var chalk_1 = require('chalk');
@@ -57,6 +58,7 @@ var Facile = (function (_super) {
             level: 'info',
             transports: [
                 new (winston_1.transports.Console)({
+                    colorize: true,
                     prettyPrint: true,
                     handleExceptions: true,
                     humanReadableUnhandledException: true
@@ -69,6 +71,8 @@ var Facile = (function (_super) {
         // Create Express app.
         this.express = express;
         this.app = express();
+        this._initialized = false;
+        this._started = false;
         // Set the instance.
         Facile.instance = this;
         return this;
@@ -120,15 +124,8 @@ var Facile = (function (_super) {
         process.env.NODE_ENV = this._config.env;
         // Ensure config auto has value.
         this._config.auto = this._config.auto !== false ? true : false;
-        // If auto enable event listeners.
-        if (this._config.auto) {
-            this.enableEvents();
-            this.execAfter('core:configure', function () {
-                _this.emit('init');
-            });
-        }
-        else
-            return this;
+        this._configured = true;
+        return this;
     };
     /**
      * Returns Initialization Methods
@@ -138,10 +135,15 @@ var Facile = (function (_super) {
      * @memberOf Facile
      */
     Facile.prototype.init = function () {
-        var self = this;
+        var that = this;
         // Ensure configuration.
         if (!this._config) {
-            this.logger.warn('Failed to initialize please run facile.configure() first...exiting.');
+            this.logger.warn('Failed to initialize please run facile.configure()...exiting.');
+            process.exit();
+        }
+        if (this._config.auto && !this._autoInit) {
+            console.log('');
+            this.logger.error('Facile config set to "auto" but attempted to init manually.');
             process.exit();
         }
         /**
@@ -154,12 +156,12 @@ var Facile = (function (_super) {
          * @memberOf Facile
          */
         function run() {
-            if (self._config.auto)
-                self.execBefore('init', function () {
-                    self.emit('init:server');
-                });
-            else
-                return inits;
+            var _this = this;
+            if (!this._config.auto)
+                throw new Error('The method init().run() cannot be called manually use { auto: true } in your configuration.');
+            this.execBefore('init', function () {
+                _this.emit('init:server');
+            });
         }
         /**
          * Used internally to trigger
@@ -171,44 +173,61 @@ var Facile = (function (_super) {
          * @memberOf Facile
          */
         function done() {
-            if (self._config.auto)
-                self.execAfter('init', function () {
-                    self.emit('core:start');
+            var _this = this;
+            this.logger.debug('Facile initialization complete.');
+            this._initialized = true;
+            if (this._config.auto) {
+                this.execAfter('init', function () {
+                    _this.emit('core:start');
                 });
-            else
-                return self;
-        }
-        /**
-         * Used internally to trigger
-         * all initialization events.
-         *
-         * @private
-         * @member all
-         * @returns {IFacile}
-         * @memberOf Facile
-         */
-        function all() {
-            return done();
+            }
+            else {
+                return this;
+            }
         }
         var inits = {
-            run: run.bind(this),
-            server: server.init.bind(this),
-            services: services.init.bind(this),
-            filters: filters.init.bind(this),
-            models: models.init.bind(this),
-            controllers: controllers.init.bind(this),
-            routes: routes.init.bind(this),
-            all: all.bind(this),
-            done: done.bind(this)
+            run: run.bind(that),
+            server: server.init.bind(that),
+            services: services.init.bind(that),
+            filters: filters.init.bind(that),
+            models: models.init.bind(that),
+            controllers: controllers.init.bind(that),
+            routes: routes.init.bind(that),
+            done: done.bind(that)
         };
-        return run();
+        return inits;
+    };
+    /**
+     * Initializies all registered components
+     * in series using async.series.
+     *
+     * @member initAll
+     * @returns {Facile}
+     * @memberOf Facile
+     */
+    Facile.prototype.initAll = function () {
+        var _this = this;
+        var inits = this.init();
+        var _server = lodash_1.bind(server.init, this);
+        var series = [
+            _server
+        ];
+        // Iterate series of all initializations.
+        async_1.series(series, function (err) {
+            if (err)
+                _this.logger.error(err.message || 'Unknown error', err);
+            _this._initialized = true;
+        });
+        // Don't wait for series
+        // return for chaining we'll
+        // ensure done before start.
+        return this;
     };
     /**
      * Enables Lifecycle Listeners.
      *
      * Events
      *
-     * core:configure
      * init
      * init:server
      * init:services
@@ -223,7 +242,7 @@ var Facile = (function (_super) {
      * @returns {Facile}
      * @memberOf Facile
      */
-    Facile.prototype.enableEvents = function () {
+    Facile.prototype.enableListeners = function () {
         var init = this.init();
         this.on('init', init.run);
         this.on('init:server', init.server);
@@ -232,6 +251,7 @@ var Facile = (function (_super) {
         this.on('init:models', init.models);
         this.on('init:controllers', init.controllers);
         this.on('init:routes', init.routes);
+        this.on('init:done', init.done);
         this.on('core:start', this.start);
         this.on('core:listen', this.listen);
         // Set flag indicating that
@@ -249,13 +269,16 @@ var Facile = (function (_super) {
      * @memberOf Facile
      */
     Facile.prototype.listen = function () {
+        if (!this._started) {
+            this.logger.error('Facile.listen() cannot be called directly please use .start().');
+            process.exit();
+        }
         // Listen for connections.
         this.logger.debug('Server preparing to listen.');
         this.server.listen(this._config.port, this._config.host, function (err) {
             if (err)
                 throw err;
         });
-        return this;
     };
     /**
      * Start Server.
@@ -266,53 +289,99 @@ var Facile = (function (_super) {
      * @memberof Facile
      */
     Facile.prototype.start = function (config, fn) {
-        var that = this;
+        var _this = this;
         // Allow callback as first argument.
         if (lodash_1.isFunction(config)) {
             fn = config;
             config = undefined;
         }
-        // Can't start without a config.
-        if (!this._config) {
-            // If no _config and no config throw error.
-            if (!config)
-                throw new Error('Attempted to start but not configured or no config was supplied.');
-            var _config = config;
-            // If Auto return the config as
-            // auto events listeners will fire
-            // start.
-            if (_config.auto !== false)
-                return this.configure(config);
-            // Otherwise just configure.
-            this.configure(config);
-        }
+        /////////////////////////////
+        // Wait/Start Facile
+        /////////////////////////////
         function handleStart() {
-            that.logger.debug('Starting server preparing for connections.');
+            var _this = this;
             // On listening Handle Callback.
-            that.server.on('listening', function () {
-                var address = that.server.address(), addy = address.address, port = address.port;
-                console.log(chalk_1.cyan('\nServer listening at: http://' + addy + ':' + port));
+            this.server.on('listening', function () {
+                var address = _this.server.address(), addy = address.address, port = address.port;
+                if (_this._config.auto)
+                    _this.execAfter('core:listen');
                 // Call if callack function provided.
-                if (fn) {
-                    that.logger.debug('Exec callback on server start/listening.');
-                    fn(that);
-                }
-                if (that._config.auto)
-                    that.execAfter('core:listen');
+                if (fn)
+                    fn(_this);
+                console.log(chalk_1.cyan('\nServer listening at: http://' + addy + ':' + port));
             });
-            if (that._config.auto)
-                that.execAfter('core:start', function () {
-                    that.listen();
+            if (this._config.auto) {
+                this.execAfter('core:start', function () {
+                    _this._started = true;
+                    _this.emit('core:listen');
                 });
-            else
-                return that.listen();
+            }
+            else {
+                this._started = true;
+                this.listen();
+            }
         }
-        if (this._config.auto)
-            this.execBefore('core:start', function () {
-                handleStart();
-            });
-        else
-            return handleStart();
+        var waitId;
+        /**
+         * Waits to start server until initialized.
+         * This is only used when "auto" is NOT set
+         * to true in your config.
+         */
+        function handleWaitStart() {
+            if (!this._initialized) {
+                waitId = setTimeout(handleWaitStart.bind(this), 10);
+            }
+            else {
+                clearTimeout(waitId);
+                handleStart.call(this);
+            }
+        }
+        /////////////////////////////
+        // Ensure Configuration
+        /////////////////////////////
+        if (!this._configured)
+            this.configure(config);
+        // Can't continue without configuration.
+        // Should never hit but just in case.
+        if (!this._config) {
+            console.log('');
+            this.logger.error('Failed to start Facile missing or invalid configuration.');
+            process.exit();
+        }
+        /////////////////////////////
+        // Manual or Auto Init
+        /////////////////////////////
+        if (this._config.auto) {
+            this.logger.debug('Auto configuration detected.');
+            // Initialize first which will round
+            // trip and call start again falling
+            // through to the execution below.
+            if (!this._initialized) {
+                // ensures manual init is not called while auto is set.
+                this._autoInit = true;
+                this.enableListeners();
+                this.init().run();
+            }
+            else {
+                this.execBefore('core:start', function () {
+                    handleStart.call(_this);
+                });
+                return this;
+            }
+        }
+        else {
+            // When starting manually must have
+            // called configure and init manually
+            // before starting.
+            if (!this._initialized) {
+                console.log('');
+                this.logger.error('Facile failed to start call facile.init() before starting.');
+                process.exit();
+            }
+            handleWaitStart.call(this);
+            // Don't wait just return.
+            return this;
+        }
     };
     /**
      * Stops the server.
@@ -605,8 +674,9 @@ var Facile = (function (_super) {
         return this._controllers[name];
     };
     /**
-     * Wrapper for utils extend.
+     * Convenience wrapper for lodash extend.
      *
+     * @member extend
      * @param {...any[]} args
      * @returns {*}
      *
@@ -618,6 +688,30 @@ var Facile = (function (_super) {
             args[_i - 0] = arguments[_i];
         }
         return lodash_1.extend.apply(null, args);
+    };
+    /**
+     * Extends configuration files.
+     *
+     * @member extendConfig
+     * @param {...any[]} configs
+     * @returns {IConfig}
+     *
+     * @memberOf Facile
+     */
+    Facile.prototype.extendConfig = function () {
+        var _this = this;
+        var configs = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            configs[_i - 0] = arguments[_i];
+        }
+        var arr = [];
+        configs.forEach(function (c) {
+            if (lodash_1.isString(c))
+                c = _this._configs[c];
+            arr.push(c);
+        });
+        arr.unshift({});
+        return lodash_1.extend.apply(null, arr);
     };
     return Facile;
 }(core_1.Core));

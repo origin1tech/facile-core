@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
-	<title>Facile Core Source: interfaces/index.ts</title>
+	<title>Facile Core Source: core/core.ts</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -331,415 +331,230 @@
 					
 
 
-		<h1 class="page-title">Source: interfaces/index.ts</h1>
+		<h1 class="page-title">Source: core/core.ts</h1>
     
     <section>
         <article>
-            <pre class="sunlight-highlight-javascript ">import { EventEmitter }from 'events';
-import { Router, RequestHandler,
-				NextFunction, ErrorRequestHandler,
-				Request, Response, Express } from 'express';
-import { Socket, Server } from 'net';
-import { BoomError, Output } from 'boom';
-import { LoggerInstance } from 'winston';
+            <pre class="sunlight-highlight-javascript ">
+import { LoggerInstance, Logger, transports, TransportInstance } from 'winston';
+import { Express } from 'express';
+import { Server, Socket } from 'net';
+import { isFunction, each } from 'lodash';
+import { EventEmitter } from 'events';
+import { series as asyncSeries } from 'async';
+import { truncate } from './utils';
+import { IFacile, ICore, ICallbackResult, ICallback,
+				IConfig, IConfigs, IListenersMap, IBoom } from '../interfaces';
 
-
-// Re-export Interfaces for Convenience.
-export interface IRequestHandler extends RequestHandler {}
-export interface INextFunction extends NextFunction {}
-export interface IErrorRequestHandler extends ErrorRequestHandler {}
-export interface IRequest extends Request {}
-export interface IResponse extends Response {}
-export interface IBoomError extends BoomError {}
-export interface IBoomOutput extends Output  {}
-
-export interface IUtils {
-	extend(...args: any[]): any;
-	extendMap(key: any, val: any, obj?: any): void;
-	initMap(Type: any, obj: any, instance?: any): void;
-	maxIn(obj: any, key: string): number;
-	hasIn(obj: any, key: any, val: any): boolean;
-	parseRoute(url: string, handler: IRequestHandler | Array&lt;IRequestHandler> | string | IRoute): IRoute;
-	validateRoute(route: IRoute): IRoute;
-	noop(): void;
-	truncate(str: string, length: number, omission: string): string;
-}
-
-export interface IInit {
-	run(): IInit;
-	server(): IInit;
-	services(): IInit;
-	filters(): IInit;
-	models(): IInit;
-	controllers(): IInit;
-	routes(): IInit;
-	all(): IFacile;
-	done(): IFacile;
-}
-
-export interface IListenersMap {
-	[name: string]: { before: boolean, after: boolean };
-}
-
-export interface ICore extends EventEmitter {
+/**
+ * Facile Core
+ *
+ * @export
+ * @class Core
+ * @extends {EventEmitter}
+ * @implements {IEvents}
+ */
+export class Core extends EventEmitter implements ICore {
 
 	Boom: IBoom;
 	express: any;
 	app: Express;
 	server: Server;
 	logger: LoggerInstance;
+
 	_pkg: any;
 	_config: IConfig;
-	_configs: IConfigs;
+	_configs: IConfigs = {};
 	_listeners: IListenersMap;
-	_beforeEvents: any;
-	_afterEvents: any;
-	before(name: string, event: ICallback): ICore;
-	after(name: string, event: ICallback): ICore;
-	hasBefore(name: string): boolean;
-	hasAfter(name: string): boolean;
-	execBefore(name: string, fn?: ICallbackResult): void;
-	execAfter(name: string, fn?: ICallbackResult): void;
-	execEvents(name: string, type: string, fn?: ICallbackResult): void;
 
-}
+	_beforeEvents: any = {};
+	_afterEvents: any = {};
 
-export interface IFacile extends ICore {
+	/**
+	 * Creates an instance of Core.
+	 *
+	 * @constructor
+	 * @memberOf Core
+	 */
+	constructor() {
 
-	_routers: IRouters;
-	_routes: Array&lt;IRoute>;
+		super();
 
-	_nextSocketId: number;
-	_sockets: ISockets;
+		this._listeners = {
+			'core:configure': { before: false, after: true },
+			'init': { before: true, after: true },
+			'init:server': { before: true, after: true },
+			'init:services': { before: true, after: true },
+			'init:filters': { before: true, after: true },
+			'init:models': { before: true, after: true },
+			'init:controllers': { before: true, after: true },
+			'init:routes': { before: true, after: true },
+			'init:done': { before: true, after: true },
+			'core:start': { before: true, after: true },
+		};
 
-	_services: IServices;
-	_middlewares: IMiddlewares;
-	_filters: IFilters;
-	_models: IModels;
-	_controllers: IControllers;
+		// For each event initialize object.
+		each(this._listeners, (v, k) => {
+			this._beforeEvents[k] = [];
+			this._afterEvents[k] = [];
+		});
 
-	configure(config?: string | IConfig): IFacile;
-	init(): IInit;
-	enableEvents(): IFacile;
-	listen(): IFacile;
-	start(config?: string | IConfig | Function, fn?: Function): IFacile;
-	stop(msg?: string, code?: number): void;
+	}
 
-	addConfig(name: string, config: IConfig): IFacile;
-	addRouter(name: string, router?: Router): Router;
-	addMiddleware(name: string, fn?: any, order?: number): IFacile;
-	addService(Service: IService | Array&lt;IService>): IFacile;
-	addFilter(Filter: IFilter | Array&lt;IFilter>): IFacile;
-	addModel(Model: IModel | Array&lt;IModel>): IFacile;
-	addController(Controller: IController | Array&lt;IController>): IFacile;
-	addService(Service: IService | Array&lt;IService>, instance?: boolean): IFacile;
-	addRoute(method: string | string[] | IRoutesMap | IRoute[],
-					url?: string,
-					handler?: IRequestHandler,
-					filters?: IRequestHandler | IRequestHandler[],
-					router?: string): IFacile;
+	/**
+	 * Adds before event listener
+	 * to known Facile event.
+	 *
+	 * @member before
+	 * @param {string} name the name of the Facile event.
+	 * @param {Function} event the event to be called.
+	 *
+	 * @memberOf Core
+	 */
+	before(name: string, event: ICallback): Core {
 
-	config(name: string): IConfig;
-	filter(name: string): IFilter;
-	service(name: string): IService;
-	model(name: string): IModel;
-	controller(name: string): IController;
-	extend(...args: any[]): any;
-	extendConfig(...configs: any[]): IConfig;
+		if (!this._listeners[name].before) {
+			this.logger.warn('Listener: ' + name + ' has no event "before".');
+			return this;
+		}
 
-}
+		// Get var to collection.
+		let arr = this._beforeEvents[name];
 
-/**
- * SSL Certificate Interface.
- *
- * @export
- * @interface ICertificate
- */
-export interface ICertificate {
-	key: string;
-	cert: string;
-}
+		// Add the event.
+		arr.push(event);
 
-/**
- * Node style callback.
- * @todo should probably support promise also.
- *
- * @export
- * @interface ICallback
- */
-export interface ICallbackResult {
-	(err?: string | Error, data?: any): void;
-}
+		return this;
 
-export interface ICallback {
-	(done: ICallbackResult): void;
-}
+	}
 
-/**
- * Name and renderer for views.
- * @todo create custon interface
- * for renderer. consolidate should
- * but does not export the interface
- * in typings.
- *
- * @export
- * @interface IViewEngine
- */
-export interface IViewEngine {
-	name: string;
-	renderer: string | Function;
-}
+	/**
+	 * Adds after event listener
+	 * to known Facile event.
+	 *
+	 * @member after
+	 * @param {string} name the name of the Facile event.
+	 * @param {Function} event the event to be called.
+	 *
+	 * @memberOf Core
+	 */
+	after(name: string, event: ICallback): Core {
 
-/**
- * Express View Settings
- *
- * @export
- * @interface IExpressViews
- */
-export interface IViewConfig {
-	layout?: string;
-	engine?: IViewEngine;
-	'view engine'?: string;
-	views?: string | string[] | boolean;
-}
+		if (!this._listeners[name].after) {
+			this.logger.warn('Listener: ' + name + ' has no event "after".');
+			return this;
+		}
 
-/**
- * Server Configuration.
- *
- * @export
- * @interface IConfig
- */
-export interface IConfig {
-	cwd?: string;
-	pkg?: any;
-	host?: string;
-	port?: number;
-	certificate?: ICertificate | true;
-	maxConnections?: number;
-	env?: string;
-	logger?: LoggerInstance;
-	logLevel?: 'error' | 'warn' | 'info' | 'debug';
-	views?: IViewConfig;
-	database?: any;
-	auto?: boolean;
-}
+		// Get var to collection.
+		let arr = this._afterEvents[name];
 
-/**
- * Map of Configs.
- *
- * @export
- * @interface IConfigs
- */
-export interface IConfigs {
-	[name: string]: IConfig;
-}
+		// Add the event.
+		arr.push(event);
 
-/**
- * Interface for configuration flags.
- *
- * @export
- * @interface IFlags
- */
-export interface IFlags {
-	[name: string]: any;
-}
+		return this;
 
-/**
- * Map containing socket connections.
- *
- * @export
- * @interface ISockets
- */
-export interface ISockets {
-	[id: number]: Socket;
-}
+	}
 
-/**
- * Map of app middleware.
- *
- * @export
- * @interface IMiddleware
- */
-export interface IMiddleware {
-	fn: any;
-	order?: number;
-}
+	/**
+	 * Checks if before listeners exist for event.
+	 *
+	 * @member hasBefore
+	 * @param {string} name
+	 * @returns {boolean}
+	 *
+	 * @memberOf Core
+	 */
+	hasBefore(name: string): boolean {
+		return this._beforeEvents[name] &amp;&amp; this._beforeEvents[name].length;
+	}
 
-/**
- * Map of middleware.
- *
- * @export
- * @interface IMiddlewares
- */
-export interface IMiddlewares {
-	[name: string]: IMiddleware;
-}
+	/**
+	 * Checks if after listeners exist for event.
+	 *
+	 * @member hasAfter
+	 * @param {string} name
+	 * @returns {boolean}
+	 *
+	 * @memberOf Core
+	 */
+	hasAfter(name: string): boolean {
+		return this._afterEvents[name] &amp;&amp; this._afterEvents[name].length;
+	}
 
-/**
- * Boom wrap event signature interface.
- *
- * @export
- * @interface IBoomWrap
- */
-export interface IBoomWrap {
-	(error: Error, statusCode?: number, message?: string): BoomError;
-}
+	/**
+	 * Executes before event listeners.
+	 *
+	 * @member execBefore
+	 * @param {string} name
+	 * @param {ICallbackResult} [fn]
+	 *
+	 * @memberOf Core
+	 */
+	execBefore(name: string, fn?: ICallbackResult): void {
+		this.execEvents(name, this._beforeEvents, fn);
+	}
 
-/**
- * Boom create signature interface.
- *
- * @export
- * @interface IBoomCreate
- */
-export interface IBoomCreate {
-	(statusCode: number, message?: string, data?: any): BoomError;
-}
+	/**
+	 * Executes after event listeners.
+	 *
+	 * @member execAfter
+	 * @param {string} name
+	 * @param {ICallbackResult} [fn]
+	 *
+	 * @memberOf Core
+	 */
+	execAfter(name: string, fn?: ICallbackResult): void {
+		this.execEvents(name, this._afterEvents, fn);
+	}
 
-/**
- * Boom event signature interface.
- *
- * @export
- * @interface IBoomEvent
- */
-export interface IBoomEvent {
-	(message?: string, data?: any): BoomError;
-}
+	/**
+	 * Executes lifecyle events for
+	 * a known Facile event.
+	 *
+	 * @example
+	 *
+	 * In the example below each "before"
+	 * event funciton is called in series
+	 * until completed. Calling the callback
+	 * is required in each lifecycle event.
+	 *
+	 * facile.before('init:server', (done) => {
+	 *
+	 * 		// do something before server init.
+	 * 		// call done when finished.
+	 * 		done();
+	 *
+	 * 		// If there's an error pass to
+	 * 		// done method and it will be logged.
+	 * 		// done(err);
+	 *
+	 * 		// To exit simply return the callback.
+	 * 		// return done();
+	 *
+	 * });
+	 *
+	 * @member execEvents
+	 * @param {string} name
+	 * @param {string} type
+	 * @param {ICallback} [fn]
+	 *
+	 * @memberOf Core
+	 */
+	execEvents(name: string, type: any, fn?: ICallbackResult): void {
 
-/**
- * Interface used to extend framework with
- * standard Boom error events.
- *
- * @export
- * @interface IBoom
- */
-export interface IBoom {
-	wrap: IBoomWrap;
-	create: IBoomCreate;
-	badRequest: IBoomEvent;
-	unauthorized: IBoomEvent;
-	forbidden: IBoomEvent;
-	notFound: IBoomEvent;
-	notImplemented: IBoomEvent;
-	badGateway: IBoomEvent;
-}
+		// Get the events collection.
+		let events = type[name];
 
-/**
- * Router Interface Map.
- *
- * @export
- * @interface IRouters
- */
-export interface IRouters {
-	[name: string]: Router;
-}
+		// Execute events in series.
+		asyncSeries(events, (err) => {
+			if (err)
+				this.logger.error(err.message || 'Unknown error', err);
+			fn();
+		});
 
-/**
- * Route Interface.
- *
- * @export
- * @interface IRoute
- */
-export interface IRoute {
-	method?: string | Array&lt;string>;
-	url?: string | Array&lt;string>;
-	handler?: IRequestHandler;
-	filters?: IRequestHandler | Array&lt;IRequestHandler>;
-	view?: string;
-	redirect?: string;
-	router?: string;
-	valid?: boolean;
-}
+	}
 
-/**
- * Interface for Routes by Map.
- *
- * @export
- * @interface IRoutesMap
- */
-export interface IRoutesMap {
-	[url: string]: IRequestHandler | Array&lt;IRequestHandler> | string | IRoute;
-}
-
-/**
- * Filter Interface.
- *
- * @export
- * @interface IFilter
- */
-export interface IFilter {
-	//
-}
-
-/**
- * Map of Filters.
- *
- * @export
- * @interface IFilters
- */
-export interface IFilters {
-	[name: string]: IFilter;
-}
-
-/**
- * Service Interface
- *
- * @export
- * @interface IService
- */
-export interface IService {
-
-}
-
-/**
- * Map of Services
- *
- * @export
- * @interface IServices
- */
-export interface IServices {
-	[name: string]: IService;
-}
-
-/**
- * Model interface.
- *
- * @export
- * @interface IModel
- */
-export interface IModel {
-
-}
-
-/**
- * Map of IModels.
- *
- * @export
- * @interface IModels
- */
-export interface IModels {
-	[name: string]: IModel;
-}
-
-/**
- * Controller Interface.
- *
- * @export
- * @interface IController
- */
-export interface IController {
-
-}
-
-/**
- * Map of Controllers.
- *
- * @export
- * @interface IControllers
- */
-export interface IControllers {
-	[name: string]: IController;
-}
-</pre>
+}</pre>
         </article>
     </section>
 

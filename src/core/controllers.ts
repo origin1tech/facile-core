@@ -3,34 +3,34 @@ import { IFacile, IInit } from '../interfaces';
 /**
  * Initializes Controllers
  *
- * @method
  * @export
+ * @param {Function} [fn]
  * @returns {IFacile}
  */
-export function init(): IInit {
-
-	let that: IFacile = this;
+export function init(fn?: Function): IInit {
 
 	function handleControllers() {
 
-		that.logger.debug('Initializing Controllers');
+		this.logger.debug('Initializing Controllers');
 
 		// Init code here.
 
-		if (that._config.auto)
-			that.execAfter('init:controllers', () => {
-				that.emit('init:routes');
+		if (this._config.auto)
+			this.execAfter('init:controllers', () => {
+				this.emit('init:routes');
 			});
+		else if (fn)
+			fn();
 		else
-			return that.init();
+			return this._inits;
 
 	}
 
-	if (that._config.auto)
-		that.execBefore('init:controllers', () => {
-			handleControllers();
+	if (this._config.auto)
+		this.execBefore('init:controllers', () => {
+			handleControllers.call(this);
 		});
 	else
-		return handleControllers();
+		return handleControllers.call(this);
 
 }

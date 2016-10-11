@@ -4,32 +4,33 @@ import { IFacile, IInit } from '../interfaces';
  * Initializes Models
  *
  * @export
+ * @param {Function} [fn]
  * @returns {IFacile}
  */
-export function init(): IInit {
-
-	let that: IFacile = this;
+export function init(fn?: Function): IInit {
 
 	function handleModels() {
 
-		that.logger.debug('Initializing Models');
+		this.logger.debug('Initializing Models');
 
 		// Init code here.
 
-		if (that._config.auto)
-			that.execAfter('init:models', () => {
-				that.emit('init:controllers');
+		if (this._config.auto)
+			this.execAfter('init:models', () => {
+				this.emit('init:controllers');
 			});
+		else if (fn)
+			fn();
 		else
-			return that.init();
+			return this._inits;
 
 	}
 
-	if (that._config.auto)
-		that.execBefore('init:models', () => {
-			handleModels();
+	if (this._config.auto)
+		this.execBefore('init:models', () => {
+			handleModels.call(this);
 		});
 	else
-		return handleModels();
+		return handleModels.call(this);
 
 }

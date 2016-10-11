@@ -4,11 +4,13 @@ import * as vscode from 'vscode';
 import { resolve, join } from 'path';
 import * as express from 'express';
 import * as Boom from 'boom';
+import { series as asyncSeries } from 'async';
 import { LoggerInstance, Logger, transports, TransportInstance } from 'winston';
 import { wrap, create, badRequest, unauthorized, forbidden, notFound, notImplemented } from 'boom';
 import { Server, Socket } from 'net';
 import { readFileSync } from 'fs';
-import { extend as _extend, isPlainObject, each, isFunction, isString, maxBy, has, isBoolean } from 'lodash';
+import { extend as _extend, isPlainObject, each, isFunction,
+				isString, maxBy, has, isBoolean, bind } from 'lodash';
 import { red, cyan } from 'chalk';
 
 // Internal Dependencies.
@@ -83,6 +85,7 @@ export class Facile extends Core implements IFacile {
 			level: 'info',
 			transports: [
 				new (transports.Console)({
+					colorize: true,
 					prettyPrint: true,
 					handleExceptions: true,
 					humanReadableUnhandledException: true
@@ -97,6 +100,8 @@ export class Facile extends Core implements IFacile {
 		// Create Express app.
 		this.express = express;
 		this.app = express();
+		this._initialized = false;
+		this._started = false;
 
 		// Set the instance.
 		Facile.instance = this;
@@ -163,15 +168,9 @@ export class Facile extends Core implements IFacile {
 		// Ensure config auto has value.
 		this._config.auto = this._config.auto !== false ? true : false;
 
-		// If auto enable event listeners.
-		if (this._config.auto) {
-			this.enableEvents();
-			this.execAfter('core:configure', () => {
-				this.emit('init');
-			});
-		}
-		else
-			return this;
+		this._configured = true;
+
+		return this;
 
 	}
 
@@ -184,11 +183,17 @@ export class Facile extends Core implements IFacile {
 	 */
 	init(): IInit {
 
-		let self = this;
+		let that: IFacile = this;
 
 		// Ensure configuration.
 		if (!this._config) {
-			this.logger.warn('Failed to initialize please run facile.configure() first...exiting.');
+			this.logger.warn('Failed to initialize please run facile.configure()...exiting.');
+			process.exit();
+		}
+
+		if (this._config.auto && !this._autoInit) {
+			console.log('');
+			this.logger.error('Facile config set to "auto" but attempted to init manually.');
 			process.exit();
 		}
 
@@ -201,13 +206,15 @@ export class Facile extends Core implements IFacile {
 		 * @returns {IInit}
 		 * @memberOf Facile
 		 */
-		function run(): IInit {
-			if (self._config.auto)
-				self.execBefore('init', () => {
-					self.emit('init:server');
-				});
-			else
-				return inits;
+		function run(): void {
+
+			if (!this._config.auto)
+				throw new Error('The method init().run() cannot be called manually use { auto: true } in your configuration.');
+
+			this.execBefore('init', () => {
+				this.emit('init:server');
+			});
+
 		}
 
 		/**
@@ -219,43 +226,82 @@ export class Facile extends Core implements IFacile {
 		 * @returns {IFacile}
 		 * @memberOf Facile
 		 */
-		function done(): IFacile {
-			if (self._config.auto)
-				self.execAfter('init', () => {
-					self.emit('core:start');
-				});
-			else
-				return self;
-		}
+		function done(): Facile {
 
-		/**
-		 * Used internally to trigger
-		 * all initialization events.
-		 *
-		 * @private
-		 * @member all
-		 * @returns {IFacile}
-		 * @memberOf Facile
-		 */
-		function all(): IFacile {
-			return done();
+			this.logger.debug('Facile initialization complete.');
+
+			this._initialized = true;
+
+			if (this._config.auto) {
+
+				this.execAfter('init', () => {
+					this.emit('core:start');
+				});
+
+			}
+
+			else {
+
+				return this;
+
+			}
+
 		}
 
 		let inits: IInit = {
 
-			run: 					run.bind(this),
-			server: 			server.init.bind(this),
-			services: 		services.init.bind(this),
-			filters: 			filters.init.bind(this),
-			models: 			models.init.bind(this),
-			controllers: 	controllers.init.bind(this),
-			routes: 			routes.init.bind(this),
-			all: 					all.bind(this),
-			done: 				done.bind(this)
+			run: 					run.bind(that),
+			server: 			server.init.bind(that),
+			services: 		services.init.bind(that),
+			filters: 			filters.init.bind(that),
+			models: 			models.init.bind(that),
+			controllers: 	controllers.init.bind(that),
+			routes: 			routes.init.bind(that),
+			done: 				done.bind(that)
 
 		};
 
-		return run();
+		return inits;
+
+	}
+
+	/**
+	 * Initializies all registered components
+	 * in series using async.series.
+	 *
+	 * @member initAll
+	 * @returns {Facile}
+	 * @memberOf Facile
+	 */
+	initAll(): Facile {
+
+		let inits = this.init();
+
+		let _server = 	bind(server.init, this) as Function;
+
+		let series = [
+			_server
+			// bind(services.init, this),
+			// bind(filters.init, this),
+			// bind(models.init, this),,
+			// bind(controllers.init, this),
+			// bind(routes.init, this),
+		];
+
+		// Iterate series of all initializations.
+		asyncSeries(series, (err) => {
+
+			if (err)
+				this.logger.error(err.message || 'Unknown error', err);
+
+			this._initialized = true;
+
+		});
+
+		// Don't wait for series
+		// return for chaining we'll
+		// ensure done before start.
+		return this;
 
 	}
 
@@ -264,7 +310,6 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * Events
 	 *
-	 * core:configure
 	 * init
 	 * init:server
 	 * init:services
@@ -279,7 +324,7 @@ export class Facile extends Core implements IFacile {
 	 * @returns {Facile}
 	 * @memberOf Facile
 	 */
-	enableEvents(): Facile {
+	enableListeners(): Facile {
 
 		let init = this.init();
 
@@ -296,6 +341,8 @@ export class Facile extends Core implements IFacile {
 		this.on('init:controllers', init.controllers);
 
 		this.on('init:routes', init.routes);
+
+		this.on('init:done', init.done);
 
 		this.on('core:start', this.start);
 
@@ -318,7 +365,12 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	listen(): Facile {
+	listen(): void {
+
+		if (!this._started) {
+			this.logger.error('Facile.listen() cannot be called directly please use .start().');
+			process.exit();
+		}
 
 		// Listen for connections.
 		this.logger.debug('Server preparing to listen.');
@@ -327,8 +379,6 @@ export class Facile extends Core implements IFacile {
 			if (err)
 				throw err;
 		});
-
-		return this;
 
 	}
 
@@ -342,73 +392,131 @@ export class Facile extends Core implements IFacile {
 	 */
 	start(config?: string | IConfig | Function, fn?: Function): Facile {
 
-		let that: Facile = this;
-
 		// Allow callback as first argument.
 		if (isFunction(config)) {
 			fn = config;
 			config = undefined;
 		}
 
-		// Can't start without a config.
-		if (!this._config) {
+		/////////////////////////////
+		// Wait/Start Facile
+		/////////////////////////////
 
-			// If no _config and no config throw error.
-			if (!config)
-				throw new Error('Attempted to start but not configured or no config was supplied.');
-
-			let _config: IConfig = config;
-
-			// If Auto return the config as
-			// auto events listeners will fire
-			// start.
-			if (_config.auto !== false)
-				return this.configure(config);
-
-			// Otherwise just configure.
-			this.configure(config);
-
-		}
-
-		function handleStart(): Facile {
-
-			that.logger.debug('Starting server preparing for connections.');
+		function handleStart(): void {
 
 			// On listening Handle Callback.
-			that.server.on('listening', () => {
+			this.server.on('listening', () => {
 
-				let address = that.server.address(),
+				let address = this.server.address(),
 						addy = address.address,
 						port = address.port;
 
-				console.log(cyan('\nServer listening at: http://' + addy + ':' + port));
+				if (this._config.auto)
+					this.execAfter('core:listen');
 
 				// Call if callack function provided.
-				if (fn) {
-					that.logger.debug('Exec callback on server start/listening.');
-					fn(that);
-				}
+				if (fn)
+					fn(this);
 
-				if (that._config.auto)
-					that.execAfter('core:listen');
+				console.log(cyan('\nServer listening at: http://' + addy + ':' + port));
 
 			});
 
-			if (that._config.auto)
-				that.execAfter('core:start', () => {
-					that.listen();
+			if (this._config.auto) {
+				this.execAfter('core:start', () => {
+					this._started = true;
+					this.emit('core:listen');
 				});
-			else
-				return that.listen();
+			}
+			else {
+				this._started = true;
+				this.listen();
+			}
 
 		}
 
-		if (this._config.auto)
-			this.execBefore('core:start', () => {
-				handleStart();
-			});
-		else
-			return handleStart();
+		let waitId;
+
+		/**
+		 * Waits to start server until initialized.
+		 * This is only used when "auto" is NOT set
+		 * to true in your config.
+		 */
+		function handleWaitStart(): void {
+			if (!this._initialized) {
+				waitId = setTimeout(handleWaitStart.bind(this), 10);
+			}
+			else {
+				clearTimeout(waitId);
+				handleStart.call(this);
+			}
+		}
+
+		/////////////////////////////
+		// Ensure Configuration
+		/////////////////////////////
+
+		if (!this._configured)
+			this.configure(config);
+
+		// Can't continue without configuration.
+		// Should never hit but just in case.
+		if (!this._config) {
+			console.log('');
+			this.logger.error('Failed to start Facile missing or invalid configuration.');
+			process.exit();
+		}
+
+		/////////////////////////////
+		// Manual or Auto Init
+		/////////////////////////////
+
+		if (this._config.auto) {
+
+			this.logger.debug('Auto configuration detected.');
+
+			// Initialize first which will round
+			// trip and call start again falling
+			// through to the execution below.
+			if (!this._initialized) {
+
+				// ensures manual init is not called while auto is set.
+				this._autoInit = true;
+
+				this.enableListeners();
+				this.init().run();
+
+			}
+
+			// Facile now initalized can now start.
+			else {
+
+				this.execBefore('core:start', () => {
+					handleStart.call(this);
+				});
+
+				return this;
+
+			}
+
+		}
+		else {
+
+			// When starting manually must have
+			// called configure and init manually
+			// before starting.
+			if (!this._initialized) {
+				console.log('');
+				this.logger.error('Facile failed to start call facile.init() before starting.');
+				process.exit();
+			}
+
+			handleWaitStart.call(this);
+
+			// Don't wait just return.
+			return this;
+
+		}
 
 	}
 
@@ -754,8 +862,9 @@ export class Facile extends Core implements IFacile {
 	}
 
 	/**
-	 * Wrapper for utils extend.
+	 * Convenience wrapper for lodash extend.
 	 *
+	 * @member extend
 	 * @param {...any[]} args
 	 * @returns {*}
 	 *
@@ -763,6 +872,31 @@ export class Facile extends Core implements IFacile {
 	 */
 	extend(...args: any[]): any {
 		return _extend.apply(null, args);
+	}
+
+	/**
+	 * Extends configuration files.
+	 *
+	 * @member extendConfig
+	 * @param {...any[]} configs
+	 * @returns {IConfig}
+	 *
+	 * @memberOf Facile
+	 */
+	extendConfig(...configs: any[]): IConfig {
+
+		let arr: IConfig[] = [];
+
+		configs.forEach((c) => {
+			if (isString(c))
+				c = this._configs[c];
+			arr.push(c);
+		});
+
+		arr.unshift({});
+
+		return _extend.apply(null, arr);
+
 	}
 
 }

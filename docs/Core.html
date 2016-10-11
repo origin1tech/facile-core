@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
-	<title>Facile Core Source: interfaces/index.ts</title>
+	<title>Facile Core Class: Core</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -331,418 +331,566 @@
 					
 
 
-		<h1 class="page-title">Source: interfaces/index.ts</h1>
+	<h1 class="page-title">
+        Class:
+        Core
+        
+    </h1>
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="sunlight-highlight-javascript ">import { EventEmitter }from 'events';
-import { Router, RequestHandler,
-				NextFunction, ErrorRequestHandler,
-				Request, Response, Express } from 'express';
-import { Socket, Server } from 'net';
-import { BoomError, Output } from 'boom';
-import { LoggerInstance } from 'winston';
+</header>
+
+<article>
+    <div class="container-overview">
+    
+
+    
+        
+<dt>
+    <a name="Core"></a>
+
+    <h4 class="name" id="Core"><span class="btn btn-mini btn btn-danger">C</span> new Core(  ) &rarr; {void}
+
+    
+
+    <a href="core_core.ts.html"><div style="font-weight:lighter; float:right;" class="btn sourceBar"><i class="icon-eye-open"></i></div></a>
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>Facile Core</p>
+    </div>
+    
 
 
-// Re-export Interfaces for Convenience.
-export interface IRequestHandler extends RequestHandler {}
-export interface INextFunction extends NextFunction {}
-export interface IErrorRequestHandler extends ErrorRequestHandler {}
-export interface IRequest extends Request {}
-export interface IResponse extends Response {}
-export interface IBoomError extends BoomError {}
-export interface IBoomOutput extends Output  {}
 
-export interface IUtils {
-	extend(...args: any[]): any;
-	extendMap(key: any, val: any, obj?: any): void;
-	initMap(Type: any, obj: any, instance?: any): void;
-	maxIn(obj: any, key: string): number;
-	hasIn(obj: any, key: any, val: any): boolean;
-	parseRoute(url: string, handler: IRequestHandler | Array&lt;IRequestHandler> | string | IRoute): IRoute;
-	validateRoute(route: IRoute): IRoute;
-	noop(): void;
-	truncate(str: string, length: number, omission: string): string;
-}
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
 
-export interface IInit {
-	run(): IInit;
-	server(): IInit;
-	services(): IInit;
-	filters(): IInit;
-	models(): IInit;
-	controllers(): IInit;
-	routes(): IInit;
-	all(): IFacile;
-	done(): IFacile;
-}
+    
 
-export interface IListenersMap {
-	[name: string]: { before: boolean, after: boolean };
-}
+    
 
-export interface ICore extends EventEmitter {
+    
 
-	Boom: IBoom;
-	express: any;
-	app: Express;
-	server: Server;
-	logger: LoggerInstance;
-	_pkg: any;
-	_config: IConfig;
-	_configs: IConfigs;
-	_listeners: IListenersMap;
-	_beforeEvents: any;
-	_afterEvents: any;
-	before(name: string, event: ICallback): ICore;
-	after(name: string, event: ICallback): ICore;
-	hasBefore(name: string): boolean;
-	hasAfter(name: string): boolean;
-	execBefore(name: string, fn?: ICallbackResult): void;
-	execAfter(name: string, fn?: ICallbackResult): void;
-	execEvents(name: string, type: string, fn?: ICallbackResult): void;
+    
 
-}
+    
 
-export interface IFacile extends ICore {
+    
 
-	_routers: IRouters;
-	_routes: Array&lt;IRoute>;
+    
 
-	_nextSocketId: number;
-	_sockets: ISockets;
+    
 
-	_services: IServices;
-	_middlewares: IMiddlewares;
-	_filters: IFilters;
-	_models: IModels;
-	_controllers: IControllers;
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_core.ts.html">core/core.ts</a></dt>
+    -->
 
-	configure(config?: string | IConfig): IFacile;
-	init(): IInit;
-	enableEvents(): IFacile;
-	listen(): IFacile;
-	start(config?: string | IConfig | Function, fn?: Function): IFacile;
-	stop(msg?: string, code?: number): void;
+    
 
-	addConfig(name: string, config: IConfig): IFacile;
-	addRouter(name: string, router?: Router): Router;
-	addMiddleware(name: string, fn?: any, order?: number): IFacile;
-	addService(Service: IService | Array&lt;IService>): IFacile;
-	addFilter(Filter: IFilter | Array&lt;IFilter>): IFacile;
-	addModel(Model: IModel | Array&lt;IModel>): IFacile;
-	addController(Controller: IController | Array&lt;IController>): IFacile;
-	addService(Service: IService | Array&lt;IService>, instance?: boolean): IFacile;
-	addRoute(method: string | string[] | IRoutesMap | IRoute[],
-					url?: string,
-					handler?: IRequestHandler,
-					filters?: IRequestHandler | IRequestHandler[],
-					router?: string): IFacile;
+    
 
-	config(name: string): IConfig;
-	filter(name: string): IFilter;
-	service(name: string): IService;
-	model(name: string): IModel;
-	controller(name: string): IController;
-	extend(...args: any[]): any;
-	extendConfig(...configs: any[]): IConfig;
+    
+</dl>
 
-}
+    
+    
 
-/**
- * SSL Certificate Interface.
- *
- * @export
- * @interface ICertificate
- */
-export interface ICertificate {
-	key: string;
-	cert: string;
-}
+    
 
-/**
- * Node style callback.
- * @todo should probably support promise also.
- *
- * @export
- * @interface ICallback
- */
-export interface ICallbackResult {
-	(err?: string | Error, data?: any): void;
-}
+    
+    
+    
+    
+    
+    
+    
+</dd>
 
-export interface ICallback {
-	(done: ICallbackResult): void;
-}
+ 
+    
+    </div>
 
-/**
- * Name and renderer for views.
- * @todo create custon interface
- * for renderer. consolidate should
- * but does not export the interface
- * in typings.
- *
- * @export
- * @interface IViewEngine
- */
-export interface IViewEngine {
-	name: string;
-	renderer: string | Function;
-}
+   
+    <h3 class="subsection-title">Implements:</h3>
+    <ul>
+        <li>{IEvents}</li>
+    </ul>    
 
-/**
- * Express View Settings
- *
- * @export
- * @interface IExpressViews
- */
-export interface IViewConfig {
-	layout?: string;
-	engine?: IViewEngine;
-	'view engine'?: string;
-	views?: string | string[] | boolean;
-}
+    
 
-/**
- * Server Configuration.
- *
- * @export
- * @interface IConfig
- */
-export interface IConfig {
-	cwd?: string;
-	pkg?: any;
-	host?: string;
-	port?: number;
-	certificate?: ICertificate | true;
-	maxConnections?: number;
-	env?: string;
-	logger?: LoggerInstance;
-	logLevel?: 'error' | 'warn' | 'info' | 'debug';
-	views?: IViewConfig;
-	database?: any;
-	auto?: boolean;
-}
+    
+        <h3 class="subsection-title">Extends</h3>
 
-/**
- * Map of Configs.
- *
- * @export
- * @interface IConfigs
- */
-export interface IConfigs {
-	[name: string]: IConfig;
-}
+        <ul>
+            <li>EventEmitter</li>
+        </ul>
+    
 
-/**
- * Interface for configuration flags.
- *
- * @export
- * @interface IFlags
- */
-export interface IFlags {
-	[name: string]: any;
-}
+    
 
-/**
- * Map containing socket connections.
- *
- * @export
- * @interface ISockets
- */
-export interface ISockets {
-	[id: number]: Socket;
-}
+    
 
-/**
- * Map of app middleware.
- *
- * @export
- * @interface IMiddleware
- */
-export interface IMiddleware {
-	fn: any;
-	order?: number;
-}
+    
 
-/**
- * Map of middleware.
- *
- * @export
- * @interface IMiddlewares
- */
-export interface IMiddlewares {
-	[name: string]: IMiddleware;
-}
 
-/**
- * Boom wrap event signature interface.
- *
- * @export
- * @interface IBoomWrap
- */
-export interface IBoomWrap {
-	(error: Error, statusCode?: number, message?: string): BoomError;
-}
+    
 
-/**
- * Boom create signature interface.
- *
- * @export
- * @interface IBoomCreate
- */
-export interface IBoomCreate {
-	(statusCode: number, message?: string, data?: any): BoomError;
-}
+    
 
-/**
- * Boom event signature interface.
- *
- * @export
- * @interface IBoomEvent
- */
-export interface IBoomEvent {
-	(message?: string, data?: any): BoomError;
-}
+    
+        <h3 class="subsection-title">Properties</h3>
 
-/**
- * Interface used to extend framework with
- * standard Boom error events.
- *
- * @export
- * @interface IBoom
- */
-export interface IBoom {
-	wrap: IBoomWrap;
-	create: IBoomCreate;
-	badRequest: IBoomEvent;
-	unauthorized: IBoomEvent;
-	forbidden: IBoomEvent;
-	notFound: IBoomEvent;
-	notImplemented: IBoomEvent;
-	badGateway: IBoomEvent;
-}
+        <dl>
+            
+<dt>
+    <a name=".after"></a><h4 class="name" id=".after"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">P</span> after<span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>Adds after event listener<br>to known Facile event.</p>
+    </div>
+    
+    
+    
 
-/**
- * Router Interface Map.
- *
- * @export
- * @interface IRouters
- */
-export interface IRouters {
-	[name: string]: Router;
-}
+    
+<dl class="details">
+    
 
-/**
- * Route Interface.
- *
- * @export
- * @interface IRoute
- */
-export interface IRoute {
-	method?: string | Array&lt;string>;
-	url?: string | Array&lt;string>;
-	handler?: IRequestHandler;
-	filters?: IRequestHandler | Array&lt;IRequestHandler>;
-	view?: string;
-	redirect?: string;
-	router?: string;
-	valid?: boolean;
-}
+    
 
-/**
- * Interface for Routes by Map.
- *
- * @export
- * @interface IRoutesMap
- */
-export interface IRoutesMap {
-	[url: string]: IRequestHandler | Array&lt;IRequestHandler> | string | IRoute;
-}
+    
 
-/**
- * Filter Interface.
- *
- * @export
- * @interface IFilter
- */
-export interface IFilter {
-	//
-}
+    
 
-/**
- * Map of Filters.
- *
- * @export
- * @interface IFilters
- */
-export interface IFilters {
-	[name: string]: IFilter;
-}
+    
 
-/**
- * Service Interface
- *
- * @export
- * @interface IService
- */
-export interface IService {
+    
 
-}
+    
 
-/**
- * Map of Services
- *
- * @export
- * @interface IServices
- */
-export interface IServices {
-	[name: string]: IService;
-}
+    
 
-/**
- * Model interface.
- *
- * @export
- * @interface IModel
- */
-export interface IModel {
+    
 
-}
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_core.ts.html">core/core.ts</a></dt>
+    -->
 
-/**
- * Map of IModels.
- *
- * @export
- * @interface IModels
- */
-export interface IModels {
-	[name: string]: IModel;
-}
+    
 
-/**
- * Controller Interface.
- *
- * @export
- * @interface IController
- */
-export interface IController {
+    
 
-}
+    
+</dl>
 
-/**
- * Map of Controllers.
- *
- * @export
- * @interface IControllers
- */
-export interface IControllers {
-	[name: string]: IController;
-}
-</pre>
-        </article>
-    </section>
+    
+    
+</dd>
 
+        
+            
+<dt>
+    <a name=".before"></a><h4 class="name" id=".before"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">P</span> before<span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>Adds before event listener<br>to known Facile event.</p>
+    </div>
+    
+    
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_core.ts.html">core/core.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <a name=".execAfter"></a><h4 class="name" id=".execAfter"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">P</span> execAfter<span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>Executes after event listeners.</p>
+    </div>
+    
+    
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_core.ts.html">core/core.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <a name=".execBefore"></a><h4 class="name" id=".execBefore"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">P</span> execBefore<span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>Executes before event listeners.</p>
+    </div>
+    
+    
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_core.ts.html">core/core.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <a name=".execEvents"></a><h4 class="name" id=".execEvents"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">P</span> execEvents<span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>Executes lifecyle events for<br>a known Facile event.</p>
+    </div>
+    
+    
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_core.ts.html">core/core.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+        <h5>Example</h5>
+        
+    <pre class="sunlight-highlight-javascript">In the example below each "before"
+event funciton is called in series
+until completed. Calling the callback
+is required in each lifecycle event.
+
+facile.before('init:server', (done) => {
+
+		// do something before server init.
+		// call done when finished.
+		done();
+
+		// If there's an error pass to
+		// done method and it will be logged.
+		// done(err);
+
+		// To exit simply return the callback.
+		// return done();
+
+});</pre>
+
+
+    
+</dd>
+
+        
+            
+<dt>
+    <a name=".hasAfter"></a><h4 class="name" id=".hasAfter"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">P</span> hasAfter<span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>Checks if after listeners exist for event.</p>
+    </div>
+    
+    
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_core.ts.html">core/core.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+</dd>
+
+        
+            
+<dt>
+    <a name=".hasBefore"></a><h4 class="name" id=".hasBefore"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">P</span> hasBefore<span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>Checks if before listeners exist for event.</p>
+    </div>
+    
+    
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_core.ts.html">core/core.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+</dd>
+
+        </dl>
+    
+
+    
+
+    
+
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_core.ts.html">core/core.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+</article>
+
+</section>
 
 
 
@@ -768,6 +916,10 @@ export interface IControllers {
 				</footer>
 			</div>
 			<!--
+			
+			<div class="span3">
+				<div id="toc"></div>
+			</div>
 			
 			-->
 			<br clear="both">

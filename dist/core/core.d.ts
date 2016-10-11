@@ -3,7 +3,7 @@ import { LoggerInstance } from 'winston';
 import { Express } from 'express';
 import { Server } from 'net';
 import { EventEmitter } from 'events';
-import { ICore, ICallbackResult, ICallback, IConfig, IConfigs, IListenersMap, IBoom } from '../interfaces';
+import { ICore, ICallbackResult, ICallback, IConfig, IConfigs, IListenersMap, IBoom, IInit } from '../interfaces';
 /**
  * Facile Core
  *
@@ -21,9 +21,14 @@ export declare class Core extends EventEmitter implements ICore {
     _pkg: any;
     _config: IConfig;
     _configs: IConfigs;
+    _inits: IInit;
     _listeners: IListenersMap;
-    beforeEvents: any;
-    afterEvents: any;
+    _beforeEvents: any;
+    _afterEvents: any;
+    _configured: boolean;
+    _initialized: boolean;
+    _started: boolean;
+    _autoInit: boolean;
     /**
      * Creates an instance of Core.
      *

@@ -4,32 +4,34 @@ import { IFacile, IInit } from '../interfaces';
  * Initializes Services
  *
  * @export
+ * @param {Function} [fn]
  * @returns {IFacile}
  */
-export function init(): IInit {
-
-	let that: IFacile = this;
+export function init(fn?: Function): IInit {
 
 	function handleServices() {
 
-		that.logger.debug('Initializing Services');
+		this.logger.debug('Initializing Services');
 
 		// Init code here.
 
-		if (that._config.auto)
-			that.execAfter('init:services', () => {
-				that.emit('init:filters');
+		if (this._config.auto)
+			this.execAfter('init:services', () => {
+				this.emit('init:filters');
 			});
+		else if (fn)
+			fn();
 		else
-			return that.init();
+			return this._inits;
+
 
 	}
 
-	if (that._config.auto)
-		that.execBefore('init:services', () => {
-			handleServices();
+	if (this._config.auto)
+		this.execBefore('init:services', () => {
+			handleServices.call(this);
 		});
 	else
-		return handleServices();
+		return handleServices.call(this);
 
 }

@@ -281,13 +281,34 @@
 				
 				
 					    <li id="navTitle_Classes" class="nav-header navTitle">
-                            <a class="handCursor" data-toggle="collapse" data-id="T_Classes" data-target="#collapse_Classes">Classes<span class="badge badge-info pull-right">5</span></a>
+                            <a class="handCursor" data-toggle="collapse" data-id="T_Classes" data-target="#collapse_Classes">Classes<span class="badge badge-info pull-right">6</span></a>
                         </li>
                         <li id="navContents_Classes">
                             <div id="collapse_Classes" class="collapse">
                                 <ul class="nav nav-list" style="width:100%;margin-left:-8px;">
-                                    <li><a href="Controller.html">Controller</a></li><li><a href="Facile.html">Facile</a></li><li><a href="Filter.html">Filter</a></li><li><a href="Model.html">Model</a></li><li><a href="Service.html">Service</a></li>
+                                    <li><a href="Controller.html">Controller</a></li><li><a href="Core.html">Core</a></li><li><a href="Facile.html">Facile</a></li><li><a href="Filter.html">Filter</a></li><li><a href="Model.html">Model</a></li><li><a href="Service.html">Service</a></li>
                             
+                                    </ul>
+                                </div>
+                            </li>
+                        
+					    <li id="navTitle_Global" class="nav-header navTitle">
+                            <a class="handCursor" data-toggle="collapse" data-id="T_Global" data-target="#collapse_Global">Global<span class="badge badge-info pull-right">1</span></a>
+                        </li>
+                        <li id="navContents_Global">
+                            <div id="collapse_Global" class="collapse">
+                                <ul class="nav nav-list" style="width:100%;margin-left:-8px;">
+                                    
+                                        <?j
+                                    <li>
+                                        
+                                        
+                                        	<a href="global.html#utils">utils</a>
+                                        
+                                    </li>
+                                    
+                             <li class="divider"></li>
+                        
                                     </ul>
                                 </div>
                             </li>
@@ -297,7 +318,7 @@
 		</div>
 
 		<script>
-			var searchMembers = [{"realName":"Controller","link":"Controller"},{"realName":"Facile","link":"Facile"},{"realName":"Filter","link":"Filter"},{"realName":"Model","link":"Model"},{"realName":"Service","link":"Service"}];
+			var searchMembers = [{"realName":"Controller","link":"Controller"},{"realName":"Core","link":"Core"},{"realName":"Facile","link":"Facile"},{"realName":"Filter","link":"Filter"},{"realName":"Model","link":"Model"},{"realName":"Service","link":"Service"}];
 		</script>
     </aside>
 	</div>
@@ -322,21 +343,19 @@ import * as express from 'express';
 import * as Boom from 'boom';
 import { LoggerInstance, Logger, transports, TransportInstance } from 'winston';
 import { wrap, create, badRequest, unauthorized, forbidden, notFound, notImplemented } from 'boom';
-import { createServer } from 'http';
-import { createServer as createServerHttps } from 'https';
 import { Server, Socket } from 'net';
 import { readFileSync } from 'fs';
-import { extend, isPlainObject, each, isFunction, isString, maxBy, has, isBoolean } from 'lodash';
+import { extend as _extend, isPlainObject, each, isFunction, isString, maxBy, has, isBoolean } from 'lodash';
 import { red, cyan } from 'chalk';
 
 // Internal Dependencies.
 import * as utils from './utils';
-import { Events } from './events';
+import { Core } from './core';
 import * as defaults from './defaults';
-import { IFacile, ICertificate, IConfig, IRouters, IRoute, IBoom, ICallback, IFilter,
+import { IFacile, ICertificate, IConfig, IRouters, IRoute, IBoom, ICallbackResult, IFilter,
 				IMiddleware, IMiddlewares, ISockets, IModels, IControllers, IModel, IController,
 				IUtils, IFilters, IConfigs, IRequestHandler, IRoutesMap, IService, IServices,
-				IViewConfig, IInit } from '../interfaces';
+				IViewConfig, IInit, ICallback } from '../interfaces';
 
 import * as server from './server';
 import * as services from './services';
@@ -353,10 +372,10 @@ let packages = defaults.packages;
  *
  * @export
  * @class Facile
- * @extends {events.EventEmitter}
+ * @extends {Events}
  * @implements {IFacile}
  */
-export class Facile extends Events implements IFacile {
+export class Facile extends Core implements IFacile {
 
 	/**
 	 * Singleton instance of Facile
@@ -367,27 +386,11 @@ export class Facile extends Events implements IFacile {
 	 */
 	static instance: Facile;
 
-	/**
-	 * Exposes Boom to Facile
-	 * @member {IBoom} Facile.publicProperty
-	 * @memberOf Facile
-	 */
-	Boom: IBoom;
-
-	app: express.Express;
-	server: Server;
-	logger: LoggerInstance;
-
-	_auto: boolean = false;
-	_pkg: any;
-	_config: IConfig;
-	_configs: IConfigs = {};
-
 	_routers: IRouters = {};
 	_routes: Array&lt;IRoute>;
 
 	_nextSocketId: number = 0;
-	_sockets: ISockets;
+	_sockets: ISockets = {};
 
 	_services: IServices = {};
 	_middlewares: IMiddlewares = {};
@@ -429,6 +432,7 @@ export class Facile extends Events implements IFacile {
 		this.logger = defaultLogger;
 
 		// Create Express app.
+		this.express = express;
 		this.app = express();
 
 		// Set the instance.
@@ -442,19 +446,14 @@ export class Facile extends Events implements IFacile {
 	// CONFIGURE &amp; MANAGE SERVER
 	///////////////////////////////////////////////////
 
-	/**
-	 * Configures Facile
-	 * optionally provide boolean to
-	 * auto load and start.
+  /**
+   * Configure
 	 *
-	 * @method configure
-	 * @param {(IConfig | boolean)} [config]
-	 * @param {(boolean | ICallback)} [autoStart]
-	 * @param {ICallback} [fn]
-	 * @returns {(Facile | void)}
-	 *
-	 * @memberOf Facile
-	 */
+   * @method configure
+   * @param {(string | IConfig)} [config]
+   * @returns {Facile}
+   * @memberOf Facile
+   */
 	configure(config?: string | IConfig): Facile {
 
 		// Check if configuration is string.
@@ -463,7 +462,7 @@ export class Facile extends Events implements IFacile {
 			config = this.config(config);
 
 		// Extend options with defaults.
-		this._config = extend({}, defaults.config, config);
+		this._config = _extend({}, defaults.config, config);
 
 		// Setup the Logger.
 		if (this._config.logger)
@@ -498,52 +497,90 @@ export class Facile extends Events implements IFacile {
 		// Set Node environment.
 		process.env.NODE_ENV = this._config.env;
 
-		// Check for auto init hooks/listeners.
-		if (this._config.auto) {
-			this.enableHooks();
-			this.emit('init', this);
-		}
+		// Ensure config auto has value.
+		this._config.auto = this._config.auto !== false ? true : false;
 
-		return this;
+		// If auto enable event listeners.
+		if (this._config.auto) {
+			this.enableEvents();
+			this.execAfter('core:configure', () => {
+				this.emit('init');
+			});
+		}
+		else
+			return this;
 
 	}
 
 	/**
 	 * Returns Initialization Methods
 	 *
-	 * @method
+	 * @method init
 	 * @returns {IInit}
-	 *
 	 * @memberOf Facile
 	 */
 	init(): IInit {
 
 		let self = this;
 
-		function configured(): IInit {
-			self.emit('init:server');
-			return self.init();
+		// Ensure configuration.
+		if (!this._config) {
+			this.logger.warn('Failed to initialize please run facile.configure() first...exiting.');
+			process.exit();
 		}
 
-		// Used when individually calling
-		// inits on done returns back to
-		// main context for chaining to
-		// start.
+		/**
+		 * Used internally to trigger
+		 * init events after configuration.
+		 *
+		 * @private
+		 * @method run
+		 * @returns {IInit}
+		 * @memberOf Facile
+		 */
+		function run(): IInit {
+			if (self._config.auto)
+				self.execBefore('init', () => {
+					self.emit('init:server');
+				});
+			else
+				return inits;
+		}
+
+		/**
+		 * Used internally to trigger
+		 * init done event.
+		 *
+		 * @member done
+		 * @private
+		 * @returns {IFacile}
+		 * @memberOf Facile
+		 */
 		function done(): IFacile {
-			self.emit('core:start');
-			return self;
+			if (self._config.auto)
+				self.execAfter('init', () => {
+					self.emit('core:start');
+				});
+			else
+				return self;
 		}
 
-		// Iterates all inits then
-		// calls done to return to
-		// main context.
+		/**
+		 * Used internally to trigger
+		 * all initialization events.
+		 *
+		 * @private
+		 * @member all
+		 * @returns {IFacile}
+		 * @memberOf Facile
+		 */
 		function all(): IFacile {
 			return done();
 		}
 
 		let inits: IInit = {
 
-			configured: 	configured.bind(this),
+			run: 					run.bind(this),
 			server: 			server.init.bind(this),
 			services: 		services.init.bind(this),
 			filters: 			filters.init.bind(this),
@@ -555,7 +592,7 @@ export class Facile extends Events implements IFacile {
 
 		};
 
-		return inits;
+		return run();
 
 	}
 
@@ -564,6 +601,7 @@ export class Facile extends Events implements IFacile {
 	 *
 	 * Events
 	 *
+	 * core:configure
 	 * init
 	 * init:server
 	 * init:services
@@ -572,18 +610,17 @@ export class Facile extends Events implements IFacile {
 	 * init:controllers
 	 * init:routes
 	 * init:done
-	 * core:listening
+	 * core:start
 	 *
-	 * @method
+	 * @method enableHooks
 	 * @returns {Facile}
-	 *
 	 * @memberOf Facile
 	 */
-	enableHooks(): Facile {
+	enableEvents(): Facile {
 
 		let init = this.init();
 
-		this.on('init', init.configured);
+		this.on('init', init.run);
 
 		this.on('init:server', init.server);
 
@@ -602,8 +639,9 @@ export class Facile extends Events implements IFacile {
 		this.on('core:listen', this.listen);
 
 		// Set flag indicating that
-		// lifecycle hooks are auto firing.
-		this._auto = true;
+		// init hooks are listening
+		// in case called manually.
+		this._config.auto = true;
 
 		return this;
 
@@ -620,7 +658,7 @@ export class Facile extends Events implements IFacile {
 	listen(): Facile {
 
 		// Listen for connections.
-		this.logger.debug('Preparing server to listen for connections.');
+		this.logger.debug('Server preparing to listen.');
 
 		this.server.listen(this._config.port, this._config.host, (err: Error) => {
 			if (err)
@@ -639,63 +677,75 @@ export class Facile extends Events implements IFacile {
 	 * @method
 	 * @memberof Facile
 	 */
-	start(fn?: Function): Facile {
+	start(config?: string | IConfig | Function, fn?: Function): Facile {
 
-		let self = this;
+		let that: Facile = this;
 
-		this.logger.debug('Configuring server protocol and settings.');
+		// Allow callback as first argument.
+		if (isFunction(config)) {
+			fn = config;
+			config = undefined;
+		}
 
-		// Create Https if Certificate.
-		if (this._config.certificate)
-			this.server = createServerHttps(this._config.certificate, this.app);
+		// Can't start without a config.
+		if (!this._config) {
 
-		// Create Http Server.
-		else
-			this.server = createServer(this.app);
+			// If no _config and no config throw error.
+			if (!config)
+				throw new Error('Attempted to start but not configured or no config was supplied.');
 
-		// Limit server connections.
-		this.server.maxConnections = this._config.maxConnections;
+			let _config: IConfig = config;
 
-		// Listener callback on server listening.
-		this.server.on('listening', () => {
+			// If Auto return the config as
+			// auto events listeners will fire
+			// start.
+			if (_config.auto !== false)
+				return this.configure(config);
 
-			this.emit('core:listening');
+			// Otherwise just configure.
+			this.configure(config);
 
-			let address = this.server.address(),
-					addy = address.address,
-					port = address.port;
+		}
 
-			console.log(cyan('\nServer listening at: http://' + addy + ':' + port));
+		function handleStart(): Facile {
 
-			// Call if callack function provided.
-			if (fn) {
-				this.logger.debug('Exec callback on server start/listening.');
-				fn(this);
-			}
+			that.logger.debug('Starting server preparing for connections.');
 
-		});
+			// On listening Handle Callback.
+			that.server.on('listening', () => {
 
-		// Store connections
-		this.server.on('connection', (socket: Socket) => {
+				let address = that.server.address(),
+						addy = address.address,
+						port = address.port;
 
-			// Save the connection.
-			let socketId = this._nextSocketId++;
-			this._sockets[socketId] = socket;
+				console.log(cyan('\nServer listening at: http://' + addy + ':' + port));
 
-			// Listen for socket close.
-			socket.on('close', () => {
+				// Call if callack function provided.
+				if (fn) {
+					that.logger.debug('Exec callback on server start/listening.');
+					fn(that);
+				}
 
-				this.logger.debug('Socket ' + socketId + ' was closed.');
-				delete this._sockets[socketId];
+				if (that._config.auto)
+					that.execAfter('core:listen');
 
 			});
 
-		});
+			if (that._config.auto)
+				that.execAfter('core:start', () => {
+					that.listen();
+				});
+			else
+				return that.listen();
 
-		if (!this._auto)
-			this.listen();
+		}
 
-		return this;
+		if (this._config.auto)
+			this.execBefore('core:start', () => {
+				handleStart();
+			});
+		else
+			return handleStart();
 
 	}
 
@@ -794,7 +844,7 @@ export class Facile extends Events implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	addMiddleware(name: string | IMiddlewares, fn?: IRequestHandler, order?: number): Facile {
+	addMiddleware(name: string | IMiddlewares, fn?: any, order?: number): Facile {
 
 		let middlewares: IMiddlewares = {};
 
@@ -1040,6 +1090,44 @@ export class Facile extends Events implements IFacile {
 		return this._controllers[name];
 	}
 
+	/**
+	 * Convenience wrapper for lodash extend.
+	 *
+	 * @member extend
+	 * @param {...any[]} args
+	 * @returns {*}
+	 *
+	 * @memberOf Facile
+	 */
+	extend(...args: any[]): any {
+		return _extend.apply(null, args);
+	}
+
+	/**
+	 * Extends configuration files.
+	 *
+	 * @member extendConfig
+	 * @param {...any[]} configs
+	 * @returns {IConfig}
+	 *
+	 * @memberOf Facile
+	 */
+	extendConfig(...configs: any[]): IConfig {
+
+		let arr: IConfig[] = [];
+
+		configs.forEach((c) => {
+			if (isString(c))
+				c = this._configs[c];
+			arr.push(c);
+		});
+
+		arr.unshift({});
+
+		return _extend.apply(null, arr);
+
+	}
+
 }
 </pre>
         </article>
@@ -1065,7 +1153,7 @@ export class Facile extends Events implements IFacile {
 									
 						<span class="jsdoc-message">
 						Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a>
-						on Mon Oct 10 2016 09:20:13 GMT-0700 (PDT) using the <a href="https://github.com/xperiments/TSDoc">TSDoc template</a>.
+						on Tue Oct 11 2016 06:48:11 GMT-0700 (PDT) using the <a href="https://github.com/xperiments/TSDoc">TSDoc template</a>.
 						</span>
 				</footer>
 			</div>

@@ -51,11 +51,19 @@ export declare class Facile extends Core implements IFacile {
      */
     init(): IInit;
     /**
+     * Initializies all registered components
+     * in series using async.series.
+     *
+     * @member initAll
+     * @returns {Facile}
+     * @memberOf Facile
+     */
+    initAll(): Facile;
+    /**
      * Enables Lifecycle Listeners.
      *
      * Events
      *
-     * core:configure
      * init
      * init:server
      * init:services
@@ -70,7 +78,7 @@ export declare class Facile extends Core implements IFacile {
      * @returns {Facile}
      * @memberOf Facile
      */
-    enableEvents(): Facile;
+    enableListeners(): Facile;
     /**
      * Start Listening for Connections
      *
@@ -79,7 +87,7 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    listen(): Facile;
+    listen(): void;
     /**
      * Start Server.
      *
@@ -249,12 +257,23 @@ export declare class Facile extends Core implements IFacile {
      */
     controller(name: string): IController;
     /**
-     * Wrapper for utils extend.
+     * Convenience wrapper for lodash extend.
      *
+     * @member extend
      * @param {...any[]} args
      * @returns {*}
      *
      * @memberOf Facile
      */
     extend(...args: any[]): any;
+    /**
+     * Extends configuration files.
+     *
+     * @member extendConfig
+     * @param {...any[]} configs
+     * @returns {IConfig}
+     *
+     * @memberOf Facile
+     */
+    extendConfig(...configs: any[]): IConfig;
 }

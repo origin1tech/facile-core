@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
-	<title>Facile Core Source: interfaces/index.ts</title>
+	<title>Facile Core Source: core/utils.ts</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -331,413 +331,269 @@
 					
 
 
-		<h1 class="page-title">Source: interfaces/index.ts</h1>
+		<h1 class="page-title">Source: core/utils.ts</h1>
     
     <section>
         <article>
-            <pre class="sunlight-highlight-javascript ">import { EventEmitter }from 'events';
-import { Router, RequestHandler,
-				NextFunction, ErrorRequestHandler,
-				Request, Response, Express } from 'express';
-import { Socket, Server } from 'net';
-import { BoomError, Output } from 'boom';
-import { LoggerInstance } from 'winston';
+            <pre class="sunlight-highlight-javascript ">
+import { extend as _extend, isPlainObject, max, keys,
+				each, isString, isFunction, padEnd, truncate as _truncate } from 'lodash';
+import { IFacile, IRoute, IRequestHandler } from '../interfaces';
 
+/**
+ * Add object to mapped collection.
+ *
+ * @member utils
+ * @export
+ * @param {*} key
+ * @param {*} val
+ * @param {*} [obj]
+ */
+export function extendMap(key: any, val: any, obj?: any) {
 
-// Re-export Interfaces for Convenience.
-export interface IRequestHandler extends RequestHandler {}
-export interface INextFunction extends NextFunction {}
-export interface IErrorRequestHandler extends ErrorRequestHandler {}
-export interface IRequest extends Request {}
-export interface IResponse extends Response {}
-export interface IBoomError extends BoomError {}
-export interface IBoomOutput extends Output  {}
+	// Allow map object as second arg.
+	if (!obj) {
+		obj = val;
+		val = undefined;
+	}
 
-export interface IUtils {
-	extend(...args: any[]): any;
-	extendMap(key: any, val: any, obj?: any): void;
-	initMap(Type: any, obj: any, instance?: any): void;
-	maxIn(obj: any, key: string): number;
-	hasIn(obj: any, key: any, val: any): boolean;
-	parseRoute(url: string, handler: IRequestHandler | Array&lt;IRequestHandler> | string | IRoute): IRoute;
-	validateRoute(route: IRoute): IRoute;
-	noop(): void;
-	truncate(str: string, length: number, omission: string): string;
-}
+	// key and value provided.
+	if (isString(key) &amp;&amp; val !== undefined) {
+		obj[key] = val;
+	}
 
-export interface IInit {
-	run(): IInit;
-	server(): IInit;
-	services(): IInit;
-	filters(): IInit;
-	models(): IInit;
-	controllers(): IInit;
-	routes(): IInit;
-	all(): IFacile;
-	done(): IFacile;
-}
+	// Check if is class with construtor
+	// or Array of class object.
+	else if (key.constructor || (Array.isArray(key) &amp;&amp; key[0] &amp;&amp; key[0].constructor)) {
 
-export interface IListenersMap {
-	[name: string]: { before: boolean, after: boolean };
-}
+		if (Array.isArray(key))
+			key.forEach((klass) => {
+				obj[klass.constructor.name] = klass;
+			});
 
-export interface ICore extends EventEmitter {
+		else
+			obj[key.constructor.name] = key;
 
-	Boom: IBoom;
-	express: any;
-	app: Express;
-	server: Server;
-	logger: LoggerInstance;
-	_pkg: any;
-	_config: IConfig;
-	_configs: IConfigs;
-	_listeners: IListenersMap;
-	_beforeEvents: any;
-	_afterEvents: any;
-	before(name: string, event: ICallback): ICore;
-	after(name: string, event: ICallback): ICore;
-	hasBefore(name: string): boolean;
-	hasAfter(name: string): boolean;
-	execBefore(name: string, fn?: ICallbackResult): void;
-	execAfter(name: string, fn?: ICallbackResult): void;
-	execEvents(name: string, type: string, fn?: ICallbackResult): void;
+	}
 
-}
+	// Map with name and object provided.
+	else if (isPlainObject(key)) {
+		Object.keys(key).forEach((k) => {
+			obj[k] = key[k];
+		});
+	}
 
-export interface IFacile extends ICore {
-
-	_routers: IRouters;
-	_routes: Array&lt;IRoute>;
-
-	_nextSocketId: number;
-	_sockets: ISockets;
-
-	_services: IServices;
-	_middlewares: IMiddlewares;
-	_filters: IFilters;
-	_models: IModels;
-	_controllers: IControllers;
-
-	configure(config?: string | IConfig): IFacile;
-	init(): IInit;
-	enableEvents(): IFacile;
-	listen(): IFacile;
-	start(config?: string | IConfig | Function, fn?: Function): IFacile;
-	stop(msg?: string, code?: number): void;
-
-	addConfig(name: string, config: IConfig): IFacile;
-	addRouter(name: string, router?: Router): Router;
-	addMiddleware(name: string, fn?: any, order?: number): IFacile;
-	addService(Service: IService | Array&lt;IService>): IFacile;
-	addFilter(Filter: IFilter | Array&lt;IFilter>): IFacile;
-	addModel(Model: IModel | Array&lt;IModel>): IFacile;
-	addController(Controller: IController | Array&lt;IController>): IFacile;
-	addService(Service: IService | Array&lt;IService>, instance?: boolean): IFacile;
-	addRoute(method: string | string[] | IRoutesMap | IRoute[],
-					url?: string,
-					handler?: IRequestHandler,
-					filters?: IRequestHandler | IRequestHandler[],
-					router?: string): IFacile;
-
-	config(name: string): IConfig;
-	filter(name: string): IFilter;
-	service(name: string): IService;
-	model(name: string): IModel;
-	controller(name: string): IController;
-	extend(...args: any[]): any;
-	extendConfig(...configs: any[]): IConfig;
+	else {
+		throw new Error('Failed to extend map, invalid configuration.');
+	}
 
 }
 
 /**
- * SSL Certificate Interface.
+ * Extends object with supplied Type.
  *
+ * @member utils
  * @export
- * @interface ICertificate
+ * @param {*} Type
+ * @param {*} obj
+ * @param {IFacile} [instance]
  */
-export interface ICertificate {
-	key: string;
-	cert: string;
+export function initMap(Type: any, obj: any, instance?: any) {
+
+	// Check if map instead of single
+	// class was provided.
+	if (!instance) {
+		instance = obj;
+		obj = Type;
+		Type = undefined;
+	}
+
+	// Instantiate class and update in map.
+	if (Type) {
+		let name = Type.constructor.name;
+		obj[name] = new Type(instance);
+	}
+
+	// Otherwise iterate and instantiate all.
+	else {
+		each(obj, (T, k) => {
+			obj[k] = new T(instance);
+		});
+	}
+
 }
 
 /**
- * Node style callback.
- * @todo should probably support promise also.
+ * Gets max value in object
+ * of objects by property.
  *
+ * @member utils
  * @export
- * @interface ICallback
+ * @param {*} obj
+ * @param {string} key
+ * @returns {number}
  */
-export interface ICallbackResult {
-	(err?: string | Error, data?: any): void;
-}
-
-export interface ICallback {
-	(done: ICallbackResult): void;
-}
-
-/**
- * Name and renderer for views.
- * @todo create custon interface
- * for renderer. consolidate should
- * but does not export the interface
- * in typings.
- *
- * @export
- * @interface IViewEngine
- */
-export interface IViewEngine {
-	name: string;
-	renderer: string | Function;
+export function maxIn(obj: any, key: string): number {
+	return max(keys(obj).map((k) => {
+		return obj[k][key];
+	}));
 }
 
 /**
- * Express View Settings
+ * Checks if object contains
+ * property with value.
  *
+ * @member utils
  * @export
- * @interface IExpressViews
+ * @param {*} obj
+ * @param {*} key
+ * @param {*} val
+ * @returns {boolean}
  */
-export interface IViewConfig {
-	layout?: string;
-	engine?: IViewEngine;
-	'view engine'?: string;
-	views?: string | string[] | boolean;
+export function hasIn(obj: any, key: any, val: any): boolean {
+	let filter: any = {};
+	filter[key] = val;
+	if (isPlainObject(key))
+		filter = key;
+	return _.some(obj, filter);
 }
 
 /**
- * Server Configuration.
+ * Parses a key/value Route.
+ * When using IRoutesMap the
+ * url needs to be parsed into
+ * an IRoute configuration.
  *
+ * @member utils
  * @export
- * @interface IConfig
+ * @param {string} url
+ * @param {(IRequestHandler | Array&lt;IRequestHandler> | string | IRoute)} handler
+ * @returns {IRoute}
  */
-export interface IConfig {
-	cwd?: string;
-	pkg?: any;
-	host?: string;
-	port?: number;
-	certificate?: ICertificate | true;
-	maxConnections?: number;
-	env?: string;
-	logger?: LoggerInstance;
-	logLevel?: 'error' | 'warn' | 'info' | 'debug';
-	views?: IViewConfig;
-	database?: any;
-	auto?: boolean;
+export function parseRoute(url: string,
+													handler: IRequestHandler | Array&lt;IRequestHandler> | string | IRoute): IRoute {
+
+	let route: IRoute;
+
+	let arr = url.trim().split(' ');
+	if (arr.length === 1)
+		arr.unshift('get');
+
+	route = {
+		method: arr[0],
+		url: arr[1]
+	};
+
+	// If handler is Route object extend it.
+	if (isPlainObject(handler)) {
+		route = _extend({}, route, handler);
+	}
+	// Set last handler as primary handler
+	// set others to filters property.
+	else if (Array.isArray(handler)) {
+		let last = handler.pop();
+		route.handler = last;
+		route.filters = handler;
+	}
+	else {
+		route.handler = handler as IRequestHandler;
+	}
+
+	return route;
+
 }
 
 /**
- * Map of Configs.
- *
+ * Validates Route configuration.
+ * When invalid route.valid will
+ * equal false.
+ * @member utils
  * @export
- * @interface IConfigs
+ * @param {IRoute} route
+ * @returns {IRoute}
  */
-export interface IConfigs {
-	[name: string]: IConfig;
+export function validateRoute(route: IRoute): IRoute {
+
+	route.valid = true;
+
+	// Normalize if method is array.
+	if (Array.isArray(route.method)) {
+		let methods = [];
+		route.method.forEach((m, k) => {
+			methods.push(m.toUpperCase());
+		});
+		route.method = methods;
+	}
+
+	// Otherwise normalize single method.
+	else {
+		let method: string = route.method as string;
+		route.method = (method || 'GET').toUpperCase();
+	}
+
+	// Ensure default router.
+	route.router = route.router || 'default';
+
+	// Mehod, Handler and Url path are required.
+	if (!route.method || !route.handler || !route.url)
+		route.valid = false;
+
+
+	return route;
+
 }
 
 /**
- * Interface for configuration flags.
+ * Function for non operation.
  *
+ * @member utils
  * @export
- * @interface IFlags
  */
-export interface IFlags {
-	[name: string]: any;
+export function noop () {}
+
+/**
+ * Truncates a string using lodash _.truncate
+ *
+ * @member utils
+ * @export
+ * @param {string} str
+ * @param {number} length
+ * @param {string} [omission='...']
+ * @returns {string}
+ */
+export function truncate(str: string, length: number, omission: string = '...'): string {
+	return _truncate(str, {
+		length: length,
+		omission: omission,
+		separator: ' '
+	});
 }
 
 /**
- * Map containing socket connections.
+ * Gets function name.
  *
+ * @member utils
  * @export
- * @interface ISockets
+ * @param {Function} fn
+ * @returns {string}
  */
-export interface ISockets {
-	[id: number]: Socket;
-}
+export function functionName(fn: Function): string {
 
-/**
- * Map of app middleware.
- *
- * @export
- * @interface IMiddleware
- */
-export interface IMiddleware {
-	fn: any;
-	order?: number;
-}
-
-/**
- * Map of middleware.
- *
- * @export
- * @interface IMiddlewares
- */
-export interface IMiddlewares {
-	[name: string]: IMiddleware;
-}
-
-/**
- * Boom wrap event signature interface.
- *
- * @export
- * @interface IBoomWrap
- */
-export interface IBoomWrap {
-	(error: Error, statusCode?: number, message?: string): BoomError;
-}
-
-/**
- * Boom create signature interface.
- *
- * @export
- * @interface IBoomCreate
- */
-export interface IBoomCreate {
-	(statusCode: number, message?: string, data?: any): BoomError;
-}
-
-/**
- * Boom event signature interface.
- *
- * @export
- * @interface IBoomEvent
- */
-export interface IBoomEvent {
-	(message?: string, data?: any): BoomError;
-}
-
-/**
- * Interface used to extend framework with
- * standard Boom error events.
- *
- * @export
- * @interface IBoom
- */
-export interface IBoom {
-	wrap: IBoomWrap;
-	create: IBoomCreate;
-	badRequest: IBoomEvent;
-	unauthorized: IBoomEvent;
-	forbidden: IBoomEvent;
-	notFound: IBoomEvent;
-	notImplemented: IBoomEvent;
-	badGateway: IBoomEvent;
-}
-
-/**
- * Router Interface Map.
- *
- * @export
- * @interface IRouters
- */
-export interface IRouters {
-	[name: string]: Router;
-}
-
-/**
- * Route Interface.
- *
- * @export
- * @interface IRoute
- */
-export interface IRoute {
-	method?: string | Array&lt;string>;
-	url?: string | Array&lt;string>;
-	handler?: IRequestHandler;
-	filters?: IRequestHandler | Array&lt;IRequestHandler>;
-	view?: string;
-	redirect?: string;
-	router?: string;
-	valid?: boolean;
-}
-
-/**
- * Interface for Routes by Map.
- *
- * @export
- * @interface IRoutesMap
- */
-export interface IRoutesMap {
-	[url: string]: IRequestHandler | Array&lt;IRequestHandler> | string | IRoute;
-}
-
-/**
- * Filter Interface.
- *
- * @export
- * @interface IFilter
- */
-export interface IFilter {
+	// Match:
+	// - ^          the beginning of the string
+	// - function   the word 'function'
+	// - \s+        at least some white space
+	// - ([\w\$]+)  capture one or more valid JavaScript identifier characters
+	// - \s*        optionally followed by white space (in theory there won't be any here,
+	//              so if performance is an issue this can be omitted[1]
+	// - \(         followed by an opening brace
 	//
-}
 
-/**
- * Map of Filters.
- *
- * @export
- * @interface IFilters
- */
-export interface IFilters {
-	[name: string]: IFilter;
-}
+	let result = /^function\s+([\w\$]+)\s*\(/.exec(fn.toString());
 
-/**
- * Service Interface
- *
- * @export
- * @interface IService
- */
-export interface IService {
+	// Ignores match on anonymous functions.
+	return  result  ?  result[ 1 ]  :  '';
 
-}
-
-/**
- * Map of Services
- *
- * @export
- * @interface IServices
- */
-export interface IServices {
-	[name: string]: IService;
-}
-
-/**
- * Model interface.
- *
- * @export
- * @interface IModel
- */
-export interface IModel {
-
-}
-
-/**
- * Map of IModels.
- *
- * @export
- * @interface IModels
- */
-export interface IModels {
-	[name: string]: IModel;
-}
-
-/**
- * Controller Interface.
- *
- * @export
- * @interface IController
- */
-export interface IController {
-
-}
-
-/**
- * Map of Controllers.
- *
- * @export
- * @interface IControllers
- */
-export interface IControllers {
-	[name: string]: IController;
 }
 </pre>
         </article>

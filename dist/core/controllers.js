@@ -2,28 +2,31 @@
 /**
  * Initializes Controllers
  *
- * @method
  * @export
+ * @param {Function} [fn]
  * @returns {IFacile}
  */
-function init() {
-    var that = this;
+function init(fn) {
+    var _this = this;
     function handleControllers() {
-        that.logger.debug('Initializing Controllers');
+        var _this = this;
+        this.logger.debug('Initializing Controllers');
         // Init code here.
-        if (that._config.auto)
-            that.execAfter('init:controllers', function () {
-                that.emit('init:routes');
+        if (this._config.auto)
+            this.execAfter('init:controllers', function () {
+                _this.emit('init:routes');
             });
+        else if (fn)
+            fn();
         else
-            return that.init();
+            return this._inits;
     }
-    if (that._config.auto)
-        that.execBefore('init:controllers', function () {
-            handleControllers();
+    if (this._config.auto)
+        this.execBefore('init:controllers', function () {
+            handleControllers.call(_this);
         });
     else
-        return handleControllers();
+        return handleControllers.call(this);
 }
 exports.init = init;
 //# sourceMappingURL=controllers.js.map

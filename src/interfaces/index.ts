@@ -36,7 +36,6 @@ export interface IInit {
 	models(): IInit;
 	controllers(): IInit;
 	routes(): IInit;
-	all(): IFacile;
 	done(): IFacile;
 }
 
@@ -54,9 +53,14 @@ export interface ICore extends EventEmitter {
 	_pkg: any;
 	_config: IConfig;
 	_configs: IConfigs;
+	_inits: IInit;
 	_listeners: IListenersMap;
-	beforeEvents: any;
-	afterEvents: any;
+	_beforeEvents: any;
+	_afterEvents: any;
+	_configured: boolean;
+	_initialized: boolean;
+	_started: boolean;
+	_autoInit: boolean;
 	before(name: string, event: ICallback): ICore;
 	after(name: string, event: ICallback): ICore;
 	hasBefore(name: string): boolean;
@@ -83,8 +87,9 @@ export interface IFacile extends ICore {
 
 	configure(config?: string | IConfig): IFacile;
 	init(): IInit;
-	enableEvents(): IFacile;
-	listen(): IFacile;
+	initAll(): IFacile;
+	enableListeners(): IFacile;
+	listen(): void;
 	start(config?: string | IConfig | Function, fn?: Function): IFacile;
 	stop(msg?: string, code?: number): void;
 
@@ -101,13 +106,14 @@ export interface IFacile extends ICore {
 					handler?: IRequestHandler,
 					filters?: IRequestHandler | IRequestHandler[],
 					router?: string): IFacile;
-
+	router(name: string): Router;
 	config(name: string): IConfig;
 	filter(name: string): IFilter;
 	service(name: string): IService;
 	model(name: string): IModel;
 	controller(name: string): IController;
 	extend(...args: any[]): any;
+	extendConfig(...configs: any[]): IConfig;
 
 }
 

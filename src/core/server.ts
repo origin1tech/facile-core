@@ -1,4 +1,4 @@
-import { IFacile, IInit, IViewEngine } from '../interfaces';
+import { IFacile, IInit, IViewEngine, IMiddleware } from '../interfaces';
 import { createServer } from 'http';
 import { createServer as createServerHttps } from 'https';
 import { each, sortBy, isString } from 'lodash';
@@ -10,11 +10,10 @@ import * as cons from 'consolidate';
  * Initializes Server
  *
  * @export
+ * @param {Function} [fn]
  * @returns {IFacile}
  */
-export function init(): IInit {
-
-	let that: IFacile = this;
+export function init(fn?: Function): IInit {
 
 	function handleServer(): IInit {
 
@@ -22,10 +21,10 @@ export function init(): IInit {
 		// Ensure Router.
 		////////////////////////////////
 
-		that.logger.debug('Initializing Server Router.');
-		that._routers = that._routers || {};
-		if (!that._routers['default'])
-			that._routers['default'] = that.app._router;
+		this.logger.debug('Initializing Server Router.');
+		this._routers = this._routers || {};
+		if (!this._routers['default'])
+			this._routers['default'] = this.app._router;
 
 		////////////////////////////////
 		// Configure Views
@@ -33,9 +32,9 @@ export function init(): IInit {
 
 		// Check if engine in config is string
 		// or valid engine object.
-		if (that._config.views) {
+		if (this._config.views) {
 
-			let viewConfig = that._config.views;
+			let viewConfig = this._config.views;
 			let eng = viewConfig.engine;
 
 			// Convert engine to valid
@@ -44,17 +43,17 @@ export function init(): IInit {
 				eng.renderer = cons[eng.renderer];
 
 			// Set the engine.
-			that._config.views.engine = eng;
-			that.app.engine(eng.name, eng.renderer as Function);
+			this._config.views.engine = eng;
+			this.app.engine(eng.name, eng.renderer as Function);
 
 			// Set view engine.
 			let viewEng = viewConfig['view engine'];
 			viewEng = viewConfig['view engine'] = viewEng || eng.name;
-			that.app.set('view engine', viewEng);
+			this.app.set('view engine', viewEng);
 
 			// Set views path.
 			if (viewConfig.views)
-				that.app.set('views', viewConfig.views);
+				this.app.set('views', viewConfig.views);
 
 		}
 
@@ -62,62 +61,68 @@ export function init(): IInit {
 		// Configure Middleware
 		////////////////////////////////
 
-		that.logger.debug('Initializing Server Middleware.');
-		let middlewares = sortBy(that._middlewares, 'order');
-		each(middlewares, (v) => {
-			that.app.use(v.fn);
+		this.logger.debug('Initializing Server Middleware.');
+		let middlewares = sortBy(this._middlewares, 'order');
+		each(middlewares, (v: IMiddleware) => {
+			this.app.use(v.fn);
 		});
 
 		////////////////////////////////
 		// Server Protocol & Cert
 		////////////////////////////////
 
-		that.logger.debug('Initializing Server protocol.');
-		if (that._config.certificate)
-			that.server = createServerHttps(that._config.certificate, that.app);
+		this.logger.debug('Initializing Server protocol.');
+		if (this._config.certificate)
+			this.server = createServerHttps(this._config.certificate, this.app);
 
 		// Create Http Server.
 		else
-			that.server = createServer(that.app);
+			this.server = createServer(this.app);
 
 		// Limit server connections.
-		that.server.maxConnections = that._config.maxConnections;
+		this.server.maxConnections = this._config.maxConnections;
 
 		////////////////////////////////
 		// Listen for Connections
 		////////////////////////////////
 
-		that.logger.debug('Initializing Server connection listener.');
-		that.server.on('connection', (socket: Socket) => {
+		this.logger.debug('Initializing Server connection listener.');
+		this.server.on('connection', (socket: Socket) => {
 
 			// Save the connection.
-			let socketId = that._nextSocketId++;
-			that._sockets[socketId] = socket;
+			let socketId = this._nextSocketId++;
+			this._sockets[socketId] = socket;
 
 			// Listen for socket close.
 			socket.on('close', () => {
 
-				that.logger.debug('Socket ' + socketId + ' was closed.');
-				delete that._sockets[socketId];
+				this.logger.debug('Socket ' + socketId + ' was closed.');
+				delete this._sockets[socketId];
 
 			});
 
 		});
 
-		if (that._config.auto)
-			that.execAfter('init:server', () => {
-				that.emit('init:services');
+		if (this._config.auto) {
+			console.log('hit auto')
+			this.execAfter('init:server', () => {
+				this.emit('init:services');
 			});
-		else
-			return that.init();
+		}
+		else if (fn)
+			fn();
+		else {
+			console.log('hit here.')
+			return this._inits;
+		}
 
 	}
 
-	if (that._config.auto)
-		that.execBefore('init:server', () => {
-			handleServer();
+	if (this._config.auto)
+		this.execBefore('init:server', () => {
+			handleServer.call(this);
 		});
 	else
-		return handleServer();
+		return handleServer.call(this);
 
 }
