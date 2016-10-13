@@ -1,36 +1,37 @@
 import { IFacile, IInit } from '../interfaces';
+import { Facile } from './';
+import { each } from 'lodash';
 
-/**
- * Initializes Routes
- *
- * @export
- * @param {Function} [fn]
- * @returns {IFacile}
- */
-export function init(fn?: Function): IInit {
+export function init(facile: Facile): any {
 
-	function handleRoutes() {
+	return (fn?: Function): IInit => {
 
-		this.logger.debug('Initializing Routes');
+		function handleRoutes() {
 
-		// Init code here.
+			facile.logger.debug('Initializing Routes');
 
-		if (this._config.auto)
-			this.execAfter('init:routes', () => {
-				this.emit('init:done');
-			});
-		else if (fn)
-			fn();
-		else
-			return this._inits;
+			// each(facile._routes, (route) => {
+			// 	console.log(route);
+			// });
 
-	}
+			if (facile._config.auto)
+				facile.execAfter('init:routes', () => {
+					facile.emit('init:done');
+				});
+			else if (fn)
+				fn();
+			else
+				return facile.init();
 
-	if (this._config.auto)
-		this.execBefore('init:routes', () => {
-			handleRoutes.call(this);
+		}
+
+	if (facile._config.auto)
+		facile.execBefore('init:routes', () => {
+			handleRoutes.call(facile);
 		});
 	else
-		return handleRoutes.call(this);
+		return handleRoutes.call(facile);
+
+	};
 
 }

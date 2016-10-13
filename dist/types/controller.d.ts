@@ -6,6 +6,7 @@ import { IController, IFacile } from '../interfaces';
  * @class Controller
  */
 export declare class Controller implements IController {
+    static type: string;
     facile: IFacile;
     /**
      * Creates an instance of Controller.

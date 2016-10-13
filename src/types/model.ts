@@ -8,6 +8,9 @@ import { IModel, IFacile } from '../interfaces';
  */
 export class Model implements IModel {
 
+	static type = 'Model';
+	facile: IFacile;
+
 	/**
 	 * Creates an instance of Model.
 	 *
@@ -15,7 +18,11 @@ export class Model implements IModel {
 	 *
 	 * @memberOf Model
 	 */
-	constructor(public facile: IFacile) {
+	constructor(facile: IFacile) {
+		Object.defineProperty(this, 'facile', {
+			enumerable: false,
+			value: facile
+		});
 		return this;
 	}
 

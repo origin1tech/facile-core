@@ -6,7 +6,6 @@ import { Socket, Server } from 'net';
 import { BoomError, Output } from 'boom';
 import { LoggerInstance } from 'winston';
 
-
 // Re-export Interfaces for Convenience.
 export interface IRequestHandler extends RequestHandler {}
 export interface INextFunction extends NextFunction {}
@@ -29,7 +28,7 @@ export interface IUtils {
 }
 
 export interface IInit {
-	run(): IInit;
+	run(): void;
 	server(): IInit;
 	services(): IInit;
 	filters(): IInit;
@@ -43,6 +42,7 @@ export interface IListenersMap {
 	[name: string]: { before: boolean, after: boolean };
 }
 
+
 export interface ICore extends EventEmitter {
 
 	Boom: IBoom;
@@ -53,14 +53,19 @@ export interface ICore extends EventEmitter {
 	_pkg: any;
 	_config: IConfig;
 	_configs: IConfigs;
-	_inits: IInit;
-	_listeners: IListenersMap;
-	_beforeEvents: any;
-	_afterEvents: any;
-	_configured: boolean;
-	_initialized: boolean;
-	_started: boolean;
-	_autoInit: boolean;
+
+	_routers: IRouters;
+	_routes: Array<IRoute>;
+
+	_middlewares: IMiddlewares;
+	_services: any;
+	_filters: any;
+	_models: any;
+	_controllers: any;
+
+	_nextSocketId: number;
+	_sockets: ISockets;
+
 	before(name: string, event: ICallback): ICore;
 	after(name: string, event: ICallback): ICore;
 	hasBefore(name: string): boolean;
@@ -73,34 +78,21 @@ export interface ICore extends EventEmitter {
 
 export interface IFacile extends ICore {
 
-	_routers: IRouters;
-	_routes: Array<IRoute>;
-
-	_nextSocketId: number;
-	_sockets: ISockets;
-
-	_services: IServices;
-	_middlewares: IMiddlewares;
-	_filters: IFilters;
-	_models: IModels;
-	_controllers: IControllers;
-
 	configure(config?: string | IConfig): IFacile;
 	init(): IInit;
-	initAll(): IFacile;
-	enableListeners(): IFacile;
-	listen(): void;
+	// enableListeners(): IFacile;
+	// listen(): void;
 	start(config?: string | IConfig | Function, fn?: Function): IFacile;
 	stop(msg?: string, code?: number): void;
 
 	addConfig(name: string, config: IConfig): IFacile;
 	addRouter(name: string, router?: Router): Router;
 	addMiddleware(name: string, fn?: any, order?: number): IFacile;
-	addService(Service: IService | Array<IService>): IFacile;
-	addFilter(Filter: IFilter | Array<IFilter>): IFacile;
-	addModel(Model: IModel | Array<IModel>): IFacile;
-	addController(Controller: IController | Array<IController>): IFacile;
-	addService(Service: IService | Array<IService>, instance?: boolean): IFacile;
+	// addService(name: string | IService | IServices, Service?: IService | IServices): IFacile;
+	// addFilter(name: string | IFilter | IFilters, Filter?: IFilter | IFilters): IFacile;
+	// addModel(name: string | IModel | IModels, Model?: IModel | IModels): IFacile;
+	// addController(name: string | IController | IControllers,
+	// 							Controller?: IController | IControllers): IFacile;
 	addRoute(method: string | string[] | IRoutesMap | IRoute[],
 					url?: string,
 					handler?: IRequestHandler,
@@ -108,10 +100,11 @@ export interface IFacile extends ICore {
 					router?: string): IFacile;
 	router(name: string): Router;
 	config(name: string): IConfig;
-	filter(name: string): IFilter;
-	service(name: string): IService;
-	model(name: string): IModel;
-	controller(name: string): IController;
+	filter<T>(name: string): T;
+	service<T>(name: string): T;
+	model<T>(name: string): T;
+	controller<T>(name: string): T;
+	component(name: string, map: any): any;
 	extend(...args: any[]): any;
 	extendConfig(...configs: any[]): IConfig;
 
@@ -171,6 +164,11 @@ export interface IViewConfig {
 	views?: string | string[] | boolean;
 }
 
+export interface IDatabase {
+	'module': any;		// The imported/required module.
+	connection: any;	// The connected instance.
+}
+
 /**
  * Server Configuration.
  *
@@ -188,7 +186,7 @@ export interface IConfig {
 	logger?: LoggerInstance;
 	logLevel?: 'error' | 'warn' | 'info' | 'debug';
 	views?: IViewConfig;
-	database?: any;
+	database?: IDatabase;
 	auto?: boolean;
 }
 
@@ -231,16 +229,6 @@ export interface ISockets {
 export interface IMiddleware {
 	fn: any;
 	order?: number;
-}
-
-/**
- * Map of middleware.
- *
- * @export
- * @interface IMiddlewares
- */
-export interface IMiddlewares {
-	[name: string]: IMiddleware;
 }
 
 /**
@@ -328,82 +316,19 @@ export interface IRoutesMap {
 	[url: string]: IRequestHandler | Array<IRequestHandler> | string | IRoute;
 }
 
-/**
- * Filter Interface.
- *
- * @export
- * @interface IFilter
- */
-export interface IFilter {
-	//
+export interface IComponent {
+	facile: IFacile;
 }
 
-/**
- * Map of Filters.
- *
- * @export
- * @interface IFilters
- */
-export interface IFilters {
-	[name: string]: IFilter;
-}
+export interface IFilter extends IComponent {}
 
-/**
- * Service Interface
- *
- * @export
- * @interface IService
- */
-export interface IService {
+export interface IModel {}
 
-}
+export interface IController  {}
 
-/**
- * Map of Services
- *
- * @export
- * @interface IServices
- */
-export interface IServices {
-	[name: string]: IService;
-}
+export interface IService  {}
 
-/**
- * Model interface.
- *
- * @export
- * @interface IModel
- */
-export interface IModel {
 
-}
 
-/**
- * Map of IModels.
- *
- * @export
- * @interface IModels
- */
-export interface IModels {
-	[name: string]: IModel;
-}
 
-/**
- * Controller Interface.
- *
- * @export
- * @interface IController
- */
-export interface IController {
 
-}
-
-/**
- * Map of Controllers.
- *
- * @export
- * @interface IControllers
- */
-export interface IControllers {
-	[name: string]: IController;
-}

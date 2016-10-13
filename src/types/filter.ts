@@ -10,6 +10,9 @@ import { IFilter, IFacile } from '../interfaces';
  */
 export class Filter implements IFilter {
 
+	static type = 'Filter';
+	facile: IFacile;
+
 	/**
 	 * Creates an instance of Filter.
 	 *
@@ -17,7 +20,11 @@ export class Filter implements IFilter {
 	 *
 	 * @memberOf Filter
 	 */
-	constructor(public facile: IFacile) {
+	constructor(facile: IFacile) {
+		Object.defineProperty(this, 'facile', {
+			enumerable: false,
+			value: facile
+		});
 		return this;
 	}
 

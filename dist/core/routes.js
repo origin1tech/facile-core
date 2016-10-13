@@ -1,32 +1,28 @@
 "use strict";
-/**
- * Initializes Routes
- *
- * @export
- * @param {Function} [fn]
- * @returns {IFacile}
- */
-function init(fn) {
-    var _this = this;
-    function handleRoutes() {
-        var _this = this;
-        this.logger.debug('Initializing Routes');
-        // Init code here.
-        if (this._config.auto)
-            this.execAfter('init:routes', function () {
-                _this.emit('init:done');
+var lodash_1 = require('lodash');
+function init(facile) {
+    return function (fn) {
+        function handleRoutes() {
+            facile.logger.debug('Initializing Routes');
+            lodash_1.each(facile._routes, function (route) {
+                console.log(route);
             });
-        else if (fn)
-            fn();
+            if (facile._config.auto)
+                facile.execAfter('init:routes', function () {
+                    facile.emit('init:done');
+                });
+            else if (fn)
+                fn();
+            else
+                return facile.init();
+        }
+        if (facile._config.auto)
+            facile.execBefore('init:routes', function () {
+                handleRoutes.call(facile);
+            });
         else
-            return this._inits;
-    }
-    if (this._config.auto)
-        this.execBefore('init:routes', function () {
-            handleRoutes.call(_this);
-        });
-    else
-        return handleRoutes.call(this);
+            return handleRoutes.call(facile);
+    };
 }
 exports.init = init;
 //# sourceMappingURL=routes.js.map

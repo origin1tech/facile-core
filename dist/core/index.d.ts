@@ -1,6 +1,6 @@
 import * as express from 'express';
 import { Core } from './core';
-import { IFacile, IConfig, IRouters, IRoute, IFilter, IMiddlewares, ISockets, IModels, IControllers, IModel, IController, IFilters, IConfigs, IRoutesMap, IService, IServices, IInit } from '../interfaces';
+import { IFacile, IConfig, IRouters, IRoute, IFilter, IMiddlewares, IModel, IController, IConfigs, IRoutesMap, IService, IInit } from '../interfaces';
 /**
  * Facile Core
  *
@@ -18,47 +18,12 @@ export declare class Facile extends Core implements IFacile {
      * @memberOf Facile
      */
     static instance: Facile;
-    _routers: IRouters;
-    _routes: Array<IRoute>;
-    _nextSocketId: number;
-    _sockets: ISockets;
-    _services: IServices;
-    _middlewares: IMiddlewares;
-    _filters: IFilters;
-    _models: IModels;
-    _controllers: IControllers;
     /**
      * Facile constructor.
      * @constructor
      * @memberof Facile
      */
     constructor();
-    /**
-     * Configure
-       *
-     * @method configure
-     * @param {(string | IConfig)} [config]
-     * @returns {Facile}
-     * @memberOf Facile
-     */
-    configure(config?: string | IConfig): Facile;
-    /**
-     * Returns Initialization Methods
-     *
-     * @method init
-     * @returns {IInit}
-     * @memberOf Facile
-     */
-    init(): IInit;
-    /**
-     * Initializies all registered components
-     * in series using async.series.
-     *
-     * @member initAll
-     * @returns {Facile}
-     * @memberOf Facile
-     */
-    initAll(): Facile;
     /**
      * Enables Lifecycle Listeners.
      *
@@ -78,7 +43,7 @@ export declare class Facile extends Core implements IFacile {
      * @returns {Facile}
      * @memberOf Facile
      */
-    enableListeners(): Facile;
+    private enableListeners();
     /**
      * Start Listening for Connections
      *
@@ -87,7 +52,36 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    listen(): void;
+    private listen();
+    /**
+     * Generic method for add controllers,
+     * models, filters and services.
+     *
+     * @param {*} name
+     * @param {*} Type
+     * @param {*} map
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    private addComponent(name, Type, collection?);
+    /**
+     * Configure
+       *
+     * @method configure
+     * @param {(string | IConfig)} [config]
+     * @returns {Facile}
+     * @memberOf Facile
+     */
+    configure(config?: string | IConfig): Facile;
+    /**
+     * Returns Initialization Methods
+     *
+     * @method init
+     * @returns {IInit}
+     * @memberOf Facile
+     */
+    init(): IInit;
     /**
      * Start Server.
      *
@@ -151,7 +145,7 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    addService(Service: IService | Array<IService>): Facile;
+    addService(name: string | IService, Service?: IService): Facile;
     /**
      * Registers Filter or Map of Filters.
      *
@@ -162,7 +156,7 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    addFilter(Filter: IFilter | Array<IFilter>): Facile;
+    addFilter(name: string | IFilter, Filter?: IFilter): Facile;
     /**
      * Registers a Model.
      *
@@ -172,7 +166,7 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    addModel(Model: IModel | Array<IModel>): Facile;
+    addModel(name: string | IModel, Model?: IModel): Facile;
     /**
      * Registers a Controller.
      *
@@ -182,7 +176,7 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    addController(Controller: IController | Array<IController>): Facile;
+    addController(name: string | IController, Controller?: IController): Facile;
     /**
      * Adds a route to the map.
      *
@@ -196,6 +190,7 @@ export declare class Facile extends Core implements IFacile {
      * @memberOf Facile
      */
     addRoute(route: IRoute | IRoutesMap | IRoute[]): Facile;
+    component(name: string, map: any): any;
     /**
      * Gets a Router by name.
      *
@@ -217,45 +212,49 @@ export declare class Facile extends Core implements IFacile {
      */
     config(name: string): IConfig;
     /**
-     * Gets a Service by name.
+     * Gets a Service
      *
-     * @method
+     * @member service
+     * @template T
      * @param {string} name
-     * @returns {IService}
+     * @returns {T}
      *
      * @memberOf Facile
      */
-    service(name: string): IService;
+    service<T>(name: string): T;
     /**
-     * Gets a Filter by name.
+     * Gets a Filter
      *
-     * @method
+     * @member filter
+     * @template T
      * @param {string} name
-     * @returns {IFilter}
+     * @returns {T}
      *
      * @memberOf Facile
      */
-    filter(name: string): IFilter;
+    filter<T>(name: string): T;
     /**
-     * Gets a Model by name.
+     * Gets a Model
      *
-     * @method
+     * @member model
+     * @template T
      * @param {string} name
-     * @returns {IModel}
+     * @returns {T}
      *
      * @memberOf Facile
      */
-    model(name: string): IModel;
+    model<T>(name: string): T;
     /**
-     * Gets a Controller by name.
+     * Gets a Controller.
      *
-     * @method
+     * @member controller
+     * @template T
      * @param {string} name
-     * @returns {IController}
+     * @returns {T}
      *
      * @memberOf Facile
      */
-    controller(name: string): IController;
+    controller<T>(name: string): T;
     /**
      * Convenience wrapper for lodash extend.
      *

@@ -3,7 +3,8 @@ var lodash_1 = require('lodash');
 /**
  * Add object to mapped collection.
  *
- * @member utils
+ * @method extendMap
+ * @memberOf utils
  * @export
  * @param {*} key
  * @param {*} val
@@ -19,13 +20,17 @@ function extendMap(key, val, obj) {
     if (lodash_1.isString(key) && val !== undefined) {
         obj[key] = val;
     }
-    else if (key.constructor || (Array.isArray(key) && key[0] && key[0].constructor)) {
-        if (Array.isArray(key))
+    else if (key.constructor || (Array.isArray(key) && key[0])) {
+        if (Array.isArray(key)) {
             key.forEach(function (klass) {
-                obj[klass.constructor.name] = klass;
+                var name = constructorName(klass);
+                obj[name] = klass;
             });
-        else
-            obj[key.constructor.name] = key;
+        }
+        else {
+            var name = constructorName(key);
+            obj[name] = key;
+        }
     }
     else if (lodash_1.isPlainObject(key)) {
         Object.keys(key).forEach(function (k) {
@@ -40,7 +45,8 @@ exports.extendMap = extendMap;
 /**
  * Extends object with supplied Type.
  *
- * @member utils
+ * @method initMap
+ * @memberOf utils
  * @export
  * @param {*} Type
  * @param {*} obj
@@ -70,7 +76,8 @@ exports.initMap = initMap;
  * Gets max value in object
  * of objects by property.
  *
- * @member utils
+ * @method maxIn
+ * @memberOf utils
  * @export
  * @param {*} obj
  * @param {string} key
@@ -86,7 +93,8 @@ exports.maxIn = maxIn;
  * Checks if object contains
  * property with value.
  *
- * @member utils
+ * @method hasIn
+ * @memberOf utils
  * @export
  * @param {*} obj
  * @param {*} key
@@ -107,7 +115,8 @@ exports.hasIn = hasIn;
  * url needs to be parsed into
  * an IRoute configuration.
  *
- * @member utils
+ * @method parseRoute
+ * @memberOf utils
  * @export
  * @param {string} url
  * @param {(IRequestHandler | Array<IRequestHandler> | string | IRoute)} handler
@@ -141,7 +150,9 @@ exports.parseRoute = parseRoute;
  * Validates Route configuration.
  * When invalid route.valid will
  * equal false.
- * @member utils
+ *
+ * @method validateRoute
+ * @memberOf utils
  * @export
  * @param {IRoute} route
  * @returns {IRoute}
@@ -171,7 +182,8 @@ exports.validateRoute = validateRoute;
 /**
  * Function for non operation.
  *
- * @member utils
+ * @method noop
+ * @methodOf utils
  * @export
  */
 function noop() { }
@@ -179,7 +191,8 @@ exports.noop = noop;
 /**
  * Truncates a string using lodash _.truncate
  *
- * @member utils
+ * @method truncate
+ * @memberOf utils
  * @export
  * @param {string} str
  * @param {number} length
@@ -196,9 +209,32 @@ function truncate(str, length, omission) {
 }
 exports.truncate = truncate;
 /**
+ * Gets constructor name with
+ * fallback to function name
+ * probably overkill.
+ *
+ * @method constructorName
+ * @memberOf utils
+ * @export
+ * @param {Function} fn
+ * @returns
+ */
+function constructorName(fn) {
+    if (fn.constructor && fn.constructor.name) {
+        var result = fn.constructor.name;
+        if (result === 'Function')
+            result = functionName(fn);
+        return result;
+    }
+    else {
+        return functionName(fn);
+    }
+}
+exports.constructorName = constructorName;
+/**
  * Gets function name.
  *
- * @member utils
+ * @method functionName
  * @export
  * @param {Function} fn
  * @returns {string}

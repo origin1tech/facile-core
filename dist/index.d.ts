@@ -17,7 +17,7 @@ declare module 'facile' {
 declare module 'facile/core' {
     import * as express from 'express';
     import { Core } from 'facile/core/core';
-    import { IFacile, IConfig, IRouters, IRoute, IFilter, IMiddlewares, ISockets, IModels, IControllers, IModel, IController, IFilters, IConfigs, IRoutesMap, IService, IServices, IInit } from 'facile/interfaces';
+    import { IFacile, IConfig, IRouters, IRoute, IFilter, IMiddlewares, IModel, IController, IConfigs, IRoutesMap, IService, IInit } from 'facile/interfaces';
     /**
         * Facile Core
         *
@@ -35,15 +35,6 @@ declare module 'facile/core' {
                 * @memberOf Facile
                 */
             static instance: Facile;
-            _routers: IRouters;
-            _routes: Array<IRoute>;
-            _nextSocketId: number;
-            _sockets: ISockets;
-            _services: IServices;
-            _middlewares: IMiddlewares;
-            _filters: IFilters;
-            _models: IModels;
-            _controllers: IControllers;
             /**
                 * Facile constructor.
                 * @constructor
@@ -67,44 +58,6 @@ declare module 'facile/core' {
                 * @memberOf Facile
                 */
             init(): IInit;
-            /**
-                * Initializies all registered components
-                * in series using async.series.
-                *
-                * @member initAll
-                * @returns {Facile}
-                * @memberOf Facile
-                */
-            initAll(): Facile;
-            /**
-                * Enables Lifecycle Listeners.
-                *
-                * Events
-                *
-                * init
-                * init:server
-                * init:services
-                * init:filters
-                * init:models
-                * init:controllers
-                * init:routes
-                * init:done
-                * core:start
-                *
-                * @method enableHooks
-                * @returns {Facile}
-                * @memberOf Facile
-                */
-            enableListeners(): Facile;
-            /**
-                * Start Listening for Connections
-                *
-                * @method
-                * @returns {Facile}
-                *
-                * @memberOf Facile
-                */
-            listen(): void;
             /**
                 * Start Server.
                 *
@@ -168,7 +121,7 @@ declare module 'facile/core' {
                 *
                 * @memberOf Facile
                 */
-            addService(Service: IService | Array<IService>): Facile;
+            addService(name: string | IService, Service?: IService): Facile;
             /**
                 * Registers Filter or Map of Filters.
                 *
@@ -179,7 +132,7 @@ declare module 'facile/core' {
                 *
                 * @memberOf Facile
                 */
-            addFilter(Filter: IFilter | Array<IFilter>): Facile;
+            addFilter(name: string | IFilter, Filter?: IFilter): Facile;
             /**
                 * Registers a Model.
                 *
@@ -189,7 +142,7 @@ declare module 'facile/core' {
                 *
                 * @memberOf Facile
                 */
-            addModel(Model: IModel | Array<IModel>): Facile;
+            addModel(name: string | IModel, Model?: IModel): Facile;
             /**
                 * Registers a Controller.
                 *
@@ -199,7 +152,7 @@ declare module 'facile/core' {
                 *
                 * @memberOf Facile
                 */
-            addController(Controller: IController | Array<IController>): Facile;
+            addController(name: string | IController, Controller?: IController): Facile;
             /**
                 * Adds a route to the map.
                 *
@@ -213,6 +166,7 @@ declare module 'facile/core' {
                 * @memberOf Facile
                 */
             addRoute(route: IRoute | IRoutesMap | IRoute[]): Facile;
+            component(name: string, map: any): any;
             /**
                 * Gets a Router by name.
                 *
@@ -234,45 +188,49 @@ declare module 'facile/core' {
                 */
             config(name: string): IConfig;
             /**
-                * Gets a Service by name.
+                * Gets a Service
                 *
-                * @method
+                * @member service
+                * @template T
                 * @param {string} name
-                * @returns {IService}
+                * @returns {T}
                 *
                 * @memberOf Facile
                 */
-            service(name: string): IService;
+            service<T>(name: string): T;
             /**
-                * Gets a Filter by name.
+                * Gets a Filter
                 *
-                * @method
+                * @member filter
+                * @template T
                 * @param {string} name
-                * @returns {IFilter}
+                * @returns {T}
                 *
                 * @memberOf Facile
                 */
-            filter(name: string): IFilter;
+            filter<T>(name: string): T;
             /**
-                * Gets a Model by name.
+                * Gets a Model
                 *
-                * @method
+                * @member model
+                * @template T
                 * @param {string} name
-                * @returns {IModel}
+                * @returns {T}
                 *
                 * @memberOf Facile
                 */
-            model(name: string): IModel;
+            model<T>(name: string): T;
             /**
-                * Gets a Controller by name.
+                * Gets a Controller.
                 *
-                * @method
+                * @member controller
+                * @template T
                 * @param {string} name
-                * @returns {IController}
+                * @returns {T}
                 *
                 * @memberOf Facile
                 */
-            controller(name: string): IController;
+            controller<T>(name: string): T;
             /**
                 * Convenience wrapper for lodash extend.
                 *
@@ -328,7 +286,7 @@ declare module 'facile/interfaces' {
             truncate(str: string, length: number, omission: string): string;
     }
     export interface IInit {
-            run(): IInit;
+            run(): void;
             server(): IInit;
             services(): IInit;
             filters(): IInit;
@@ -352,14 +310,15 @@ declare module 'facile/interfaces' {
             _pkg: any;
             _config: IConfig;
             _configs: IConfigs;
-            _inits: IInit;
-            _listeners: IListenersMap;
-            _beforeEvents: any;
-            _afterEvents: any;
-            _configured: boolean;
-            _initialized: boolean;
-            _started: boolean;
-            _autoInit: boolean;
+            _routers: IRouters;
+            _routes: Array<IRoute>;
+            _middlewares: IMiddlewares;
+            _services: any;
+            _filters: any;
+            _models: any;
+            _controllers: any;
+            _nextSocketId: number;
+            _sockets: ISockets;
             before(name: string, event: ICallback): ICore;
             after(name: string, event: ICallback): ICore;
             hasBefore(name: string): boolean;
@@ -369,37 +328,21 @@ declare module 'facile/interfaces' {
             execEvents(name: string, type: string, fn?: ICallbackResult): void;
     }
     export interface IFacile extends ICore {
-            _routers: IRouters;
-            _routes: Array<IRoute>;
-            _nextSocketId: number;
-            _sockets: ISockets;
-            _services: IServices;
-            _middlewares: IMiddlewares;
-            _filters: IFilters;
-            _models: IModels;
-            _controllers: IControllers;
             configure(config?: string | IConfig): IFacile;
             init(): IInit;
-            initAll(): IFacile;
-            enableListeners(): IFacile;
-            listen(): void;
             start(config?: string | IConfig | Function, fn?: Function): IFacile;
             stop(msg?: string, code?: number): void;
             addConfig(name: string, config: IConfig): IFacile;
             addRouter(name: string, router?: Router): Router;
             addMiddleware(name: string, fn?: any, order?: number): IFacile;
-            addService(Service: IService | Array<IService>): IFacile;
-            addFilter(Filter: IFilter | Array<IFilter>): IFacile;
-            addModel(Model: IModel | Array<IModel>): IFacile;
-            addController(Controller: IController | Array<IController>): IFacile;
-            addService(Service: IService | Array<IService>, instance?: boolean): IFacile;
             addRoute(method: string | string[] | IRoutesMap | IRoute[], url?: string, handler?: IRequestHandler, filters?: IRequestHandler | IRequestHandler[], router?: string): IFacile;
             router(name: string): Router;
             config(name: string): IConfig;
-            filter(name: string): IFilter;
-            service(name: string): IService;
-            model(name: string): IModel;
-            controller(name: string): IController;
+            filter<T>(name: string): T;
+            service<T>(name: string): T;
+            model<T>(name: string): T;
+            controller<T>(name: string): T;
+            component(name: string, map: any): any;
             extend(...args: any[]): any;
             extendConfig(...configs: any[]): IConfig;
     }
@@ -452,6 +395,10 @@ declare module 'facile/interfaces' {
             'view engine'?: string;
             views?: string | string[] | boolean;
     }
+    export interface IDatabase {
+            'module': any;
+            connection: any;
+    }
     /**
         * Server Configuration.
         *
@@ -469,7 +416,7 @@ declare module 'facile/interfaces' {
             logger?: LoggerInstance;
             logLevel?: 'error' | 'warn' | 'info' | 'debug';
             views?: IViewConfig;
-            database?: any;
+            database?: IDatabase;
             auto?: boolean;
     }
     /**
@@ -596,73 +543,16 @@ declare module 'facile/interfaces' {
     export interface IRoutesMap {
             [url: string]: IRequestHandler | Array<IRequestHandler> | string | IRoute;
     }
-    /**
-        * Filter Interface.
-        *
-        * @export
-        * @interface IFilter
-        */
-    export interface IFilter {
+    export interface IComponent {
+            facile: IFacile;
     }
-    /**
-        * Map of Filters.
-        *
-        * @export
-        * @interface IFilters
-        */
-    export interface IFilters {
-            [name: string]: IFilter;
+    export interface IFilter extends IComponent {
     }
-    /**
-        * Service Interface
-        *
-        * @export
-        * @interface IService
-        */
-    export interface IService {
-    }
-    /**
-        * Map of Services
-        *
-        * @export
-        * @interface IServices
-        */
-    export interface IServices {
-            [name: string]: IService;
-    }
-    /**
-        * Model interface.
-        *
-        * @export
-        * @interface IModel
-        */
     export interface IModel {
     }
-    /**
-        * Map of IModels.
-        *
-        * @export
-        * @interface IModels
-        */
-    export interface IModels {
-            [name: string]: IModel;
-    }
-    /**
-        * Controller Interface.
-        *
-        * @export
-        * @interface IController
-        */
     export interface IController {
     }
-    /**
-        * Map of Controllers.
-        *
-        * @export
-        * @interface IControllers
-        */
-    export interface IControllers {
-            [name: string]: IController;
+    export interface IService {
     }
 }
 
@@ -678,7 +568,7 @@ declare module 'facile/core/core' {
     import { Express } from 'express';
     import { Server } from 'net';
     import { EventEmitter } from 'events';
-    import { ICore, ICallbackResult, ICallback, IConfig, IConfigs, IListenersMap, IBoom, IInit } from 'facile/interfaces';
+    import { ICore, ICallbackResult, ICallback, IConfig, IConfigs, IListenersMap, IBoom, IRouters, ISockets, IRoute } from 'facile/interfaces';
     /**
         * Facile Core
         *
@@ -694,16 +584,25 @@ declare module 'facile/core/core' {
             server: Server;
             logger: LoggerInstance;
             _pkg: any;
+            _apppkg: any;
             _config: IConfig;
             _configs: IConfigs;
-            _inits: IInit;
-            _listeners: IListenersMap;
-            _beforeEvents: any;
-            _afterEvents: any;
-            _configured: boolean;
-            _initialized: boolean;
-            _started: boolean;
-            _autoInit: boolean;
+            _routers: IRouters;
+            _middlewares: any;
+            _services: any;
+            _filters: any;
+            _models: any;
+            _controllers: any;
+            _routes: Array<IRoute>;
+            _nextSocketId: number;
+            _sockets: ISockets;
+            protected _listeners: IListenersMap;
+            protected _beforeEvents: any;
+            protected _afterEvents: any;
+            protected _configured: boolean;
+            protected _initialized: boolean;
+            protected _started: boolean;
+            protected _autoInit: boolean;
             /**
                 * Creates an instance of Core.
                 *
@@ -841,6 +740,7 @@ declare module 'facile/types/filter' {
         * @implements {IFilter}
         */
     export class Filter implements IFilter {
+            static type: string;
             facile: IFacile;
             /**
                 * Creates an instance of Filter.
@@ -862,6 +762,7 @@ declare module 'facile/types/model' {
         * @class Model
         */
     export class Model implements IModel {
+            static type: string;
             facile: IFacile;
             /**
                 * Creates an instance of Model.
@@ -883,6 +784,7 @@ declare module 'facile/types/controller' {
         * @class Controller
         */
     export class Controller implements IController {
+            static type: string;
             facile: IFacile;
             /**
                 * Creates an instance of Controller.

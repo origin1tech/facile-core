@@ -6,7 +6,6 @@ var __extends = (this && this.__extends) || function (d, b) {
 };
 var express = require('express');
 var Boom = require('boom');
-var async_1 = require('async');
 var winston_1 = require('winston');
 var lodash_1 = require('lodash');
 var chalk_1 = require('chalk');
@@ -40,14 +39,6 @@ var Facile = (function (_super) {
     function Facile() {
         // Extend class with emitter.
         _super.call(this);
-        this._routers = {};
-        this._nextSocketId = 0;
-        this._sockets = {};
-        this._services = {};
-        this._middlewares = {};
-        this._filters = {};
-        this._models = {};
-        this._controllers = {};
         if (Facile.instance)
             return Facile.instance;
         // Set Facile's package.json to variable.
@@ -59,7 +50,6 @@ var Facile = (function (_super) {
             transports: [
                 new (winston_1.transports.Console)({
                     colorize: true,
-                    prettyPrint: true,
                     handleExceptions: true,
                     humanReadableUnhandledException: true
                 })
@@ -77,6 +67,80 @@ var Facile = (function (_super) {
         Facile.instance = this;
         return this;
     }
+    ///////////////////////////////////////////////////
+    // PRIVATE METHODS
+    ///////////////////////////////////////////////////
+    /**
+     * Enables Lifecycle Listeners.
+     *
+     * Events
+     *
+     * init
+     * init:server
+     * init:services
+     * init:filters
+     * init:models
+     * init:controllers
+     * init:routes
+     * init:done
+     * core:start
+     *
+     * @method enableHooks
+     * @returns {Facile}
+     * @memberOf Facile
+     */
+    Facile.prototype.enableListeners = function () {
+        var init = this.init();
+        this.on('init', init.run);
+        this.on('init:server', init.server);
+        this.on('init:services', init.services);
+        this.on('init:filters', init.filters);
+        this.on('init:models', init.models);
+        this.on('init:controllers', init.controllers);
+        this.on('init:routes', init.routes);
+        this.on('init:done', init.done);
+        this.on('core:start', this.start);
+        this.on('core:listen', this.listen);
+        // Set flag indicating that
+        // init hooks are listening
+        // in case called manually.
+        this._config.auto = true;
+        return this;
+    };
+    /**
+     * Start Listening for Connections
+     *
+     * @method
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    Facile.prototype.listen = function () {
+        if (!this._started) {
+            this.logger.error('Facile.listen() cannot be called directly please use .start().');
+            process.exit();
+        }
+        // Listen for connections.
+        this.logger.debug('Server preparing to listen.');
+        this.server.listen(this._config.port, this._config.host, function (err) {
+            if (err)
+                throw err;
+        });
+    };
+    /**
+     * Generic method for add controllers,
+     * models, filters and services.
+     *
+     * @param {*} name
+     * @param {*} Type
+     * @param {*} map
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    Facile.prototype.addComponent = function (name, Type, collection) {
+        return this;
+    };
     ///////////////////////////////////////////////////
     // CONFIGURE & MANAGE SERVER
     ///////////////////////////////////////////////////
@@ -135,7 +199,7 @@ var Facile = (function (_super) {
      * @memberOf Facile
      */
     Facile.prototype.init = function () {
-        var that = this;
+        var facile = this;
         // Ensure configuration.
         if (!this._config) {
             this.logger.warn('Failed to initialize please run facile.configure()...exiting.');
@@ -156,11 +220,10 @@ var Facile = (function (_super) {
          * @memberOf Facile
          */
         function run() {
-            var _this = this;
-            if (!this._config.auto)
+            if (!facile._config.auto)
                 throw new Error('The method init().run() cannot be called manually use { auto: true } in your configuration.');
-            this.execBefore('init', function () {
-                _this.emit('init:server');
+            facile.execBefore('init', function () {
+                facile.emit('init:server');
             });
         }
         /**
@@ -173,112 +236,36 @@ var Facile = (function (_super) {
          * @memberOf Facile
          */
         function done() {
-            var _this = this;
-            this.logger.debug('Facile initialization complete.');
-            this._initialized = true;
-            if (this._config.auto) {
-                this.execAfter('init', function () {
-                    _this.emit('core:start');
+            facile.logger.debug('Facile initialization complete.');
+            facile._initialized = true;
+            if (facile._config.auto) {
+                facile.execAfter('init', function () {
+                    facile.emit('core:start');
                 });
             }
             else {
-                return this;
+                return facile;
             }
         }
         var inits = {
-            run: run.bind(that),
-            server: server.init.bind(that),
-            services: services.init.bind(that),
-            filters: filters.init.bind(that),
-            models: models.init.bind(that),
-            controllers: controllers.init.bind(that),
-            routes: routes.init.bind(that),
-            done: done.bind(that)
+            // run: 					run.bind(that),
+            // server: 				server.init.bind(that),
+            // services: 			services.init.bind(that),
+            // filters: 			filters.init.bind(that),
+            // models: 				models.init.bind(that),
+            // controllers: 	controllers.init.bind(that),
+            // routes: 				routes.init.bind(that),
+            // done: 					done.bind(that)
+            run: run,
+            server: server.init(facile),
+            services: services.init(facile),
+            filters: filters.init(facile),
+            models: models.init(facile),
+            controllers: controllers.init(facile),
+            routes: routes.init(facile),
+            done: done
         };
         return inits;
-    };
-    /**
-     * Initializies all registered components
-     * in series using async.series.
-     *
-     * @member initAll
-     * @returns {Facile}
-     * @memberOf Facile
-     */
-    Facile.prototype.initAll = function () {
-        var _this = this;
-        var inits = this.init();
-        var _server = lodash_1.bind(server.init, this);
-        var series = [
-            _server
-        ];
-        // Iterate series of all initializations.
-        async_1.series(series, function (err) {
-            if (err)
-                _this.logger.error(err.message || 'Unknown error', err);
-            _this._initialized = true;
-        });
-        // Don't wait for series
-        // return for chaining we'll
-        // ensure done before start.
-        return this;
-    };
-    /**
-     * Enables Lifecycle Listeners.
-     *
-     * Events
-     *
-     * init
-     * init:server
-     * init:services
-     * init:filters
-     * init:models
-     * init:controllers
-     * init:routes
-     * init:done
-     * core:start
-     *
-     * @method enableHooks
-     * @returns {Facile}
-     * @memberOf Facile
-     */
-    Facile.prototype.enableListeners = function () {
-        var init = this.init();
-        this.on('init', init.run);
-        this.on('init:server', init.server);
-        this.on('init:services', init.services);
-        this.on('init:filters', init.filters);
-        this.on('init:models', init.models);
-        this.on('init:controllers', init.controllers);
-        this.on('init:routes', init.routes);
-        this.on('init:done', init.done);
-        this.on('core:start', this.start);
-        this.on('core:listen', this.listen);
-        // Set flag indicating that
-        // init hooks are listening
-        // in case called manually.
-        this._config.auto = true;
-        return this;
-    };
-    /**
-     * Start Listening for Connections
-     *
-     * @method
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
-    Facile.prototype.listen = function () {
-        if (!this._started) {
-            this.logger.error('Facile.listen() cannot be called directly please use .start().');
-            process.exit();
-        }
-        // Listen for connections.
-        this.logger.debug('Server preparing to listen.');
-        this.server.listen(this._config.port, this._config.host, function (err) {
-            if (err)
-                throw err;
-        });
     };
     /**
      * Start Server.
@@ -509,9 +496,9 @@ var Facile = (function (_super) {
      *
      * @memberOf Facile
      */
-    Facile.prototype.addService = function (Service) {
-        utils.extendMap(Service, this._services);
-        return this;
+    Facile.prototype.addService = function (name, Service) {
+        var collection = this._services;
+        return this.addComponent(name, Service, this._services);
     };
     /**
      * Registers Filter or Map of Filters.
@@ -523,9 +510,8 @@ var Facile = (function (_super) {
      *
      * @memberOf Facile
      */
-    Facile.prototype.addFilter = function (Filter) {
-        utils.extendMap(Filter, this._filters);
-        return this;
+    Facile.prototype.addFilter = function (name, Filter) {
+        return this.addComponent(name, Filter, this._filters);
     };
     /**
      * Registers a Model.
@@ -536,9 +522,8 @@ var Facile = (function (_super) {
      *
      * @memberOf Facile
      */
-    Facile.prototype.addModel = function (Model) {
-        utils.extendMap(Model, this._models);
-        return this;
+    Facile.prototype.addModel = function (name, Model) {
+        return this.addComponent(name, Model, this._models);
     };
     /**
      * Registers a Controller.
@@ -549,9 +534,8 @@ var Facile = (function (_super) {
      *
      * @memberOf Facile
      */
-    Facile.prototype.addController = function (Controller) {
-        utils.extendMap(Controller, this._controllers);
-        return this;
+    Facile.prototype.addController = function (name, Controller) {
+        return this.addComponent(name, Controller, this._controllers);
     };
     /**
      * Adds a route to the map.
@@ -589,8 +573,8 @@ var Facile = (function (_super) {
         else if (lodash_1.isPlainObject(route)) {
             var routes_2 = route;
             lodash_1.each(routes_2, function (v, k) {
-                var r = utils.parseRoute(k, v);
-                validate(r);
+                var rte = utils.parseRoute(k, v);
+                validate(rte);
             });
         }
         else {
@@ -601,6 +585,10 @@ var Facile = (function (_super) {
     ///////////////////////////////////////////////////
     // INSTANCE HELPERS
     ///////////////////////////////////////////////////
+    Facile.prototype.component = function (name, map) {
+        var obj = this[map] || {};
+        return obj[name];
+    };
     /**
      * Gets a Router by name.
      *
@@ -626,52 +614,60 @@ var Facile = (function (_super) {
         return this._configs[name];
     };
     /**
-     * Gets a Service by name.
+     * Gets a Service
      *
-     * @method
+     * @member service
+     * @template T
      * @param {string} name
-     * @returns {IService}
+     * @returns {T}
      *
      * @memberOf Facile
      */
     Facile.prototype.service = function (name) {
-        return this._services[name];
+        var component = this._services[name];
+        return component;
     };
     /**
-     * Gets a Filter by name.
+     * Gets a Filter
      *
-     * @method
+     * @member filter
+     * @template T
      * @param {string} name
-     * @returns {IFilter}
+     * @returns {T}
      *
      * @memberOf Facile
      */
     Facile.prototype.filter = function (name) {
-        return this._filters[name];
+        var component = this._filters[name];
+        return component;
     };
     /**
-     * Gets a Model by name.
+     * Gets a Model
      *
-     * @method
+     * @member model
+     * @template T
      * @param {string} name
-     * @returns {IModel}
+     * @returns {T}
      *
      * @memberOf Facile
      */
     Facile.prototype.model = function (name) {
-        return this._models[name];
+        var component = this._models[name];
+        return component;
     };
     /**
-     * Gets a Controller by name.
+     * Gets a Controller.
      *
-     * @method
+     * @member controller
+     * @template T
      * @param {string} name
-     * @returns {IController}
+     * @returns {T}
      *
      * @memberOf Facile
      */
     Facile.prototype.controller = function (name) {
-        return this._controllers[name];
+        var component = this._controllers[name];
+        return component;
     };
     /**
      * Convenience wrapper for lodash extend.

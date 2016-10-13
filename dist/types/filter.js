@@ -15,9 +15,13 @@ var Filter = (function () {
      * @memberOf Filter
      */
     function Filter(facile) {
-        this.facile = facile;
+        Object.defineProperty(this, 'facile', {
+            enumerable: false,
+            value: facile
+        });
         return this;
     }
+    Filter.type = 'Filter';
     return Filter;
 }());
 exports.Filter = Filter;

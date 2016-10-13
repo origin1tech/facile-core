@@ -1,34 +1,27 @@
 "use strict";
-/**
- * Initializes Filters
- *
- * @export
- * @param {Function} [fn]
- * @returns {IFacile}
- */
-function init(fn) {
-    var _this = this;
-    function handleFilters() {
-        var _this = this;
-        this.logger.debug('Initializing Filters');
-        // Init code here.
-        if (this._config.auto)
-            this.execAfter('init:filters', function () {
-                _this.emit('init:models');
-            });
-        else if (fn)
-            fn();
-        else {
-            console.log('hit3');
-            return this._inits;
+var utils_1 = require('./utils');
+function init(facile) {
+    return function (fn) {
+        function handleFilters() {
+            facile.logger.debug('Initializing Filters');
+            // Initialize the filters.
+            utils_1.initMap(facile._filters, facile);
+            if (facile._config.auto)
+                facile.execAfter('init:filters', function () {
+                    facile.emit('init:models');
+                });
+            else if (fn)
+                fn();
+            else
+                return facile.init();
         }
-    }
-    if (this._config.auto)
-        this.execBefore('init:filters', function () {
-            handleFilters.call(_this);
-        });
-    else
-        return handleFilters.call(this);
+        if (facile._config.auto)
+            facile.execBefore('init:filters', function () {
+                handleFilters.call(facile);
+            });
+        else
+            return handleFilters.call(facile);
+    };
 }
 exports.init = init;
 //# sourceMappingURL=filters.js.map

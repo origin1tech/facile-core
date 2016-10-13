@@ -14,9 +14,13 @@ var Model = (function () {
      * @memberOf Model
      */
     function Model(facile) {
-        this.facile = facile;
+        Object.defineProperty(this, 'facile', {
+            enumerable: false,
+            value: facile
+        });
         return this;
     }
+    Model.type = 'Model';
     return Model;
 }());
 exports.Model = Model;

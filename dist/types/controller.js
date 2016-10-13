@@ -14,9 +14,13 @@ var Controller = (function () {
      * @memberOf Controller
      */
     function Controller(facile) {
-        this.facile = facile;
+        Object.defineProperty(this, 'facile', {
+            enumerable: false,
+            value: facile
+        });
         return this;
     }
+    Controller.type = 'Controller';
     return Controller;
 }());
 exports.Controller = Controller;

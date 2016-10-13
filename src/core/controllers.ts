@@ -1,36 +1,39 @@
-import { IFacile, IInit } from '../interfaces';
+import { IInit } from '../interfaces';
+import {  } from './utils';
+import { Facile } from './';
+import { each } from 'lodash';
 
-/**
- * Initializes Controllers
- *
- * @export
- * @param {Function} [fn]
- * @returns {IFacile}
- */
-export function init(fn?: Function): IInit {
 
-	function handleControllers() {
+export function init(facile: Facile): any {
 
-		this.logger.debug('Initializing Controllers');
+	return (fn?: Function): IInit => {
 
-		// Init code here.
+		function handleControllers() {
 
-		if (this._config.auto)
-			this.execAfter('init:controllers', () => {
-				this.emit('init:routes');
+			facile.logger.debug('Initializing Controllers');
+
+			// Initialize the controllers.
+			// each(facile._controllers, (Ctrl, key) => {
+			// 	facile._controllers[key] = new Ctrl(facile);
+			// });
+
+			if (facile._config.auto)
+				facile.execAfter('init:controllers', () => {
+					facile.emit('init:routes');
+				});
+			else if (fn)
+				fn();
+			else
+				return facile.init();
+
+		}
+
+		if (facile._config.auto)
+			facile.execBefore('init:controllers', () => {
+				handleControllers.call(facile);
 			});
-		else if (fn)
-			fn();
 		else
-			return this._inits;
-
-	}
-
-	if (this._config.auto)
-		this.execBefore('init:controllers', () => {
-			handleControllers.call(this);
-		});
-	else
-		return handleControllers.call(this);
+			return handleControllers.call(facile);
+		};
 
 }

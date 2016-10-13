@@ -1,9 +1,2 @@
-import { IInit } from '../interfaces';
-/**
- * Initializes Filters
- *
- * @export
- * @param {Function} [fn]
- * @returns {IFacile}
- */
-export declare function init(fn?: Function): IInit;
+import { Facile } from './';
+export declare function init(facile: Facile): any;

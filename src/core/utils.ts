@@ -6,7 +6,8 @@ import { IFacile, IRoute, IRequestHandler } from '../interfaces';
 /**
  * Add object to mapped collection.
  *
- * @member utils
+ * @method extendMap
+ * @memberOf utils
  * @export
  * @param {*} key
  * @param {*} val
@@ -27,15 +28,19 @@ export function extendMap(key: any, val: any, obj?: any) {
 
 	// Check if is class with construtor
 	// or Array of class object.
-	else if (key.constructor || (Array.isArray(key) && key[0] && key[0].constructor)) {
+	else if (key.constructor || (Array.isArray(key) && key[0])) {
 
-		if (Array.isArray(key))
+		if (Array.isArray(key)) {
 			key.forEach((klass) => {
-				obj[klass.constructor.name] = klass;
+				let name = constructorName(klass);
+				obj[name] = klass;
 			});
+		}
 
-		else
-			obj[key.constructor.name] = key;
+		else {
+			let name = constructorName(key);
+			obj[name] = key;
+		}
 
 	}
 
@@ -55,7 +60,8 @@ export function extendMap(key: any, val: any, obj?: any) {
 /**
  * Extends object with supplied Type.
  *
- * @member utils
+ * @method initMap
+ * @memberOf utils
  * @export
  * @param {*} Type
  * @param {*} obj
@@ -90,7 +96,8 @@ export function initMap(Type: any, obj: any, instance?: any) {
  * Gets max value in object
  * of objects by property.
  *
- * @member utils
+ * @method maxIn
+ * @memberOf utils
  * @export
  * @param {*} obj
  * @param {string} key
@@ -106,7 +113,8 @@ export function maxIn(obj: any, key: string): number {
  * Checks if object contains
  * property with value.
  *
- * @member utils
+ * @method hasIn
+ * @memberOf utils
  * @export
  * @param {*} obj
  * @param {*} key
@@ -127,7 +135,8 @@ export function hasIn(obj: any, key: any, val: any): boolean {
  * url needs to be parsed into
  * an IRoute configuration.
  *
- * @member utils
+ * @method parseRoute
+ * @memberOf utils
  * @export
  * @param {string} url
  * @param {(IRequestHandler | Array<IRequestHandler> | string | IRoute)} handler
@@ -151,6 +160,7 @@ export function parseRoute(url: string,
 	if (isPlainObject(handler)) {
 		route = _extend({}, route, handler);
 	}
+
 	// Set last handler as primary handler
 	// set others to filters property.
 	else if (Array.isArray(handler)) {
@@ -170,7 +180,9 @@ export function parseRoute(url: string,
  * Validates Route configuration.
  * When invalid route.valid will
  * equal false.
- * @member utils
+ *
+ * @method validateRoute
+ * @memberOf utils
  * @export
  * @param {IRoute} route
  * @returns {IRoute}
@@ -209,7 +221,8 @@ export function validateRoute(route: IRoute): IRoute {
 /**
  * Function for non operation.
  *
- * @member utils
+ * @method noop
+ * @methodOf utils
  * @export
  */
 export function noop () {}
@@ -217,7 +230,8 @@ export function noop () {}
 /**
  * Truncates a string using lodash _.truncate
  *
- * @member utils
+ * @method truncate
+ * @memberOf utils
  * @export
  * @param {string} str
  * @param {number} length
@@ -233,9 +247,32 @@ export function truncate(str: string, length: number, omission: string = '...'):
 }
 
 /**
+ * Gets constructor name with
+ * fallback to function name
+ * probably overkill.
+ *
+ * @method constructorName
+ * @memberOf utils
+ * @export
+ * @param {Function} fn
+ * @returns
+ */
+export function constructorName(fn: Function) {
+	if (fn.constructor && fn.constructor.name) {
+		let result = fn.constructor.name;
+		if (result === 'Function')
+			result = functionName(fn);
+		return result;
+	}
+	else {
+		return functionName(fn);
+	}
+}
+
+/**
  * Gets function name.
  *
- * @member utils
+ * @method functionName
  * @export
  * @param {Function} fn
  * @returns {string}

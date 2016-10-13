@@ -1,32 +1,27 @@
 "use strict";
-/**
- * Initializes Services
- *
- * @export
- * @param {Function} [fn]
- * @returns {IFacile}
- */
-function init(fn) {
-    var _this = this;
-    function handleServices() {
-        var _this = this;
-        this.logger.debug('Initializing Services');
-        // Init code here.
-        if (this._config.auto)
-            this.execAfter('init:services', function () {
-                _this.emit('init:filters');
+var utils_1 = require('./utils');
+function init(facile) {
+    return function (fn) {
+        function handleServices() {
+            facile.logger.debug('Initializing Services');
+            // Initialize the services.
+            utils_1.initMap(facile._services, facile);
+            if (facile._config.auto)
+                facile.execAfter('init:services', function () {
+                    facile.emit('init:filters');
+                });
+            else if (fn)
+                fn();
+            else
+                return facile.init();
+        }
+        if (facile._config.auto)
+            facile.execBefore('init:services', function () {
+                handleServices.call(facile);
             });
-        else if (fn)
-            fn();
         else
-            return this._inits;
-    }
-    if (this._config.auto)
-        this.execBefore('init:services', function () {
-            handleServices.call(_this);
-        });
-    else
-        return handleServices.call(this);
+            return handleServices.call(facile);
+    };
 }
 exports.init = init;
 //# sourceMappingURL=services.js.map

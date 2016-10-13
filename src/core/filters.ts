@@ -1,38 +1,37 @@
-import { IFacile, IInit } from '../interfaces';
+import { IInit } from '../interfaces';
+import {  } from './utils';
+import { Facile } from './';
 
-/**
- * Initializes Filters
- *
- * @export
- * @param {Function} [fn]
- * @returns {IFacile}
- */
-export function init(fn?: Function): IInit {
 
-	function handleFilters() {
+export function init(facile: Facile): any {
 
-		this.logger.debug('Initializing Filters');
+	return (fn?: Function): IInit => {
 
-		// Init code here.
+		function handleFilters() {
 
-		if (this._config.auto)
-			this.execAfter('init:filters', () => {
-				this.emit('init:models');
-			});
-		else if (fn)
-			fn();
-		else {
-			console.log('hit3');
-			return this._inits;
+			facile.logger.debug('Initializing Filters');
+
+			// Initialize the filters.
+			// initMap(facile._filters, facile);
+
+			if (facile._config.auto)
+				facile.execAfter('init:filters', () => {
+					facile.emit('init:models');
+				});
+			else if (fn)
+				fn();
+			else
+				return facile.init();
+
 		}
 
-	}
+		if (facile._config.auto)
+			facile.execBefore('init:filters', () => {
+				handleFilters.call(facile);
+			});
+		else
+			return handleFilters.call(facile);
 
-	if (this._config.auto)
-		this.execBefore('init:filters', () => {
-			handleFilters.call(this);
-		});
-	else
-		return handleFilters.call(this);
+	};
 
 }

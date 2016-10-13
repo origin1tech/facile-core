@@ -14,7 +14,10 @@ var Service = (function () {
      * @memberOf Service
      */
     function Service(facile) {
-        this.facile = facile;
+        Object.defineProperty(this, 'facile', {
+            enumerable: false,
+            value: facile
+        });
         return this;
     }
     return Service;

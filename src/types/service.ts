@@ -9,6 +9,8 @@ import { IService, IFacile } from '../interfaces';
  */
 export class Service implements IService {
 
+	facile: IFacile;
+
 	/**
 	 * Creates an instance of Service.
 	 *
@@ -16,7 +18,11 @@ export class Service implements IService {
 	 *
 	 * @memberOf Service
 	 */
-	constructor(public facile: IFacile) {
+	constructor(facile: IFacile) {
+		Object.defineProperty(this, 'facile', {
+			enumerable: false,
+			value: facile
+		});
 		return this;
 	}
 

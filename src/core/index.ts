@@ -18,9 +18,10 @@ import * as utils from './utils';
 import { Core } from './core';
 import * as defaults from './defaults';
 import { IFacile, ICertificate, IConfig, IRouters, IRoute, IBoom, ICallbackResult, IFilter,
-				IMiddleware, IMiddlewares, ISockets, IModels, IControllers, IModel, IController,
-				IUtils, IFilters, IConfigs, IRequestHandler, IRoutesMap, IService, IServices,
+				IMiddleware, ISockets, IModel, IController,
+				IUtils, IConfigs, IRequestHandler, IRoutesMap, IService,
 				IViewConfig, IInit, ICallback } from '../interfaces';
+import { Collection } from './collection';
 
 import * as server from './server';
 import * as services from './services';
@@ -51,18 +52,6 @@ export class Facile extends Core implements IFacile {
 	 */
 	static instance: Facile;
 
-	_routers: IRouters = {};
-	_routes: Array<IRoute>;
-
-	_nextSocketId: number = 0;
-	_sockets: ISockets = {};
-
-	_services: IServices = {};
-	_middlewares: IMiddlewares = {};
-	_filters: IFilters = {};
-	_models: IModels = {};
-	_controllers: IControllers = {};
-
 	/**
 	 * Facile constructor.
 	 * @constructor
@@ -86,7 +75,6 @@ export class Facile extends Core implements IFacile {
 			transports: [
 				new (transports.Console)({
 					colorize: true,
-					prettyPrint: true,
 					handleExceptions: true,
 					humanReadableUnhandledException: true
 				})
@@ -111,8 +99,125 @@ export class Facile extends Core implements IFacile {
 	}
 
 	///////////////////////////////////////////////////
+	// PRIVATE METHODS
+	///////////////////////////////////////////////////
+
+	/**
+	 * Enables Lifecycle Listeners.
+	 *
+	 * Events
+	 *
+	 * init
+	 * init:server
+	 * init:services
+	 * init:filters
+	 * init:models
+	 * init:controllers
+	 * init:routes
+	 * init:done
+	 * core:start
+	 *
+	 * @method enableHooks
+	 * @returns {Facile}
+	 * @memberOf Facile
+	 */
+	private enableListeners(): Facile {
+
+		let init = this.init();
+
+		this.on('init', init.run);
+
+		this.on('init:server', init.server);
+
+		this.on('init:services', init.services);
+
+		this.on('init:filters', init.filters);
+
+		this.on('init:models', init.models);
+
+		this.on('init:controllers', init.controllers);
+
+		this.on('init:routes', init.routes);
+
+		this.on('init:done', init.done);
+
+		this.on('core:start', this.start);
+
+		this.on('core:listen', this.listen);
+
+		// Set flag indicating that
+		// init hooks are listening
+		// in case called manually.
+		this._config.auto = true;
+
+		return this;
+
+	}
+
+	/**
+	 * Start Listening for Connections
+	 *
+	 * @method
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	private listen(): void {
+
+		if (!this._started) {
+			this.logger.error('Facile.listen() cannot be called directly please use .start().');
+			process.exit();
+		}
+
+		// Listen for connections.
+		this.logger.debug('Server preparing to listen.');
+
+		this.server.listen(this._config.port, this._config.host, (err: Error) => {
+			if (err)
+				throw err;
+		});
+
+	}
+
+	/**
+	 * Generic method for add controllers,
+	 * models, filters and services.
+	 *
+	 * @param {*} name
+	 * @param {*} Type
+	 * @param {*} map
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	private addComponent<T>(name: any, Type: any, collection?: Collection<T>): Facile {
+
+		// Adding single component by name and class/function.
+		if (isString(name)) {
+			collection.add(name, Type);
+		}
+
+		// Otherwise iterate object.
+		else if (isPlainObject(name)) {
+			each(name, (v, k) => {
+				collection.add(k, v);
+			});
+		}
+
+		// Otherwise log error.
+		else {
+			this.logger.error('Failed ot add component expected type ' +
+												'string or object but got "' + typeof name + ' ".');
+		}
+
+		return this;
+
+	}
+
+	///////////////////////////////////////////////////
 	// CONFIGURE & MANAGE SERVER
 	///////////////////////////////////////////////////
+
 
   /**
    * Configure
@@ -183,7 +288,7 @@ export class Facile extends Core implements IFacile {
 	 */
 	init(): IInit {
 
-		let that: IFacile = this;
+		let facile: Facile = this;
 
 		// Ensure configuration.
 		if (!this._config) {
@@ -208,11 +313,13 @@ export class Facile extends Core implements IFacile {
 		 */
 		function run(): void {
 
-			if (!this._config.auto)
-				throw new Error('The method init().run() cannot be called manually use { auto: true } in your configuration.');
+			if (!facile._config.auto) {
+				this.logger.error('The method init().run() cannot be called manually use { auto: true } in your configuration.');
+				process.exit();
+			}
 
-			this.execBefore('init', () => {
-				this.emit('init:server');
+			facile.execBefore('init', () => {
+				facile.emit('init:server');
 			});
 
 		}
@@ -228,21 +335,21 @@ export class Facile extends Core implements IFacile {
 		 */
 		function done(): Facile {
 
-			this.logger.debug('Facile initialization complete.');
+			facile.logger.debug('Facile initialization complete.');
 
-			this._initialized = true;
+			facile._initialized = true;
 
-			if (this._config.auto) {
+			if (facile._config.auto) {
 
-				this.execAfter('init', () => {
-					this.emit('core:start');
+				facile.execAfter('init', () => {
+					facile.emit('core:start');
 				});
 
 			}
 
 			else {
 
-				return this;
+				return facile;
 
 			}
 
@@ -250,135 +357,27 @@ export class Facile extends Core implements IFacile {
 
 		let inits: IInit = {
 
-			run: 					run.bind(that),
-			server: 			server.init.bind(that),
-			services: 		services.init.bind(that),
-			filters: 			filters.init.bind(that),
-			models: 			models.init.bind(that),
-			controllers: 	controllers.init.bind(that),
-			routes: 			routes.init.bind(that),
-			done: 				done.bind(that)
+			// run: 					run.bind(that),
+			// server: 				server.init.bind(that),
+			// services: 			services.init.bind(that),
+			// filters: 			filters.init.bind(that),
+			// models: 				models.init.bind(that),
+			// controllers: 	controllers.init.bind(that),
+			// routes: 				routes.init.bind(that),
+			// done: 					done.bind(that)
+
+			run: 						run,
+			server: 				server.init(facile),
+			services: 			services.init(facile),
+			filters: 				filters.init(facile),
+			models: 				models.init(facile),
+			controllers: 		controllers.init(facile),
+			routes: 				routes.init(facile),
+			done: 					done
 
 		};
 
 		return inits;
-
-	}
-
-	/**
-	 * Initializies all registered components
-	 * in series using async.series.
-	 *
-	 * @member initAll
-	 * @returns {Facile}
-	 * @memberOf Facile
-	 */
-	initAll(): Facile {
-
-		let inits = this.init();
-
-		let _server = 	bind(server.init, this) as Function;
-
-		let series = [
-			_server
-			// bind(services.init, this),
-			// bind(filters.init, this),
-			// bind(models.init, this),,
-			// bind(controllers.init, this),
-			// bind(routes.init, this),
-		];
-
-		// Iterate series of all initializations.
-		asyncSeries(series, (err) => {
-
-			if (err)
-				this.logger.error(err.message || 'Unknown error', err);
-
-			this._initialized = true;
-
-		});
-
-		// Don't wait for series
-		// return for chaining we'll
-		// ensure done before start.
-		return this;
-
-	}
-
-	/**
-	 * Enables Lifecycle Listeners.
-	 *
-	 * Events
-	 *
-	 * init
-	 * init:server
-	 * init:services
-	 * init:filters
-	 * init:models
-	 * init:controllers
-	 * init:routes
-	 * init:done
-	 * core:start
-	 *
-	 * @method enableHooks
-	 * @returns {Facile}
-	 * @memberOf Facile
-	 */
-	enableListeners(): Facile {
-
-		let init = this.init();
-
-		this.on('init', init.run);
-
-		this.on('init:server', init.server);
-
-		this.on('init:services', init.services);
-
-		this.on('init:filters', init.filters);
-
-		this.on('init:models', init.models);
-
-		this.on('init:controllers', init.controllers);
-
-		this.on('init:routes', init.routes);
-
-		this.on('init:done', init.done);
-
-		this.on('core:start', this.start);
-
-		this.on('core:listen', this.listen);
-
-		// Set flag indicating that
-		// init hooks are listening
-		// in case called manually.
-		this._config.auto = true;
-
-		return this;
-
-	}
-
-	/**
-	 * Start Listening for Connections
-	 *
-	 * @method
-	 * @returns {Facile}
-	 *
-	 * @memberOf Facile
-	 */
-	listen(): void {
-
-		if (!this._started) {
-			this.logger.error('Facile.listen() cannot be called directly please use .start().');
-			process.exit();
-		}
-
-		// Listen for connections.
-		this.logger.debug('Server preparing to listen.');
-
-		this.server.listen(this._config.port, this._config.host, (err: Error) => {
-			if (err)
-				throw err;
-		});
 
 	}
 
@@ -589,12 +588,16 @@ export class Facile extends Core implements IFacile {
 		let hasDefault = isPlainObject(name) && has(name, 'default');
 
 		// Check for default router.
-		if (name === 'default' || hasDefault)
-			throw new Error('Router name cannot be "default".');
+		if (name === 'default' || hasDefault) {
+			this.logger.warn('Default router is readonly previously defined router.');
+			return this.router('default');
+		}
 
 		// Add router to map.
 		if (isString(name))
 			this._routers[name] = router || express.Router();
+
+		// Add multiple
 		else
 			Object.keys(name).forEach((k) => {
 				this._routers[k] = name[k] || express.Router();
@@ -672,9 +675,9 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	addService(Service: IService | Array<IService>): Facile {
-		utils.extendMap(Service, this._services);
-		return this;
+	addService(name: string | IService, Service?: IService): Facile {
+		let collection: Collection<any> = this._services;
+		return this.addComponent(name, Service, this._services);
 	}
 
 	/**
@@ -687,9 +690,8 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	addFilter(Filter: IFilter | Array<IFilter>): Facile {
-		utils.extendMap(Filter, this._filters);
-		return this;
+	addFilter(name: string | IFilter, Filter?: IFilter): Facile {
+		return this.addComponent(name, Filter, this._filters);
 	}
 
 	/**
@@ -701,9 +703,8 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	addModel(Model: IModel | Array<IModel>): Facile {
-		utils.extendMap(Model, this._models);
-		return this;
+	addModel(name: string | IModel, Model?: IModel): Facile {
+		return this.addComponent(name, Model, this._models);
 	}
 
 	/**
@@ -715,9 +716,9 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	addController(Controller: IController | Array<IController>): Facile {
-		utils.extendMap(Controller, this._controllers);
-		return this;
+	addController(name: string | IController,
+								Controller?: IController): Facile {
+		return this.addComponent(name, Controller, this._controllers);
 	}
 
 	/**
@@ -766,8 +767,8 @@ export class Facile extends Core implements IFacile {
 		else if (isPlainObject(route)) {
 			let routes = route as IRoutesMap;
 			each(routes, (v, k) => {
-				let r = utils.parseRoute(k, v);
-				validate(r);
+				let rte = utils.parseRoute(k, v);
+				validate(rte);
 			});
 		}
 
@@ -779,9 +780,15 @@ export class Facile extends Core implements IFacile {
 
 	}
 
+
 	///////////////////////////////////////////////////
 	// INSTANCE HELPERS
 	///////////////////////////////////////////////////
+
+	component(name: string, map: any) {
+		let obj = this[map] || {};
+		return obj[name];
+	}
 
 	/**
 	 * Gets a Router by name.
@@ -810,55 +817,63 @@ export class Facile extends Core implements IFacile {
 	}
 
 	/**
-	 * Gets a Service by name.
+	 * Gets a Service
 	 *
-	 * @method
+	 * @member service
+	 * @template T
 	 * @param {string} name
-	 * @returns {IService}
+	 * @returns {T}
 	 *
 	 * @memberOf Facile
 	 */
-	service(name: string): IService {
-		return this._services[name];
+	service<T>(name: string): T {
+		let component: T = this._services[name];
+		return component;
 	}
 
 	/**
-	 * Gets a Filter by name.
+	 * Gets a Filter
 	 *
-	 * @method
+	 * @member filter
+	 * @template T
 	 * @param {string} name
-	 * @returns {IFilter}
+	 * @returns {T}
 	 *
 	 * @memberOf Facile
 	 */
-	filter(name: string): IFilter {
-		return this._filters[name];
+	filter<T>(name: string): T {
+		let component: T = this._filters[name];
+		return component;
 	}
 
 	/**
-	 * Gets a Model by name.
+	 * Gets a Model
 	 *
-	 * @method
+	 * @member model
+	 * @template T
 	 * @param {string} name
-	 * @returns {IModel}
+	 * @returns {T}
 	 *
 	 * @memberOf Facile
 	 */
-	model(name: string): IModel {
-		return this._models[name];
+	model<T>(name: string): T {
+			let component: T = this._models[name];
+		return component;
 	}
 
 	/**
-	 * Gets a Controller by name.
+	 * Gets a Controller.
 	 *
-	 * @method
+	 * @member controller
+	 * @template T
 	 * @param {string} name
-	 * @returns {IController}
+	 * @returns {T}
 	 *
 	 * @memberOf Facile
 	 */
-	controller(name: string): IController {
-		return this._controllers[name];
+	controller<T>(name: string): T {
+		let component: T = this._controllers[name];
+		return component;
 	}
 
 	/**

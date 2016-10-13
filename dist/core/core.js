@@ -7,6 +7,7 @@ var __extends = (this && this.__extends) || function (d, b) {
 var lodash_1 = require('lodash');
 var events_1 = require('events');
 var async_1 = require('async');
+var collection_1 = require('./collection');
 /**
  * Facile Core
  *
@@ -27,6 +28,10 @@ var Core = (function (_super) {
         var _this = this;
         _super.call(this);
         this._configs = {};
+        this._routers = {};
+        this._routes = [];
+        this._nextSocketId = 0;
+        this._sockets = {};
         this._beforeEvents = {};
         this._afterEvents = {};
         this._initialized = false;
@@ -49,6 +54,12 @@ var Core = (function (_super) {
             _this._beforeEvents[k] = [];
             _this._afterEvents[k] = [];
         });
+        // Init Component collections.
+        this._services = new collection_1.Collection('services');
+        this._filters = new collection_1.Collection('filters');
+        this._models = new collection_1.Collection('models');
+        this._controllers = new collection_1.Collection('controllers');
+        this._middlewares = new collection_1.Collection('middleware');
     }
     /**
      * Adds before event listener

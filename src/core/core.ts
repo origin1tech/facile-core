@@ -7,7 +7,10 @@ import { EventEmitter } from 'events';
 import { series as asyncSeries } from 'async';
 import { truncate } from './utils';
 import { IFacile, ICore, ICallbackResult, ICallback,
-				IConfig, IConfigs, IListenersMap, IBoom, IInit } from '../interfaces';
+				IConfig, IConfigs, IListenersMap, IBoom, IInit,
+				IMiddlewares,
+				IRouters, ISockets, IRoute } from '../interfaces';
+import { Collection } from './collection';
 
 /**
  * Facile Core
@@ -26,17 +29,29 @@ export class Core extends EventEmitter implements ICore {
 	logger: LoggerInstance;
 
 	_pkg: any;
+	_apppkg: any;
+
 	_config: IConfig;
 	_configs: IConfigs = {};
-	_inits: IInit;
-	_listeners: IListenersMap;
+	_routers: IRouters = {};
 
-	_beforeEvents: any = {};
-	_afterEvents: any = {};
-	_configured: boolean;
-	_initialized: boolean = false;
-	_started: boolean = false;
-	_autoInit: boolean = false;
+	_middlewares: any;
+	_services: any;
+	_filters: any;
+	_models: any;
+	_controllers: any;
+	_routes: Array<IRoute> = [];
+
+	_nextSocketId: number = 0;
+	_sockets: ISockets = {};
+
+	protected _listeners: IListenersMap;
+	protected _beforeEvents: any = {};
+	protected _afterEvents: any = {};
+	protected _configured: boolean;
+	protected _initialized: boolean = false;
+	protected _started: boolean = false;
+	protected _autoInit: boolean = false;
 
 	/**
 	 * Creates an instance of Core.
@@ -66,6 +81,13 @@ export class Core extends EventEmitter implements ICore {
 			this._beforeEvents[k] = [];
 			this._afterEvents[k] = [];
 		});
+
+		// Init Component collections.
+		this._services = new Collection('services');
+		this._filters = new Collection('filters');
+		this._models = new Collection('models');
+		this._controllers = new Collection('controllers');
+		this._middlewares = new Collection('middleware');
 
 	}
 

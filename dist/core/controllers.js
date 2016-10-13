@@ -1,32 +1,30 @@
 "use strict";
-/**
- * Initializes Controllers
- *
- * @export
- * @param {Function} [fn]
- * @returns {IFacile}
- */
-function init(fn) {
-    var _this = this;
-    function handleControllers() {
-        var _this = this;
-        this.logger.debug('Initializing Controllers');
-        // Init code here.
-        if (this._config.auto)
-            this.execAfter('init:controllers', function () {
-                _this.emit('init:routes');
+var lodash_1 = require('lodash');
+function init(facile) {
+    return function (fn) {
+        function handleControllers() {
+            facile.logger.debug('Initializing Controllers');
+            // Initialize the controllers.
+            lodash_1.each(facile._controllers, function (Ctrl, key) {
+                facile._controllers[key] = new Ctrl(facile);
             });
-        else if (fn)
-            fn();
+            console.log(facile._controllers);
+            if (facile._config.auto)
+                facile.execAfter('init:controllers', function () {
+                    facile.emit('init:routes');
+                });
+            else if (fn)
+                fn();
+            else
+                return facile.init();
+        }
+        if (facile._config.auto)
+            facile.execBefore('init:controllers', function () {
+                handleControllers.call(facile);
+            });
         else
-            return this._inits;
-    }
-    if (this._config.auto)
-        this.execBefore('init:controllers', function () {
-            handleControllers.call(_this);
-        });
-    else
-        return handleControllers.call(this);
+            return handleControllers.call(facile);
+    };
 }
 exports.init = init;
 //# sourceMappingURL=controllers.js.map

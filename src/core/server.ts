@@ -5,124 +5,118 @@ import { each, sortBy, isString } from 'lodash';
 import { red, cyan } from 'chalk';
 import { Server, Socket } from 'net';
 import * as cons from 'consolidate';
+import { Facile } from './';
 
-/**
- * Initializes Server
- *
- * @export
- * @param {Function} [fn]
- * @returns {IFacile}
- */
-export function init(fn?: Function): IInit {
+export function init(facile: Facile): any {
 
-	function handleServer(): IInit {
+	return (fn?: Function): IInit => {
 
-		////////////////////////////////
-		// Ensure Router.
-		////////////////////////////////
+		function handleServer(): IInit {
 
-		this.logger.debug('Initializing Server Router.');
-		this._routers = this._routers || {};
-		if (!this._routers['default'])
-			this._routers['default'] = this.app._router;
+			////////////////////////////////
+			// Ensure Router.
+			////////////////////////////////
 
-		////////////////////////////////
-		// Configure Views
-		////////////////////////////////
+			facile.logger.debug('Initializing Server Router.');
+			facile._routers = facile._routers || {};
+			if (!facile._routers['default'])
+				facile._routers['default'] = facile.app._router;
 
-		// Check if engine in config is string
-		// or valid engine object.
-		if (this._config.views) {
+			////////////////////////////////
+			// Configure Views
+			////////////////////////////////
 
-			let viewConfig = this._config.views;
-			let eng = viewConfig.engine;
+			// Check if engine in config is string
+			// or valid engine object.
+			if (facile._config.views) {
 
-			// Convert engine to valid
-			// consolidate rendering engine.
-			if (isString(eng.renderer))
-				eng.renderer = cons[eng.renderer];
+				let viewConfig = facile._config.views;
+				let eng = viewConfig.engine;
 
-			// Set the engine.
-			this._config.views.engine = eng;
-			this.app.engine(eng.name, eng.renderer as Function);
+				// Convert engine to valid
+				// consolidate rendering engine.
+				if (isString(eng.renderer))
+					eng.renderer = cons[eng.renderer];
 
-			// Set view engine.
-			let viewEng = viewConfig['view engine'];
-			viewEng = viewConfig['view engine'] = viewEng || eng.name;
-			this.app.set('view engine', viewEng);
+				// Set the engine.
+				facile._config.views.engine = eng;
+				facile.app.engine(eng.name, eng.renderer as Function);
 
-			// Set views path.
-			if (viewConfig.views)
-				this.app.set('views', viewConfig.views);
+				// Set view engine.
+				let viewEng = viewConfig['view engine'];
+				viewEng = viewConfig['view engine'] = viewEng || eng.name;
+				facile.app.set('view engine', viewEng);
 
-		}
+				// Set views path.
+				if (viewConfig.views)
+					facile.app.set('views', viewConfig.views);
 
-		////////////////////////////////
-		// Configure Middleware
-		////////////////////////////////
+			}
 
-		this.logger.debug('Initializing Server Middleware.');
-		let middlewares = sortBy(this._middlewares, 'order');
-		each(middlewares, (v: IMiddleware) => {
-			this.app.use(v.fn);
-		});
+			////////////////////////////////
+			// Configure Middleware
+			////////////////////////////////
 
-		////////////////////////////////
-		// Server Protocol & Cert
-		////////////////////////////////
+			facile.logger.debug('Initializing Server Middleware.');
+			let middlewares = sortBy(facile._middlewares, 'order');
+			each(middlewares, (v: IMiddleware) => {
+				facile.app.use(v.fn);
+			});
 
-		this.logger.debug('Initializing Server protocol.');
-		if (this._config.certificate)
-			this.server = createServerHttps(this._config.certificate, this.app);
+			////////////////////////////////
+			// Server Protocol & Cert
+			////////////////////////////////
 
-		// Create Http Server.
-		else
-			this.server = createServer(this.app);
+			facile.logger.debug('Initializing Server protocol.');
+			if (facile._config.certificate)
+				facile.server = createServerHttps(facile._config.certificate, facile.app);
 
-		// Limit server connections.
-		this.server.maxConnections = this._config.maxConnections;
+			// Create Http Server.
+			else
+				facile.server = createServer(facile.app);
 
-		////////////////////////////////
-		// Listen for Connections
-		////////////////////////////////
+			// Limit server connections.
+			facile.server.maxConnections = facile._config.maxConnections;
 
-		this.logger.debug('Initializing Server connection listener.');
-		this.server.on('connection', (socket: Socket) => {
+			////////////////////////////////
+			// Listen for Connections
+			////////////////////////////////
 
-			// Save the connection.
-			let socketId = this._nextSocketId++;
-			this._sockets[socketId] = socket;
+			facile.logger.debug('Initializing Server connection listener.');
+			facile.server.on('connection', (socket: Socket) => {
 
-			// Listen for socket close.
-			socket.on('close', () => {
+				// Save the connection.
+				let socketId = facile._nextSocketId++;
+				facile._sockets[socketId] = socket;
 
-				this.logger.debug('Socket ' + socketId + ' was closed.');
-				delete this._sockets[socketId];
+				// Listen for socket close.
+				socket.on('close', () => {
+
+					facile.logger.debug('Socket ' + socketId + ' was closed.');
+					delete facile._sockets[socketId];
+
+				});
 
 			});
 
-		});
-
-		if (this._config.auto) {
-			console.log('hit auto')
-			this.execAfter('init:server', () => {
-				this.emit('init:services');
-			});
-		}
-		else if (fn)
-			fn();
-		else {
-			console.log('hit here.')
-			return this._inits;
-		}
+			if (facile._config.auto)
+				facile.execAfter('init:server', () => {
+					facile.emit('init:services');
+				});
+			else if (fn)
+				fn();
+			else
+				return facile.init();
 
 	}
 
-	if (this._config.auto)
-		this.execBefore('init:server', () => {
-			handleServer.call(this);
+	if (facile._config.auto)
+		facile.execBefore('init:server', () => {
+			handleServer.call(facile);
 		});
 	else
-		return handleServer.call(this);
+		return handleServer.call(facile);
+
+	};
 
 }
