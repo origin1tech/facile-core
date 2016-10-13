@@ -14,13 +14,13 @@ var Controller = (function () {
      * @memberOf Controller
      */
     function Controller(facile) {
-        Object.defineProperty(this, '_facile', {
+        Object.defineProperty(this, 'facile', {
             enumerable: false,
             value: facile
         });
         return this;
     }
-    Controller._type = 'Controller';
+    Controller.type = 'Controller';
     return Controller;
 }());
 exports.Controller = Controller;

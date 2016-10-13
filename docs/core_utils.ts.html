@@ -281,34 +281,13 @@
 				
 				
 					    <li id="navTitle_Classes" class="nav-header navTitle">
-                            <a class="handCursor" data-toggle="collapse" data-id="T_Classes" data-target="#collapse_Classes">Classes<span class="badge badge-info pull-right">6</span></a>
+                            <a class="handCursor" data-toggle="collapse" data-id="T_Classes" data-target="#collapse_Classes">Classes<span class="badge badge-info pull-right">7</span></a>
                         </li>
                         <li id="navContents_Classes">
                             <div id="collapse_Classes" class="collapse">
                                 <ul class="nav nav-list" style="width:100%;margin-left:-8px;">
-                                    <li><a href="Controller.html">Controller</a></li><li><a href="Core.html">Core</a></li><li><a href="Facile.html">Facile</a></li><li><a href="Filter.html">Filter</a></li><li><a href="Model.html">Model</a></li><li><a href="Service.html">Service</a></li>
+                                    <li><a href="Collection.html">Collection</a></li><li><a href="Controller.html">Controller</a></li><li><a href="Core.html">Core</a></li><li><a href="Facile.html">Facile</a></li><li><a href="Filter.html">Filter</a></li><li><a href="Model.html">Model</a></li><li><a href="Service.html">Service</a></li>
                             
-                                    </ul>
-                                </div>
-                            </li>
-                        
-					    <li id="navTitle_Global" class="nav-header navTitle">
-                            <a class="handCursor" data-toggle="collapse" data-id="T_Global" data-target="#collapse_Global">Global<span class="badge badge-info pull-right">1</span></a>
-                        </li>
-                        <li id="navContents_Global">
-                            <div id="collapse_Global" class="collapse">
-                                <ul class="nav nav-list" style="width:100%;margin-left:-8px;">
-                                    
-                                        <?j
-                                    <li>
-                                        
-                                        
-                                        	<a href="global.html#utils">utils</a>
-                                        
-                                    </li>
-                                    
-                             <li class="divider"></li>
-                        
                                     </ul>
                                 </div>
                             </li>
@@ -318,7 +297,7 @@
 		</div>
 
 		<script>
-			var searchMembers = [{"realName":"Controller","link":"Controller"},{"realName":"Core","link":"Core"},{"realName":"Facile","link":"Facile"},{"realName":"Filter","link":"Filter"},{"realName":"Model","link":"Model"},{"realName":"Service","link":"Service"}];
+			var searchMembers = [{"realName":"Collection","link":"Collection"},{"realName":"Controller","link":"Controller"},{"realName":"Core","link":"Core"},{"realName":"Facile","link":"Facile"},{"realName":"Filter","link":"Filter"},{"realName":"Model","link":"Model"},{"realName":"Service","link":"Service"}];
 		</script>
     </aside>
 	</div>
@@ -343,7 +322,8 @@ import { IFacile, IRoute, IRequestHandler } from '../interfaces';
 /**
  * Add object to mapped collection.
  *
- * @member utils
+ * @method extendMap
+ * @memberOf utils
  * @export
  * @param {*} key
  * @param {*} val
@@ -364,15 +344,19 @@ export function extendMap(key: any, val: any, obj?: any) {
 
 	// Check if is class with construtor
 	// or Array of class object.
-	else if (key.constructor || (Array.isArray(key) &amp;&amp; key[0] &amp;&amp; key[0].constructor)) {
+	else if (key.constructor || (Array.isArray(key) &amp;&amp; key[0])) {
 
-		if (Array.isArray(key))
+		if (Array.isArray(key)) {
 			key.forEach((klass) => {
-				obj[klass.constructor.name] = klass;
+				let name = constructorName(klass);
+				obj[name] = klass;
 			});
+		}
 
-		else
-			obj[key.constructor.name] = key;
+		else {
+			let name = constructorName(key);
+			obj[name] = key;
+		}
 
 	}
 
@@ -390,44 +374,11 @@ export function extendMap(key: any, val: any, obj?: any) {
 }
 
 /**
- * Extends object with supplied Type.
- *
- * @member utils
- * @export
- * @param {*} Type
- * @param {*} obj
- * @param {IFacile} [instance]
- */
-export function initMap(Type: any, obj: any, instance?: any) {
-
-	// Check if map instead of single
-	// class was provided.
-	if (!instance) {
-		instance = obj;
-		obj = Type;
-		Type = undefined;
-	}
-
-	// Instantiate class and update in map.
-	if (Type) {
-		let name = Type.constructor.name;
-		obj[name] = new Type(instance);
-	}
-
-	// Otherwise iterate and instantiate all.
-	else {
-		each(obj, (T, k) => {
-			obj[k] = new T(instance);
-		});
-	}
-
-}
-
-/**
  * Gets max value in object
  * of objects by property.
  *
- * @member utils
+ * @method maxIn
+ * @memberOf utils
  * @export
  * @param {*} obj
  * @param {string} key
@@ -443,7 +394,8 @@ export function maxIn(obj: any, key: string): number {
  * Checks if object contains
  * property with value.
  *
- * @member utils
+ * @method hasIn
+ * @memberOf utils
  * @export
  * @param {*} obj
  * @param {*} key
@@ -464,7 +416,8 @@ export function hasIn(obj: any, key: any, val: any): boolean {
  * url needs to be parsed into
  * an IRoute configuration.
  *
- * @member utils
+ * @method parseRoute
+ * @memberOf utils
  * @export
  * @param {string} url
  * @param {(IRequestHandler | Array&lt;IRequestHandler> | string | IRoute)} handler
@@ -488,6 +441,7 @@ export function parseRoute(url: string,
 	if (isPlainObject(handler)) {
 		route = _extend({}, route, handler);
 	}
+
 	// Set last handler as primary handler
 	// set others to filters property.
 	else if (Array.isArray(handler)) {
@@ -507,7 +461,9 @@ export function parseRoute(url: string,
  * Validates Route configuration.
  * When invalid route.valid will
  * equal false.
- * @member utils
+ *
+ * @method validateRoute
+ * @memberOf utils
  * @export
  * @param {IRoute} route
  * @returns {IRoute}
@@ -546,7 +502,8 @@ export function validateRoute(route: IRoute): IRoute {
 /**
  * Function for non operation.
  *
- * @member utils
+ * @method noop
+ * @memberOf utils
  * @export
  */
 export function noop () {}
@@ -554,7 +511,8 @@ export function noop () {}
 /**
  * Truncates a string using lodash _.truncate
  *
- * @member utils
+ * @method truncate
+ * @memberOf utils
  * @export
  * @param {string} str
  * @param {number} length
@@ -570,9 +528,33 @@ export function truncate(str: string, length: number, omission: string = '...'):
 }
 
 /**
+ * Gets constructor name with
+ * fallback to function name
+ * probably overkill.
+ *
+ * @method constructorName
+ * @memberOf utils
+ * @export
+ * @param {Function} fn
+ * @returns {string}
+ */
+export function constructorName(fn: Function) {
+	if (fn.constructor &amp;&amp; fn.constructor.name) {
+		let result = fn.constructor.name;
+		if (result === 'Function')
+			result = functionName(fn);
+		return result;
+	}
+	else {
+		return functionName(fn);
+	}
+}
+
+/**
  * Gets function name.
  *
- * @member utils
+ * @method functionName
+ * @memberOf utils
  * @export
  * @param {Function} fn
  * @returns {string}
@@ -619,7 +601,7 @@ export function functionName(fn: Function): string {
 									
 						<span class="jsdoc-message">
 						Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a>
-						on Tue Oct 11 2016 06:48:11 GMT-0700 (PDT) using the <a href="https://github.com/xperiments/TSDoc">TSDoc template</a>.
+						on Thu Oct 13 2016 14:44:58 GMT-0700 (PDT) using the <a href="https://github.com/xperiments/TSDoc">TSDoc template</a>.
 						</span>
 				</footer>
 			</div>

@@ -281,34 +281,13 @@
 				
 				
 					    <li id="navTitle_Classes" class="nav-header navTitle">
-                            <a class="handCursor" data-toggle="collapse" data-id="T_Classes" data-target="#collapse_Classes">Classes<span class="badge badge-info pull-right">6</span></a>
+                            <a class="handCursor" data-toggle="collapse" data-id="T_Classes" data-target="#collapse_Classes">Classes<span class="badge badge-info pull-right">7</span></a>
                         </li>
                         <li id="navContents_Classes">
                             <div id="collapse_Classes" class="collapse">
                                 <ul class="nav nav-list" style="width:100%;margin-left:-8px;">
-                                    <li><a href="Controller.html">Controller</a></li><li><a href="Core.html">Core</a></li><li><a href="Facile.html">Facile</a></li><li><a href="Filter.html">Filter</a></li><li><a href="Model.html">Model</a></li><li><a href="Service.html">Service</a></li>
+                                    <li><a href="Collection.html">Collection</a></li><li><a href="Controller.html">Controller</a></li><li><a href="Core.html">Core</a></li><li><a href="Facile.html">Facile</a></li><li><a href="Filter.html">Filter</a></li><li><a href="Model.html">Model</a></li><li><a href="Service.html">Service</a></li>
                             
-                                    </ul>
-                                </div>
-                            </li>
-                        
-					    <li id="navTitle_Global" class="nav-header navTitle">
-                            <a class="handCursor" data-toggle="collapse" data-id="T_Global" data-target="#collapse_Global">Global<span class="badge badge-info pull-right">1</span></a>
-                        </li>
-                        <li id="navContents_Global">
-                            <div id="collapse_Global" class="collapse">
-                                <ul class="nav nav-list" style="width:100%;margin-left:-8px;">
-                                    
-                                        <?j
-                                    <li>
-                                        
-                                        
-                                        	<a href="global.html#utils">utils</a>
-                                        
-                                    </li>
-                                    
-                             <li class="divider"></li>
-                        
                                     </ul>
                                 </div>
                             </li>
@@ -318,7 +297,7 @@
 		</div>
 
 		<script>
-			var searchMembers = [{"realName":"Controller","link":"Controller"},{"realName":"Core","link":"Core"},{"realName":"Facile","link":"Facile"},{"realName":"Filter","link":"Filter"},{"realName":"Model","link":"Model"},{"realName":"Service","link":"Service"}];
+			var searchMembers = [{"realName":"Collection","link":"Collection"},{"realName":"Controller","link":"Controller"},{"realName":"Core","link":"Core"},{"realName":"Facile","link":"Facile"},{"realName":"Filter","link":"Filter"},{"realName":"Model","link":"Model"},{"realName":"Service","link":"Service"}];
 		</script>
     </aside>
 	</div>
@@ -343,7 +322,6 @@ import { Socket, Server } from 'net';
 import { BoomError, Output } from 'boom';
 import { LoggerInstance } from 'winston';
 
-
 // Re-export Interfaces for Convenience.
 export interface IRequestHandler extends RequestHandler {}
 export interface INextFunction extends NextFunction {}
@@ -366,14 +344,13 @@ export interface IUtils {
 }
 
 export interface IInit {
-	run(): IInit;
+	run(): void;
 	server(): IInit;
 	services(): IInit;
 	filters(): IInit;
 	models(): IInit;
 	controllers(): IInit;
 	routes(): IInit;
-	all(): IFacile;
 	done(): IFacile;
 }
 
@@ -391,9 +368,19 @@ export interface ICore extends EventEmitter {
 	_pkg: any;
 	_config: IConfig;
 	_configs: IConfigs;
-	_listeners: IListenersMap;
-	_beforeEvents: any;
-	_afterEvents: any;
+
+	_routers: IRouters;
+	_routes: Array&lt;IRoute>;
+
+	_middlewares: any;
+	_services: any;
+	_filters: any;
+	_models: any;
+	_controllers: any;
+
+	_nextSocketId: number;
+	_sockets: ISockets;
+
 	before(name: string, event: ICallback): ICore;
 	after(name: string, event: ICallback): ICore;
 	hasBefore(name: string): boolean;
@@ -406,44 +393,31 @@ export interface ICore extends EventEmitter {
 
 export interface IFacile extends ICore {
 
-	_routers: IRouters;
-	_routes: Array&lt;IRoute>;
-
-	_nextSocketId: number;
-	_sockets: ISockets;
-
-	_services: IServices;
-	_middlewares: IMiddlewares;
-	_filters: IFilters;
-	_models: IModels;
-	_controllers: IControllers;
-
 	configure(config?: string | IConfig): IFacile;
 	init(): IInit;
-	enableEvents(): IFacile;
-	listen(): IFacile;
 	start(config?: string | IConfig | Function, fn?: Function): IFacile;
 	stop(msg?: string, code?: number): void;
 
-	addConfig(name: string, config: IConfig): IFacile;
-	addRouter(name: string, router?: Router): Router;
-	addMiddleware(name: string, fn?: any, order?: number): IFacile;
-	addService(Service: IService | Array&lt;IService>): IFacile;
-	addFilter(Filter: IFilter | Array&lt;IFilter>): IFacile;
-	addModel(Model: IModel | Array&lt;IModel>): IFacile;
-	addController(Controller: IController | Array&lt;IController>): IFacile;
-	addService(Service: IService | Array&lt;IService>, instance?: boolean): IFacile;
-	addRoute(method: string | string[] | IRoutesMap | IRoute[],
+	registerConfig(name: string, config: IConfig): IFacile;
+	registerRouter(name: string, router?: Router): Router;
+	registerMiddleware(name: string | IMiddlewaresMap, fn?: any, order?: number): IFacile;
+	registerRoute(method: string | string[] | IRoutesMap | IRoute[],
 					url?: string,
 					handler?: IRequestHandler,
 					filters?: IRequestHandler | IRequestHandler[],
 					router?: string): IFacile;
 
+	registerComponent(Component: IComponent): IFacile;
+	registerComponent(components: IComponentsMap): IFacile;
+	registerComponent(name: string, Component: IComponent): IFacile;
+	registerComponent(name: string | IComponent | IComponentsMap, Component?: IComponent): IFacile;
+
+	router(name: string): Router;
 	config(name: string): IConfig;
-	filter(name: string): IFilter;
-	service(name: string): IService;
-	model(name: string): IModel;
-	controller(name: string): IController;
+	filter&lt;T>(name: string): T;
+	service&lt;T>(name: string): T;
+	model&lt;T>(name: string): T;
+	controller&lt;T>(name: string): T;
 	extend(...args: any[]): any;
 	extendConfig(...configs: any[]): IConfig;
 
@@ -503,6 +477,11 @@ export interface IViewConfig {
 	views?: string | string[] | boolean;
 }
 
+export interface IDatabase {
+	'module': any;		// The imported/required module.
+	connection: any;	// The connected instance.
+}
+
 /**
  * Server Configuration.
  *
@@ -520,7 +499,7 @@ export interface IConfig {
 	logger?: LoggerInstance;
 	logLevel?: 'error' | 'warn' | 'info' | 'debug';
 	views?: IViewConfig;
-	database?: any;
+	database?: IDatabase;
 	auto?: boolean;
 }
 
@@ -561,17 +540,11 @@ export interface ISockets {
  * @interface IMiddleware
  */
 export interface IMiddleware {
-	fn: any;
+	fn: IRequestHandler | IErrorRequestHandler;
 	order?: number;
 }
 
-/**
- * Map of middleware.
- *
- * @export
- * @interface IMiddlewares
- */
-export interface IMiddlewares {
+export interface IMiddlewaresMap {
 	[name: string]: IMiddleware;
 }
 
@@ -661,84 +634,69 @@ export interface IRoutesMap {
 }
 
 /**
- * Filter Interface.
+ * IComponent
  *
+ * @desc base interfaces for components.
+ * @export
+ * @interface IComponent
+ */
+export interface IComponent {}
+
+/**
+ * IComponentsMap
+ *
+ * @desc key value map of IComponents.
+ * @export
+ * @interface IComponentsMap
+ */
+export interface IComponentsMap {
+	[name: string]: IComponent;
+}
+
+/**
+ * IFilter
+ *
+ * @desc interfaces for filters.
  * @export
  * @interface IFilter
+ * @extends {IComponent}
  */
-export interface IFilter {
-	//
-}
+export interface IFilter extends IComponent {}
 
 /**
- * Map of Filters.
+ * IModel
  *
- * @export
- * @interface IFilters
- */
-export interface IFilters {
-	[name: string]: IFilter;
-}
-
-/**
- * Service Interface
- *
- * @export
- * @interface IService
- */
-export interface IService {
-
-}
-
-/**
- * Map of Services
- *
- * @export
- * @interface IServices
- */
-export interface IServices {
-	[name: string]: IService;
-}
-
-/**
- * Model interface.
- *
+ * @desc interfaces for models.
  * @export
  * @interface IModel
+ * @extends {IComponent}
  */
-export interface IModel {
-
-}
+export interface IModel extends IComponent {}
 
 /**
- * Map of IModels.
+ * IController
  *
- * @export
- * @interface IModels
- */
-export interface IModels {
-	[name: string]: IModel;
-}
-
-/**
- * Controller Interface.
- *
+ * @desc interfaces for controllers.
  * @export
  * @interface IController
+ * @extends {IComponent}
  */
-export interface IController {
-
-}
+export interface IController extends IComponent {}
 
 /**
- * Map of Controllers.
+ * IService
  *
+ * @desc interface for services.
  * @export
- * @interface IControllers
+ * @interface IService
+ * @extends {IComponent}
  */
-export interface IControllers {
-	[name: string]: IController;
-}
+export interface IService extends IComponent {}
+
+
+
+
+
 </pre>
         </article>
     </section>
@@ -763,7 +721,7 @@ export interface IControllers {
 									
 						<span class="jsdoc-message">
 						Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a>
-						on Tue Oct 11 2016 06:48:11 GMT-0700 (PDT) using the <a href="https://github.com/xperiments/TSDoc">TSDoc template</a>.
+						on Thu Oct 13 2016 14:44:58 GMT-0700 (PDT) using the <a href="https://github.com/xperiments/TSDoc">TSDoc template</a>.
 						</span>
 				</footer>
 			</div>

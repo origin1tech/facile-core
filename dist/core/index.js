@@ -85,7 +85,8 @@ var Facile = (function (_super) {
      * init:done
      * core:start
      *
-     * @method enableHooks
+     * @private
+     * @method _enableListeners
      * @returns {Facile}
      * @memberOf Facile
      */
@@ -110,7 +111,8 @@ var Facile = (function (_super) {
     /**
      * Start Listening for Connections
      *
-     * @method
+     * @private
+     * @method _listen
      * @returns {Facile}
      *
      * @memberOf Facile
@@ -126,39 +128,6 @@ var Facile = (function (_super) {
             if (err)
                 throw err;
         });
-    };
-    /**
-     * Generic method for add controllers,
-     * models, filters and services.
-     *
-     * @param {*} name
-     * @param {*} Type
-     * @param {*} map
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
-    Facile.prototype._register = function (name, Component, collection) {
-        // If not type try to get name
-        // from function/class name.
-        if (lodash_1.isFunction(name)) {
-            Component = name;
-            name = utils.constructorName(name);
-        }
-        // Adding single component by name and class/function.
-        if (lodash_1.isString(name)) {
-            collection.add(name, Component);
-        }
-        else if (lodash_1.isPlainObject(name)) {
-            lodash_1.each(name, function (v, k) {
-                collection.add(k, v);
-            });
-        }
-        else {
-            this.logger.error('Failed ot add component expected type ' +
-                'string or object but got "' + typeof name + ' ".');
-        }
-        return this;
     };
     ///////////////////////////////////////////////////
     // CONFIGURE & MANAGE SERVER
@@ -291,7 +260,7 @@ var Facile = (function (_super) {
     /**
      * Start Server.
      *
-     * @method
+     * @method start
      * @param {Function} [fn]
      * @method
      * @memberof Facile
@@ -394,7 +363,7 @@ var Facile = (function (_super) {
     /**
      * Stops the server.
      *
-     * @method
+     * @method stop
      * @param {string} [msg]
      * @param {number} [code]
      * @returns {void}
@@ -426,28 +395,28 @@ var Facile = (function (_super) {
     /**
      * Adds a Configuration.
      *
-     * @method
+     * @method registerConfig
      * @param {string} name
      * @param {IConfig} config
      * @returns {Facile}
      *
      * @memberOf Facile
      */
-    Facile.prototype.addConfig = function (name, config) {
+    Facile.prototype.registerConfig = function (name, config) {
         utils.extendMap(name, config, this._configs);
         return this;
     };
     /**
      * Adds/Creates a Router.
      *
-     * @method
+     * @method registerRouter
      * @param {string} name
      * @param {express.Router} [router]
      * @returns {express.Router}
      *
      * @memberOf Facile
      */
-    Facile.prototype.addRouter = function (name, router) {
+    Facile.prototype.registerRouter = function (name, router) {
         var _this = this;
         // If object check if "default" was passed.
         var hasDefault = lodash_1.isPlainObject(name) && lodash_1.has(name, 'default');
@@ -468,7 +437,7 @@ var Facile = (function (_super) {
     /**
      * Registers Middleware or Middlewares to Express.
      *
-     * @method
+     * @method registerMiddleware
      * @param {string} name
      * @param {IRequestHandler} fn
      * @param {number} [order]
@@ -476,7 +445,7 @@ var Facile = (function (_super) {
      *
      * @memberOf Facile
      */
-    Facile.prototype.addMiddleware = function (name, fn, order) {
+    Facile.prototype.registerMiddleware = function (name, fn, order) {
         var _this = this;
         var middlewares = {};
         // Adding single middleware.
@@ -510,97 +479,10 @@ var Facile = (function (_super) {
         });
         return this;
     };
-    Facile.prototype.register = function (name, Component, order) {
-        var self = this;
-        var Comp;
-        var isMiddlware = false;
-        function registerFailed(t) {
-            self.logger.error('Failed to register using unsupported type "' + t + '".');
-            process.exit();
-        }
-        function registerByType(_type) {
-            if (_type === 'Service') {
-                return self._register(name, Component, self._services);
-            }
-            else if (_type === 'Filter') {
-                return self._register(name, Component, self._filters);
-            }
-            else if (_type === 'Controller') {
-                return self._register(name, Component, self._controllers);
-            }
-            else if (_type === 'Model') {
-                return self._register(name, Component, self._models);
-            }
-            else if (_type === 'Middleware') {
-                return self._register(name, Component, self._models);
-            }
-            else {
-                registerFailed(_type);
-            }
-        }
-        // Get the component static _type
-        // then register by it.
-        if (Component) {
-            Comp = Component;
-        }
-        else if (lodash_1.isPlainObject(name)) {
-            Comp = lodash_1.values(name)[0];
-            isMiddlware = Comp.fn;
-        }
-        else if (lodash_1.isFunction(name)) {
-            Comp = name;
-        }
-        else {
-            registerFailed(typeof Component || typeof name);
-        }
-        // Check if is middleware
-        if (lodash_1.isPlainObject)
-            return registerByType(Comp._type);
-    };
-    Facile.prototype.addService = function (name, Service) {
-        return this._register(name, Service, this._services);
-    };
-    /**
-     * Registers Filter or Map of Filters.
-     *
-     * @method
-     * @param {(string | IFilters)} name
-     * @param {IRequestHandler} fn
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
-    Facile.prototype.addFilter = function (name, Filter) {
-        return this._register(name, Filter, this._filters);
-    };
-    /**
-     * Registers a Model.
-     *
-     * @method
-     * @param {(IModel | Array<IModel>)} Model
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
-    Facile.prototype.addModel = function (name, Model) {
-        return this._register(name, Model, this._models);
-    };
-    /**
-     * Registers a Controller.
-     *
-     * @method
-     * @param {(IController | Array<IController>)} Controller
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
-    Facile.prototype.addController = function (name, Controller) {
-        return this._register(name, Controller, this._controllers);
-    };
     /**
      * Adds a route to the map.
      *
-     * @method
+     * @method registerRoute
      * @param {(string | IRoute)} method
      * @param {string} url
      * @param {(express.Handler | Array<express.Handler>)} handlers
@@ -609,7 +491,7 @@ var Facile = (function (_super) {
      *
      * @memberOf Facile
      */
-    Facile.prototype.addRoute = function (route) {
+    Facile.prototype.registerRoute = function (route) {
         var self = this;
         // Helper function to validate
         // the route and log if invalid.
@@ -641,6 +523,70 @@ var Facile = (function (_super) {
             validate(route);
         }
         return this;
+    };
+    /**
+     * registerComponent
+     *
+     * @desc registers a Service, Filter, Controller or Model
+     * @method registerComponent
+     * @param {(string | IComponent | IComponentsMap)} name
+     * @param {IComponent} [Component]
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    Facile.prototype.registerComponent = function (name, Component) {
+        var self = this;
+        var Comp;
+        function registerFailed(type) {
+            self.logger.error('Failed to register using unsupported type "' + type + '".');
+            process.exit();
+        }
+        function registerByType(type) {
+            var collection;
+            if (type === 'Service')
+                collection = self._services;
+            else if (type === 'Filter')
+                collection = self._filters;
+            else if (type === 'Controller')
+                collection = self._controllers;
+            else if (type === 'Model')
+                collection = self._models;
+            else
+                registerFailed(typeof type);
+            // If not type try to get name
+            // from function/class name.
+            if (lodash_1.isFunction(name)) {
+                Component = name;
+                name = utils.constructorName(name);
+            }
+            // Adding single component by name and class/function.
+            if (lodash_1.isString(name)) {
+                collection.add(name, Component);
+            }
+            else if (lodash_1.isPlainObject(name)) {
+                lodash_1.each(name, function (v, k) {
+                    collection.add(k, v);
+                });
+            }
+            else {
+                var failedType = typeof Component || typeof name;
+                self.logger.error('Failed ot register component using unsupported type "' +
+                    failedType + ' ".');
+            }
+            return self;
+        }
+        // Get the Component Type
+        // before attempting to register.
+        if (Component)
+            Comp = Component;
+        else if (lodash_1.isPlainObject(name))
+            Comp = lodash_1.values(name)[0];
+        else if (lodash_1.isFunction(name))
+            Comp = name;
+        else
+            registerFailed(typeof Component || typeof name);
+        return registerByType(Comp.type);
     };
     ///////////////////////////////////////////////////
     // INSTANCE HELPERS

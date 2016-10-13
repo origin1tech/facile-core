@@ -7,8 +7,8 @@ import { IFilter, IFacile } from '../interfaces';
  * @implements {IFilter}
  */
 export declare class Filter implements IFilter {
-    static _type: string;
-    private _facile;
+    static type: string;
+    protected facile: IFacile;
     /**
      * Creates an instance of Filter.
      *

@@ -3,7 +3,7 @@ import { LoggerInstance } from 'winston';
 import { Express } from 'express';
 import { Server } from 'net';
 import { EventEmitter } from 'events';
-import { ICore, ICallbackResult, ICallback, IConfig, IConfigs, IListenersMap, IBoom, IRouters, ISockets, IRoute } from '../interfaces';
+import { ICore, ICallbackResult, ICallback, IConfig, IConfigs, IListenersMap, IBoom, IRouters, ISockets, IRoute, IMiddlewaresMap } from '../interfaces';
 /**
  * Facile Core
  *
@@ -23,7 +23,7 @@ export declare class Core extends EventEmitter implements ICore {
     _config: IConfig;
     _configs: IConfigs;
     _routers: IRouters;
-    _middlewares: any;
+    _middlewares: IMiddlewaresMap;
     _services: any;
     _filters: any;
     _models: any;

@@ -6,8 +6,8 @@ import { IService, IFacile } from '../interfaces';
  * @class Service
  */
 export declare class Service implements IService {
-    static _type: string;
-    private _facile;
+    static type: string;
+    protected facile: IFacile;
     /**
      * Creates an instance of Service.
      *

@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
-	<title>Facile Core Source: types/model.ts</title>
+	<title>Facile Core Class: Components</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -286,8 +286,64 @@
                         <li id="navContents_Classes">
                             <div id="collapse_Classes" class="collapse">
                                 <ul class="nav nav-list" style="width:100%;margin-left:-8px;">
-                                    <li><a href="Collection.html">Collection</a></li><li><a href="Controller.html">Controller</a></li><li><a href="Core.html">Core</a></li><li><a href="Facile.html">Facile</a></li><li><a href="Filter.html">Filter</a></li><li><a href="Model.html">Model</a></li><li><a href="Service.html">Service</a></li>
+                                    <li><a href="Components.html">Components</a></li><li><a href="Controller.html">Controller</a></li><li><a href="Core.html">Core</a></li><li><a href="Facile.html">Facile</a></li><li><a href="Filter.html">Filter</a></li><li><a href="Model.html">Model</a></li><li><a href="Service.html">Service</a></li>
                             
+                                    </ul>
+                                </div>
+                            </li>
+                        
+					    <li id="navTitle_Global" class="nav-header navTitle">
+                            <a class="handCursor" data-toggle="collapse" data-id="T_Global" data-target="#collapse_Global">Global<span class="badge badge-info pull-right">6</span></a>
+                        </li>
+                        <li id="navContents_Global">
+                            <div id="collapse_Global" class="collapse">
+                                <ul class="nav nav-list" style="width:100%;margin-left:-8px;">
+                                    
+                                        <?j
+                                    <li>
+                                        
+                                        
+                                        	<a href="global.html#add">add</a>
+                                        
+                                    </li>
+                                    
+                                    <li>
+                                        
+                                        
+                                        	<a href="global.html#functionName">functionName</a>
+                                        
+                                    </li>
+                                    
+                                    <li>
+                                        
+                                        
+                                        	get.&lt;T>
+                                        
+                                    </li>
+                                    
+                                    <li>
+                                        
+                                        
+                                        	<a href="global.html#initialize">initialize</a>
+                                        
+                                    </li>
+                                    
+                                    <li>
+                                        
+                                        
+                                        	<a href="global.html#noop">noop</a>
+                                        
+                                    </li>
+                                    
+                                    <li>
+                                        
+                                        
+                                        	<a href="global.html#remove">remove</a>
+                                        
+                                    </li>
+                                    
+                             <li class="divider"></li>
+                        
                                     </ul>
                                 </div>
                             </li>
@@ -297,7 +353,7 @@
 		</div>
 
 		<script>
-			var searchMembers = [{"realName":"Collection","link":"Collection"},{"realName":"Controller","link":"Controller"},{"realName":"Core","link":"Core"},{"realName":"Facile","link":"Facile"},{"realName":"Filter","link":"Filter"},{"realName":"Model","link":"Model"},{"realName":"Service","link":"Service"}];
+			var searchMembers = [{"realName":"Components","link":"Components"},{"realName":"Controller","link":"Controller"},{"realName":"Core","link":"Core"},{"realName":"Facile","link":"Facile"},{"realName":"Filter","link":"Filter"},{"realName":"Model","link":"Model"},{"realName":"Service","link":"Service"}];
 		</script>
     </aside>
 	</div>
@@ -310,43 +366,248 @@
 					
 
 
-		<h1 class="page-title">Source: types/model.ts</h1>
+	<h1 class="page-title">
+        Class:
+        Components
+        
+    </h1>
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="sunlight-highlight-javascript ">import { IModel, IFacile } from '../interfaces';
+</header>
 
-/**
- * Base Model Class
- *
- * @export
- * @class Model
- */
-export class Model implements IModel {
+<article>
+    <div class="container-overview">
+    
 
-	static type = 'Model';
+    
+        
+<dt>
+    <a name="Components"></a>
 
-	protected facile: IFacile;
+    <h4 class="name" id="Components"><span class="btn btn-mini btn btn-danger">C</span> new Components(  ) &rarr; {void}
 
-	/**
-	 * Creates an instance of Model.
-	 *
-	 * @param {IFacile} facile
-	 * @constructor
-	 * @memberOf Model
-	 */
-	constructor(facile: IFacile) {
-		Object.defineProperty(this, 'facile', {
-			enumerable: false,
-			value: facile
-		});
-		return this;
-	}
+    
 
-}</pre>
-        </article>
-    </section>
+    <a href="core_collection.ts.html"><div style="font-weight:lighter; float:right;" class="btn sourceBar"><i class="icon-eye-open"></i></div></a>
 
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>stores collection of components.</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_collection.ts.html">core/collection.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+ 
+    
+    </div>
+
+   
+
+    
+
+    
+
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
+<dt>
+    <a name="name"></a>
+
+    <h4 class="name" id=".name"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> name(  ) &rarr; { <span class='paramSignature'>string</span> }
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>returns the name of the collection.</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_collection.ts.html">core/collection.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <span>Returns:</span>
+    
+            
+
+
+        
+    
+    
+</dd>
+
+ 
+        </dl>
+    
+
+    
+
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_collection.ts.html">core/collection.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+</article>
+
+</section>
 
 
 
@@ -367,11 +628,15 @@ export class Model implements IModel {
 									
 						<span class="jsdoc-message">
 						Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a>
-						on Thu Oct 13 2016 14:44:58 GMT-0700 (PDT) using the <a href="https://github.com/xperiments/TSDoc">TSDoc template</a>.
+						on Thu Oct 13 2016 14:26:29 GMT-0700 (PDT) using the <a href="https://github.com/xperiments/TSDoc">TSDoc template</a>.
 						</span>
 				</footer>
 			</div>
 			<!--
+			
+			<div class="span3">
+				<div id="toc"></div>
+			</div>
 			
 			-->
 			<br clear="both">

@@ -1,10 +1,18 @@
 
+interface ICollectionMap<T> {
+	[name: string]: T;
+}
+
+interface ICollectionType<T> {
+	new(): T;
+}
+
 /**
- * Components Collection
+ * Collection
  * @desc stores collection of components.
  *
  * @export
- * @class Components
+ * @class Collection
  * @template T
  */
 export class Collection<T>  {
@@ -15,10 +23,10 @@ export class Collection<T>  {
 	 * @desc contains map of components.
 	 * @member _components;
 	 * @private
-	 * @type {{ [name: string]: T }}
-	 * @methodOf Components
+	 * @type {ICollectionMap<T>}
+	 * @memberOf Collection
 	 */
-	private _components: { [name: string]: T } = {};
+	private _components: ICollectionMap<T> = {};
 
 	/**
 	 * _name
@@ -27,7 +35,7 @@ export class Collection<T>  {
 	 * @member _name;
 	 * @private
 	 * @type {string}
-	 * @memberOf Components
+	 * @memberOf Collection
 	 */
 	private _name: string;
 
@@ -40,7 +48,7 @@ export class Collection<T>  {
 	 * @param {string} name
 	 * @returns {*}
 	 *
-	 * @methodOf Components
+	 * @memberOf Collection
 	 */
 	private _get(name: string): any {
 		return this._components[name];
@@ -52,13 +60,13 @@ export class Collection<T>  {
 	 * @desc activates a class as instance.
 	 * @method activate
 	 * @private
-	 * @param {{ new (): T }} Type
+	 * @param {ICollectionType<T>} Type
 	 * @param {any[]} [args]
 	 * @returns {T}
 	 *
-	 * @methodOf Components
+	 * @memberOf Collection
 	 */
-	private _activate(Type: { new (): T }, args?: any[]): T {
+	private _activate(Type: ICollectionType<T>, args?: any[]): T {
 		function F(): void {
 			Type.apply(this, args);
 		}
@@ -72,7 +80,7 @@ export class Collection<T>  {
 	 *
 	 * @param {string} name
 	 * @constructor
-	 * @memberOf Components
+	 * @memberOf Collection
 	 */
 	constructor(name: string) {
 		this._name = name;
@@ -84,7 +92,7 @@ export class Collection<T>  {
 	 * @desc returns the name of the collection.
 	 * @method name
 	 * @returns {string}
-	 * @memberOf Components
+	 * @memberOf Collection
 	 */
 	name(): string {
 		return this._name;
@@ -99,11 +107,23 @@ export class Collection<T>  {
 	 * @param {string} name
 	 * @returns {T}
 	 *
-	 * @methodOf Components
+	 * @memberOf Collection
 	 */
 	get<T>(name: string): T {
 		let component: T = this._get(name);
 		return component;
+	}
+
+	/**
+	 * getAll
+	 *
+	 * @desc gets all components.
+	 * @method getAll
+	 * @returns {}
+	 * @memberOf Collection
+	 */
+	getAll(): {} {
+		return this._components;
 	}
 
 	/**
@@ -113,9 +133,9 @@ export class Collection<T>  {
 	 * @method add
 	 * @param {string} name
 	 * @param {T} item
-	 * @returns
+	 * @returns {Collection}
 	 *
-	 * @methodOf Components
+	 * @memberOf Collection
 	 */
 	add(name: string, component: T) {
 		this._components[name] = component;
@@ -131,7 +151,7 @@ export class Collection<T>  {
 	 * @param {...any[]} args
 	 * @returns {*}
 	 *
-	 * @methodOf Components
+	 * @memberOf Collection
 	 */
 	init(name: string, ...args: any[]): T {
 		let component = this._activate(this._get(name), args);
@@ -145,9 +165,9 @@ export class Collection<T>  {
 	 * @desc removes a component from the collection.
 	 * @method remove
 	 * @param {string} name
-	 * @returns
+	 * @returns {Collection}
 	 *
-	 * @methodOf Components
+	 * @memberOf Collection
 	 */
 	remove(name: string) {
 		delete this._components[name];

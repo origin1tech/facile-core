@@ -102,7 +102,6 @@ export interface IFacile extends ICore {
 	service<T>(name: string): T;
 	model<T>(name: string): T;
 	controller<T>(name: string): T;
-	component(name: string, map: any): any;
 	extend(...args: any[]): any;
 	extendConfig(...configs: any[]): IConfig;
 

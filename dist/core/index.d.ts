@@ -1,6 +1,6 @@
 import * as express from 'express';
 import { Core } from './core';
-import { IFacile, IConfig, IRouters, IRoute, IFilter, IModel, IController, IConfigs, IRequestHandler, IRoutesMap, IService, IInit, IMiddlewaresMap, IComponentsMap, IComponent, IErrorRequestHandler } from '../interfaces';
+import { IFacile, IConfig, IRouters, IRoute, IConfigs, IRequestHandler, IRoutesMap, IInit, IMiddlewaresMap, IComponentsMap, IComponent, IErrorRequestHandler } from '../interfaces';
 /**
  * Facile Core
  *
@@ -39,7 +39,8 @@ export declare class Facile extends Core implements IFacile {
      * init:done
      * core:start
      *
-     * @method enableHooks
+     * @private
+     * @method _enableListeners
      * @returns {Facile}
      * @memberOf Facile
      */
@@ -47,24 +48,13 @@ export declare class Facile extends Core implements IFacile {
     /**
      * Start Listening for Connections
      *
-     * @method
+     * @private
+     * @method _listen
      * @returns {Facile}
      *
      * @memberOf Facile
      */
     private _listen();
-    /**
-     * Generic method for add controllers,
-     * models, filters and services.
-     *
-     * @param {*} name
-     * @param {*} Type
-     * @param {*} map
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
-    private _register<T>(name, Component, collection?);
     /**
      * Configure
        *
@@ -85,7 +75,7 @@ export declare class Facile extends Core implements IFacile {
     /**
      * Start Server.
      *
-     * @method
+     * @method start
      * @param {Function} [fn]
      * @method
      * @memberof Facile
@@ -94,7 +84,7 @@ export declare class Facile extends Core implements IFacile {
     /**
      * Stops the server.
      *
-     * @method
+     * @method stop
      * @param {string} [msg]
      * @param {number} [code]
      * @returns {void}
@@ -105,29 +95,29 @@ export declare class Facile extends Core implements IFacile {
     /**
      * Adds a Configuration.
      *
-     * @method
+     * @method registerConfig
      * @param {string} name
      * @param {IConfig} config
      * @returns {Facile}
      *
      * @memberOf Facile
      */
-    addConfig(name: string | IConfigs, config: IConfig): Facile;
+    registerConfig(name: string | IConfigs, config: IConfig): Facile;
     /**
      * Adds/Creates a Router.
      *
-     * @method
+     * @method registerRouter
      * @param {string} name
      * @param {express.Router} [router]
      * @returns {express.Router}
      *
      * @memberOf Facile
      */
-    addRouter(name: string | IRouters, router?: express.Router): express.Router;
+    registerRouter(name: string | IRouters, router?: express.Router): express.Router;
     /**
      * Registers Middleware or Middlewares to Express.
      *
-     * @method
+     * @method registerMiddleware
      * @param {string} name
      * @param {IRequestHandler} fn
      * @param {number} [order]
@@ -135,50 +125,11 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    addMiddleware(name: string | IMiddlewaresMap, fn?: IRequestHandler | IErrorRequestHandler, order?: number): Facile;
-    register(Component: IComponent): IFacile;
-    register(components: IComponentsMap): IFacile;
-    register(middlewares: IMiddlewaresMap): IFacile;
-    register(name: string, Component: IComponent): IFacile;
-    register(name: string, middleware: IRequestHandler | IErrorRequestHandler, order?: number): IFacile;
-    addService(Service: IService): IFacile;
-    addService(services: IComponentsMap): IFacile;
-    addService(name: string, Service: IService): IFacile;
-    /**
-     * Registers Filter or Map of Filters.
-     *
-     * @method
-     * @param {(string | IFilters)} name
-     * @param {IRequestHandler} fn
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
-    addFilter(name: string | IFilter | IComponentsMap, Filter?: IFilter): Facile;
-    /**
-     * Registers a Model.
-     *
-     * @method
-     * @param {(IModel | Array<IModel>)} Model
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
-    addModel(name: string | IModel | IComponentsMap, Model?: IModel): Facile;
-    /**
-     * Registers a Controller.
-     *
-     * @method
-     * @param {(IController | Array<IController>)} Controller
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
-    addController(name: string | IController | IComponentsMap, Controller?: IController): Facile;
+    registerMiddleware(name: string | IMiddlewaresMap, fn?: IRequestHandler | IErrorRequestHandler, order?: number): Facile;
     /**
      * Adds a route to the map.
      *
-     * @method
+     * @method registerRoute
      * @param {(string | IRoute)} method
      * @param {string} url
      * @param {(express.Handler | Array<express.Handler>)} handlers
@@ -187,7 +138,10 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    addRoute(route: IRoute | IRoutesMap | IRoute[]): Facile;
+    registerRoute(route: IRoute | IRoutesMap | IRoute[]): Facile;
+    registerComponent(Component: IComponent): IFacile;
+    registerComponent(components: IComponentsMap): IFacile;
+    registerComponent(name: string, Component: IComponent): IFacile;
     component(name: string, map: any): any;
     /**
      * Gets a Router by name.

@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
-	<title>Facile Core Source: types/model.ts</title>
+	<title>Facile Core Class: Collection</title>
 
 	<!--[if lt IE 9]>
 	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -310,43 +310,920 @@
 					
 
 
-		<h1 class="page-title">Source: types/model.ts</h1>
+	<h1 class="page-title">
+        Class:
+        Collection
+        
+    </h1>
+<section>
+
+<header>
     
-    <section>
-        <article>
-            <pre class="sunlight-highlight-javascript ">import { IModel, IFacile } from '../interfaces';
+</header>
 
-/**
- * Base Model Class
- *
- * @export
- * @class Model
- */
-export class Model implements IModel {
+<article>
+    <div class="container-overview">
+    
 
-	static type = 'Model';
+    
+        
+<dt>
+    <a name="Collection"></a>
 
-	protected facile: IFacile;
+    <h4 class="name" id="Collection"><span class="btn btn-mini btn btn-danger">C</span> new Collection(  ) &rarr; {void}
 
-	/**
-	 * Creates an instance of Model.
-	 *
-	 * @param {IFacile} facile
-	 * @constructor
-	 * @memberOf Model
-	 */
-	constructor(facile: IFacile) {
-		Object.defineProperty(this, 'facile', {
-			enumerable: false,
-			value: facile
-		});
-		return this;
-	}
+    
 
-}</pre>
-        </article>
-    </section>
+    <a href="core_collection.ts.html"><div style="font-weight:lighter; float:right;" class="btn sourceBar"><i class="icon-eye-open"></i></div></a>
 
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>stores collection of components.</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_collection.ts.html">core/collection.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+ 
+    
+    </div>
+
+   
+
+    
+
+    
+
+    
+
+    
+
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        <dl>
+            
+<dt>
+    <a name="add"></a>
+
+    <h4 class="name" id=".add"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> add( name: <span class="paramSignature">string</span>, item: <span class="paramSignature">T</span> ) &rarr; { <span class='paramSignature'>Collection</span> }
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>adds a component to the collection</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>item</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">T</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_collection.ts.html">core/collection.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <span>Returns:</span>
+    
+            
+
+
+        
+    
+    
+</dd>
+
+ 
+        
+            
+<dt>
+    <a name="get<T>"></a>
+
+    <h4 class="name" id=".get%3CT%3E"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> get<T>( name: <span class="paramSignature">string</span> ) &rarr; { <span class='paramSignature'>T</span> }
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>gets a component by type.</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_collection.ts.html">core/collection.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <span>Returns:</span>
+    
+            
+
+
+        
+    
+    
+</dd>
+
+ 
+        
+            
+<dt>
+    <a name="getAll"></a>
+
+    <h4 class="name" id=".getAll"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> getAll(  )
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>gets all components.</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_collection.ts.html">core/collection.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <span>Returns:</span>
+    
+            
+
+
+        
+    
+    
+</dd>
+
+ 
+        
+            
+<dt>
+    <a name="initialize"></a>
+
+    <h4 class="name" id=".initialize"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> initialize( name: <span class="paramSignature">string</span>, args: <span class="paramSignature">Array&#46;&#60;any&#62;</span> ) &rarr; { <span class='paramSignature'>*</span> }
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>initializes component instance.</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+		<th>Argument</th>
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>args</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;any></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                    &lt;repeatable><br>
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_collection.ts.html">core/collection.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <span>Returns:</span>
+    
+            
+
+
+        
+    
+    
+</dd>
+
+ 
+        
+            
+<dt>
+    <a name="name"></a>
+
+    <h4 class="name" id=".name"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> name(  ) &rarr; { <span class='paramSignature'>string</span> }
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>returns the name of the collection.</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_collection.ts.html">core/collection.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <span>Returns:</span>
+    
+            
+
+
+        
+    
+    
+</dd>
+
+ 
+        
+            
+<dt>
+    <a name="remove"></a>
+
+    <h4 class="name" id=".remove"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> remove( name: <span class="paramSignature">string</span> ) &rarr; { <span class='paramSignature'>Collection</span> }
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>removes a component from the collection.</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_collection.ts.html">core/collection.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <span>Returns:</span>
+    
+            
+
+
+        
+    
+    
+</dd>
+
+ 
+        </dl>
+    
+
+    
+
+    
+
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_collection.ts.html">core/collection.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+</article>
+
+</section>
 
 
 
@@ -372,6 +1249,10 @@ export class Model implements IModel {
 				</footer>
 			</div>
 			<!--
+			
+			<div class="span3">
+				<div id="toc"></div>
+			</div>
 			
 			-->
 			<br clear="both">

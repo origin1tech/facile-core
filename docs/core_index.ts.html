@@ -281,34 +281,13 @@
 				
 				
 					    <li id="navTitle_Classes" class="nav-header navTitle">
-                            <a class="handCursor" data-toggle="collapse" data-id="T_Classes" data-target="#collapse_Classes">Classes<span class="badge badge-info pull-right">6</span></a>
+                            <a class="handCursor" data-toggle="collapse" data-id="T_Classes" data-target="#collapse_Classes">Classes<span class="badge badge-info pull-right">7</span></a>
                         </li>
                         <li id="navContents_Classes">
                             <div id="collapse_Classes" class="collapse">
                                 <ul class="nav nav-list" style="width:100%;margin-left:-8px;">
-                                    <li><a href="Controller.html">Controller</a></li><li><a href="Core.html">Core</a></li><li><a href="Facile.html">Facile</a></li><li><a href="Filter.html">Filter</a></li><li><a href="Model.html">Model</a></li><li><a href="Service.html">Service</a></li>
+                                    <li><a href="Collection.html">Collection</a></li><li><a href="Controller.html">Controller</a></li><li><a href="Core.html">Core</a></li><li><a href="Facile.html">Facile</a></li><li><a href="Filter.html">Filter</a></li><li><a href="Model.html">Model</a></li><li><a href="Service.html">Service</a></li>
                             
-                                    </ul>
-                                </div>
-                            </li>
-                        
-					    <li id="navTitle_Global" class="nav-header navTitle">
-                            <a class="handCursor" data-toggle="collapse" data-id="T_Global" data-target="#collapse_Global">Global<span class="badge badge-info pull-right">1</span></a>
-                        </li>
-                        <li id="navContents_Global">
-                            <div id="collapse_Global" class="collapse">
-                                <ul class="nav nav-list" style="width:100%;margin-left:-8px;">
-                                    
-                                        <?j
-                                    <li>
-                                        
-                                        
-                                        	<a href="global.html#utils">utils</a>
-                                        
-                                    </li>
-                                    
-                             <li class="divider"></li>
-                        
                                     </ul>
                                 </div>
                             </li>
@@ -318,7 +297,7 @@
 		</div>
 
 		<script>
-			var searchMembers = [{"realName":"Controller","link":"Controller"},{"realName":"Core","link":"Core"},{"realName":"Facile","link":"Facile"},{"realName":"Filter","link":"Filter"},{"realName":"Model","link":"Model"},{"realName":"Service","link":"Service"}];
+			var searchMembers = [{"realName":"Collection","link":"Collection"},{"realName":"Controller","link":"Controller"},{"realName":"Core","link":"Core"},{"realName":"Facile","link":"Facile"},{"realName":"Filter","link":"Filter"},{"realName":"Model","link":"Model"},{"realName":"Service","link":"Service"}];
 		</script>
     </aside>
 	</div>
@@ -341,21 +320,26 @@ import * as vscode from 'vscode';
 import { resolve, join } from 'path';
 import * as express from 'express';
 import * as Boom from 'boom';
+import { series as asyncSeries } from 'async';
 import { LoggerInstance, Logger, transports, TransportInstance } from 'winston';
 import { wrap, create, badRequest, unauthorized, forbidden, notFound, notImplemented } from 'boom';
 import { Server, Socket } from 'net';
 import { readFileSync } from 'fs';
-import { extend as _extend, isPlainObject, each, isFunction, isString, maxBy, has, isBoolean } from 'lodash';
+import { extend as _extend, isPlainObject, each, isFunction,
+				isString, maxBy, has, isBoolean, bind, values } from 'lodash';
 import { red, cyan } from 'chalk';
 
 // Internal Dependencies.
 import * as utils from './utils';
 import { Core } from './core';
 import * as defaults from './defaults';
-import { IFacile, ICertificate, IConfig, IRouters, IRoute, IBoom, ICallbackResult, IFilter,
-				IMiddleware, IMiddlewares, ISockets, IModels, IControllers, IModel, IController,
-				IUtils, IFilters, IConfigs, IRequestHandler, IRoutesMap, IService, IServices,
-				IViewConfig, IInit, ICallback } from '../interfaces';
+import { IFacile, ICertificate, IConfig, IRouters, IRoute,
+				IBoom, ICallbackResult, IFilter,
+				IMiddleware, ISockets, IModel, IController,
+				IUtils, IConfigs, IRequestHandler, IRoutesMap, IService,
+				IViewConfig, IInit, ICallback, IMiddlewaresMap, IComponentsMap,
+				IComponent, IErrorRequestHandler } from '../interfaces';
+import { Collection } from './collection';
 
 import * as server from './server';
 import * as services from './services';
@@ -386,18 +370,6 @@ export class Facile extends Core implements IFacile {
 	 */
 	static instance: Facile;
 
-	_routers: IRouters = {};
-	_routes: Array&lt;IRoute>;
-
-	_nextSocketId: number = 0;
-	_sockets: ISockets = {};
-
-	_services: IServices = {};
-	_middlewares: IMiddlewares = {};
-	_filters: IFilters = {};
-	_models: IModels = {};
-	_controllers: IControllers = {};
-
 	/**
 	 * Facile constructor.
 	 * @constructor
@@ -420,7 +392,7 @@ export class Facile extends Core implements IFacile {
 			level: 'info',
 			transports: [
 				new (transports.Console)({
-					prettyPrint: true,
+					colorize: true,
 					handleExceptions: true,
 					humanReadableUnhandledException: true
 				})
@@ -434,11 +406,96 @@ export class Facile extends Core implements IFacile {
 		// Create Express app.
 		this.express = express;
 		this.app = express();
+		this._initialized = false;
+		this._started = false;
 
 		// Set the instance.
 		Facile.instance = this;
 
 		return this;
+
+	}
+
+	///////////////////////////////////////////////////
+	// PRIVATE METHODS
+	///////////////////////////////////////////////////
+
+	/**
+	 * Enables Lifecycle Listeners.
+	 *
+	 * Events
+	 *
+	 * init
+	 * init:server
+	 * init:services
+	 * init:filters
+	 * init:models
+	 * init:controllers
+	 * init:routes
+	 * init:done
+	 * core:start
+	 *
+	 * @private
+	 * @method _enableListeners
+	 * @returns {Facile}
+	 * @memberOf Facile
+	 */
+	private _enableListeners(): Facile {
+
+		let init = this.init();
+
+		this.on('init', init.run);
+
+		this.on('init:server', init.server);
+
+		this.on('init:services', init.services);
+
+		this.on('init:filters', init.filters);
+
+		this.on('init:models', init.models);
+
+		this.on('init:controllers', init.controllers);
+
+		this.on('init:routes', init.routes);
+
+		this.on('init:done', init.done);
+
+		this.on('core:start', this.start);
+
+		this.on('core:listen', this._listen);
+
+		// Set flag indicating that
+		// init hooks are listening
+		// in case called manually.
+		this._config.auto = true;
+
+		return this;
+
+	}
+
+	/**
+	 * Start Listening for Connections
+	 *
+	 * @private
+	 * @method _listen
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	private _listen(): void {
+
+		if (!this._started) {
+			this.logger.error('Facile.listen() cannot be called directly please use .start().');
+			process.exit();
+		}
+
+		// Listen for connections.
+		this.logger.debug('Server preparing to listen.');
+
+		this.server.listen(this._config.port, this._config.host, (err: Error) => {
+			if (err)
+				throw err;
+		});
 
 	}
 
@@ -500,15 +557,9 @@ export class Facile extends Core implements IFacile {
 		// Ensure config auto has value.
 		this._config.auto = this._config.auto !== false ? true : false;
 
-		// If auto enable event listeners.
-		if (this._config.auto) {
-			this.enableEvents();
-			this.execAfter('core:configure', () => {
-				this.emit('init');
-			});
-		}
-		else
-			return this;
+		this._configured = true;
+
+		return this;
 
 	}
 
@@ -521,11 +572,17 @@ export class Facile extends Core implements IFacile {
 	 */
 	init(): IInit {
 
-		let self = this;
+		let facile: Facile = this;
 
 		// Ensure configuration.
 		if (!this._config) {
-			this.logger.warn('Failed to initialize please run facile.configure() first...exiting.');
+			this.logger.warn('Failed to initialize please run facile.configure()...exiting.');
+			process.exit();
+		}
+
+		if (this._config.auto &amp;&amp; !this._autoInit) {
+			console.log('');
+			this.logger.error('Facile config set to "auto" but attempted to init manually.');
 			process.exit();
 		}
 
@@ -538,13 +595,17 @@ export class Facile extends Core implements IFacile {
 		 * @returns {IInit}
 		 * @memberOf Facile
 		 */
-		function run(): IInit {
-			if (self._config.auto)
-				self.execBefore('init', () => {
-					self.emit('init:server');
-				});
-			else
-				return inits;
+		function run(): void {
+
+			if (!facile._config.auto) {
+				this.logger.error('The method init().run() cannot be called manually use { auto: true } in your configuration.');
+				process.exit();
+			}
+
+			facile.execBefore('init', () => {
+				facile.emit('init:server');
+			});
+
 		}
 
 		/**
@@ -556,130 +617,63 @@ export class Facile extends Core implements IFacile {
 		 * @returns {IFacile}
 		 * @memberOf Facile
 		 */
-		function done(): IFacile {
-			if (self._config.auto)
-				self.execAfter('init', () => {
-					self.emit('core:start');
-				});
-			else
-				return self;
-		}
+		function done(): Facile {
 
-		/**
-		 * Used internally to trigger
-		 * all initialization events.
-		 *
-		 * @private
-		 * @member all
-		 * @returns {IFacile}
-		 * @memberOf Facile
-		 */
-		function all(): IFacile {
-			return done();
+			facile.logger.debug('Facile initialization complete.');
+
+			facile._initialized = true;
+
+			if (facile._config.auto) {
+
+				facile.execAfter('init', () => {
+					facile.emit('core:start');
+				});
+
+			}
+
+			else {
+
+				return facile;
+
+			}
+
 		}
 
 		let inits: IInit = {
 
-			run: 					run.bind(this),
-			server: 			server.init.bind(this),
-			services: 		services.init.bind(this),
-			filters: 			filters.init.bind(this),
-			models: 			models.init.bind(this),
-			controllers: 	controllers.init.bind(this),
-			routes: 			routes.init.bind(this),
-			all: 					all.bind(this),
-			done: 				done.bind(this)
+			// run: 					run.bind(that),
+			// server: 				server.init.bind(that),
+			// services: 			services.init.bind(that),
+			// filters: 			filters.init.bind(that),
+			// models: 				models.init.bind(that),
+			// controllers: 	controllers.init.bind(that),
+			// routes: 				routes.init.bind(that),
+			// done: 					done.bind(that)
+
+			run: 						run,
+			server: 				server.init(facile),
+			services: 			services.init(facile),
+			filters: 				filters.init(facile),
+			models: 				models.init(facile),
+			controllers: 		controllers.init(facile),
+			routes: 				routes.init(facile),
+			done: 					done
 
 		};
 
-		return run();
-
-	}
-
-	/**
-	 * Enables Lifecycle Listeners.
-	 *
-	 * Events
-	 *
-	 * core:configure
-	 * init
-	 * init:server
-	 * init:services
-	 * init:filters
-	 * init:models
-	 * init:controllers
-	 * init:routes
-	 * init:done
-	 * core:start
-	 *
-	 * @method enableHooks
-	 * @returns {Facile}
-	 * @memberOf Facile
-	 */
-	enableEvents(): Facile {
-
-		let init = this.init();
-
-		this.on('init', init.run);
-
-		this.on('init:server', init.server);
-
-		this.on('init:services', init.services);
-
-		this.on('init:filters', init.filters);
-
-		this.on('init:models', init.models);
-
-		this.on('init:controllers', init.controllers);
-
-		this.on('init:routes', init.routes);
-
-		this.on('core:start', this.start);
-
-		this.on('core:listen', this.listen);
-
-		// Set flag indicating that
-		// init hooks are listening
-		// in case called manually.
-		this._config.auto = true;
-
-		return this;
-
-	}
-
-	/**
-	 * Start Listening for Connections
-	 *
-	 * @method
-	 * @returns {Facile}
-	 *
-	 * @memberOf Facile
-	 */
-	listen(): Facile {
-
-		// Listen for connections.
-		this.logger.debug('Server preparing to listen.');
-
-		this.server.listen(this._config.port, this._config.host, (err: Error) => {
-			if (err)
-				throw err;
-		});
-
-		return this;
+		return inits;
 
 	}
 
 	/**
 	 * Start Server.
 	 *
-	 * @method
+	 * @method start
 	 * @param {Function} [fn]
 	 * @method
 	 * @memberof Facile
 	 */
 	start(config?: string | IConfig | Function, fn?: Function): Facile {
-
-		let that: Facile = this;
 
 		// Allow callback as first argument.
 		if (isFunction(config)) {
@@ -687,72 +681,132 @@ export class Facile extends Core implements IFacile {
 			config = undefined;
 		}
 
-		// Can't start without a config.
-		if (!this._config) {
+		/////////////////////////////
+		// Wait/Start Facile
+		/////////////////////////////
 
-			// If no _config and no config throw error.
-			if (!config)
-				throw new Error('Attempted to start but not configured or no config was supplied.');
-
-			let _config: IConfig = config;
-
-			// If Auto return the config as
-			// auto events listeners will fire
-			// start.
-			if (_config.auto !== false)
-				return this.configure(config);
-
-			// Otherwise just configure.
-			this.configure(config);
-
-		}
-
-		function handleStart(): Facile {
-
-			that.logger.debug('Starting server preparing for connections.');
+		function handleStart(): void {
 
 			// On listening Handle Callback.
-			that.server.on('listening', () => {
+			this.server.on('listening', () => {
 
-				let address = that.server.address(),
+				let address = this.server.address(),
 						addy = address.address,
 						port = address.port;
 
-				console.log(cyan('\nServer listening at: http://' + addy + ':' + port));
+				if (this._config.auto)
+					this.execAfter('core:listen');
 
 				// Call if callack function provided.
-				if (fn) {
-					that.logger.debug('Exec callback on server start/listening.');
-					fn(that);
-				}
+				if (fn)
+					fn(this);
 
-				if (that._config.auto)
-					that.execAfter('core:listen');
+				console.log(cyan('\nServer listening at: http://' + addy + ':' + port));
 
 			});
 
-			if (that._config.auto)
-				that.execAfter('core:start', () => {
-					that.listen();
+			if (this._config.auto) {
+				this.execAfter('core:start', () => {
+					this._started = true;
+					this.emit('core:listen');
 				});
-			else
-				return that.listen();
+			}
+			else {
+				this._started = true;
+				this.listen();
+			}
 
 		}
 
-		if (this._config.auto)
-			this.execBefore('core:start', () => {
-				handleStart();
-			});
-		else
-			return handleStart();
+		let waitId;
+
+		/**
+		 * Waits to start server until initialized.
+		 * This is only used when "auto" is NOT set
+		 * to true in your config.
+		 */
+		function handleWaitStart(): void {
+			if (!this._initialized) {
+				waitId = setTimeout(handleWaitStart.bind(this), 10);
+			}
+			else {
+				clearTimeout(waitId);
+				handleStart.call(this);
+			}
+		}
+
+		/////////////////////////////
+		// Ensure Configuration
+		/////////////////////////////
+
+		if (!this._configured)
+			this.configure(config);
+
+		// Can't continue without configuration.
+		// Should never hit but just in case.
+		if (!this._config) {
+			console.log('');
+			this.logger.error('Failed to start Facile missing or invalid configuration.');
+			process.exit();
+		}
+
+		/////////////////////////////
+		// Manual or Auto Init
+		/////////////////////////////
+
+		if (this._config.auto) {
+
+			this.logger.debug('Auto configuration detected.');
+
+			// Initialize first which will round
+			// trip and call start again falling
+			// through to the execution below.
+			if (!this._initialized) {
+
+				// ensures manual init is not called while auto is set.
+				this._autoInit = true;
+
+				this._enableListeners();
+				this.init().run();
+
+			}
+
+			// Facile now initalized can now start.
+			else {
+
+				this.execBefore('core:start', () => {
+					handleStart.call(this);
+				});
+
+				return this;
+
+			}
+
+		}
+		else {
+
+			// When starting manually must have
+			// called configure and init manually
+			// before starting.
+			if (!this._initialized) {
+				console.log('');
+				this.logger.error('Facile failed to start call facile.init() before starting.');
+				process.exit();
+			}
+
+			handleWaitStart.call(this);
+
+			// Don't wait just return.
+			return this;
+
+		}
 
 	}
 
 	/**
 	 * Stops the server.
 	 *
-	 * @method
+	 * @method stop
 	 * @param {string} [msg]
 	 * @param {number} [code]
 	 * @returns {void}
@@ -790,14 +844,14 @@ export class Facile extends Core implements IFacile {
 	/**
 	 * Adds a Configuration.
 	 *
-	 * @method
+	 * @method registerConfig
 	 * @param {string} name
 	 * @param {IConfig} config
 	 * @returns {Facile}
 	 *
 	 * @memberOf Facile
 	 */
-	addConfig(name: string | IConfigs, config: IConfig): Facile {
+	registerConfig(name: string | IConfigs, config: IConfig): Facile {
 		utils.extendMap(name, config, this._configs);
 		return this;
 	}
@@ -805,25 +859,29 @@ export class Facile extends Core implements IFacile {
 	/**
 	 * Adds/Creates a Router.
 	 *
-	 * @method
+	 * @method registerRouter
 	 * @param {string} name
 	 * @param {express.Router} [router]
 	 * @returns {express.Router}
 	 *
 	 * @memberOf Facile
 	 */
-	addRouter(name: string | IRouters, router?: express.Router): express.Router {
+	registerRouter(name: string | IRouters, router?: express.Router): express.Router {
 
 		// If object check if "default" was passed.
 		let hasDefault = isPlainObject(name) &amp;&amp; has(name, 'default');
 
 		// Check for default router.
-		if (name === 'default' || hasDefault)
-			throw new Error('Router name cannot be "default".');
+		if (name === 'default' || hasDefault) {
+			this.logger.warn('Default router is readonly previously defined router.');
+			return this.router('default');
+		}
 
 		// Add router to map.
 		if (isString(name))
 			this._routers[name] = router || express.Router();
+
+		// Add multiple
 		else
 			Object.keys(name).forEach((k) => {
 				this._routers[k] = name[k] || express.Router();
@@ -836,7 +894,7 @@ export class Facile extends Core implements IFacile {
 	/**
 	 * Registers Middleware or Middlewares to Express.
 	 *
-	 * @method
+	 * @method registerMiddleware
 	 * @param {string} name
 	 * @param {IRequestHandler} fn
 	 * @param {number} [order]
@@ -844,9 +902,9 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	addMiddleware(name: string | IMiddlewares, fn?: any, order?: number): Facile {
+	registerMiddleware(name: string | IMiddlewaresMap, fn?: IRequestHandler | IErrorRequestHandler, order?: number): Facile {
 
-		let middlewares: IMiddlewares = {};
+		let middlewares: any = {};
 
 		// Adding single middleware.
 		if (isString(name))
@@ -893,66 +951,9 @@ export class Facile extends Core implements IFacile {
 	}
 
 	/**
-	 * Registers a Service.
-	 *
-	 * @method
-	 * @param {(IService | Array&lt;IService>)} Service
-	 * @returns {Facile}
-	 *
-	 * @memberOf Facile
-	 */
-	addService(Service: IService | Array&lt;IService>): Facile {
-		utils.extendMap(Service, this._services);
-		return this;
-	}
-
-	/**
-	 * Registers Filter or Map of Filters.
-	 *
-	 * @method
-	 * @param {(string | IFilters)} name
-	 * @param {IRequestHandler} fn
-	 * @returns {Facile}
-	 *
-	 * @memberOf Facile
-	 */
-	addFilter(Filter: IFilter | Array&lt;IFilter>): Facile {
-		utils.extendMap(Filter, this._filters);
-		return this;
-	}
-
-	/**
-	 * Registers a Model.
-	 *
-	 * @method
-	 * @param {(IModel | Array&lt;IModel>)} Model
-	 * @returns {Facile}
-	 *
-	 * @memberOf Facile
-	 */
-	addModel(Model: IModel | Array&lt;IModel>): Facile {
-		utils.extendMap(Model, this._models);
-		return this;
-	}
-
-	/**
-	 * Registers a Controller.
-	 *
-	 * @method
-	 * @param {(IController | Array&lt;IController>)} Controller
-	 * @returns {Facile}
-	 *
-	 * @memberOf Facile
-	 */
-	addController(Controller: IController | Array&lt;IController>): Facile {
-		utils.extendMap(Controller, this._controllers);
-		return this;
-	}
-
-	/**
 	 * Adds a route to the map.
 	 *
-	 * @method
+	 * @method registerRoute
 	 * @param {(string | IRoute)} method
 	 * @param {string} url
 	 * @param {(express.Handler | Array&lt;express.Handler>)} handlers
@@ -961,7 +962,7 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	addRoute(route: IRoute | IRoutesMap | IRoute[]): Facile {
+	registerRoute(route: IRoute | IRoutesMap | IRoute[]): Facile {
 
 		let self = this;
 
@@ -995,8 +996,8 @@ export class Facile extends Core implements IFacile {
 		else if (isPlainObject(route)) {
 			let routes = route as IRoutesMap;
 			each(routes, (v, k) => {
-				let r = utils.parseRoute(k, v);
-				validate(r);
+				let rte = utils.parseRoute(k, v);
+				validate(rte);
 			});
 		}
 
@@ -1008,6 +1009,95 @@ export class Facile extends Core implements IFacile {
 
 	}
 
+
+	registerComponent(Component: IComponent): IFacile;
+
+	registerComponent(components: IComponentsMap): IFacile;
+
+	registerComponent(name: string, Component: IComponent): IFacile;
+
+	/**
+	 * registerComponent
+	 *
+	 * @desc registers a Service, Filter, Controller or Model
+	 * @method registerComponent
+	 * @param {(string | IComponent | IComponentsMap)} name
+	 * @param {IComponent} [Component]
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	registerComponent(name: string | IComponent | IComponentsMap, Component?: IComponent): Facile {
+
+		let self = this;
+		let Comp: any;
+
+		function registerFailed(type) {
+				self.logger.error('Failed to register using unsupported type "' + type + '".');
+				process.exit();
+		}
+
+		function registerByType(type) {
+
+			let collection;
+
+			if (type === 'Service')
+				collection = self._services as Collection&lt;IService>;
+			else if (type === 'Filter')
+				collection = self._filters as Collection&lt;IFilter>;
+			else if (type === 'Controller')
+				collection = self._controllers as Collection&lt;IController>;
+			else if (type === 'Model')
+				collection = self._models as Collection&lt;IModel>;
+			else
+				registerFailed(typeof type);
+
+			// If not type try to get name
+			// from function/class name.
+			if (isFunction(name)) {
+				Component = name;
+				name = utils.constructorName(name);
+			}
+
+			// Adding single component by name and class/function.
+			if (isString(name)) {
+				collection.add(name, Component);
+			}
+
+			// Otherwise iterate object.
+			else if (isPlainObject(name)) {
+				each(name, (v, k) => {
+					collection.add(k, v);
+				});
+			}
+
+			// Otherwise log error.
+			else {
+				let failedType = typeof Component || typeof name;
+				self.logger.error('Failed ot register component using unsupported type "' +
+													failedType + ' ".');
+			}
+
+			return self;
+
+		}
+
+		// Get the Component Type
+		// before attempting to register.
+		if (Component)
+			Comp = Component;
+		else if (isPlainObject(name))
+			Comp = values(name)[0];
+		else if (isFunction(name))
+			Comp = name;
+		else
+			registerFailed(typeof Component || typeof name);
+
+		return registerByType(Comp.type);
+
+
+	}
+
 	///////////////////////////////////////////////////
 	// INSTANCE HELPERS
 	///////////////////////////////////////////////////
@@ -1015,7 +1105,7 @@ export class Facile extends Core implements IFacile {
 	/**
 	 * Gets a Router by name.
 	 *
-	 * @method
+	 * @method router
 	 * @param {string} name
 	 * @returns {express.Router}
 	 *
@@ -1028,7 +1118,7 @@ export class Facile extends Core implements IFacile {
 	/**
 	 * Gets a Config by name.
 	 *
-	 * @method
+	 * @method config
 	 * @param {string} name
 	 * @returns {IConfig}
 	 *
@@ -1039,61 +1129,69 @@ export class Facile extends Core implements IFacile {
 	}
 
 	/**
-	 * Gets a Service by name.
+	 * Gets a Service
 	 *
-	 * @method
+	 * @method service
+	 * @template T
 	 * @param {string} name
-	 * @returns {IService}
+	 * @returns {T}
 	 *
 	 * @memberOf Facile
 	 */
-	service(name: string): IService {
-		return this._services[name];
+	service&lt;T>(name: string): T {
+		let component: T = this._services[name];
+		return component;
 	}
 
 	/**
-	 * Gets a Filter by name.
+	 * Gets a Filter
 	 *
-	 * @method
+	 * @method filter
+	 * @template T
 	 * @param {string} name
-	 * @returns {IFilter}
+	 * @returns {T}
 	 *
 	 * @memberOf Facile
 	 */
-	filter(name: string): IFilter {
-		return this._filters[name];
+	filter&lt;T>(name: string): T {
+		let component: T = this._filters[name];
+		return component;
 	}
 
 	/**
-	 * Gets a Model by name.
+	 * Gets a Model
 	 *
-	 * @method
+	 * @method model
+	 * @template T
 	 * @param {string} name
-	 * @returns {IModel}
+	 * @returns {T}
 	 *
 	 * @memberOf Facile
 	 */
-	model(name: string): IModel {
-		return this._models[name];
+	model&lt;T>(name: string): T {
+		let component: T = this._models[name];
+		return component;
 	}
 
 	/**
-	 * Gets a Controller by name.
+	 * Gets a Controller.
 	 *
-	 * @method
+	 * @method controller
+	 * @template T
 	 * @param {string} name
-	 * @returns {IController}
+	 * @returns {T}
 	 *
 	 * @memberOf Facile
 	 */
-	controller(name: string): IController {
-		return this._controllers[name];
+	controller&lt;T>(name: string): T {
+		let component: T = this._controllers[name];
+		return component;
 	}
 
 	/**
 	 * Convenience wrapper for lodash extend.
 	 *
-	 * @member extend
+	 * @method extend
 	 * @param {...any[]} args
 	 * @returns {*}
 	 *
@@ -1106,7 +1204,7 @@ export class Facile extends Core implements IFacile {
 	/**
 	 * Extends configuration files.
 	 *
-	 * @member extendConfig
+	 * @method extendConfig
 	 * @param {...any[]} configs
 	 * @returns {IConfig}
 	 *
@@ -1153,7 +1251,7 @@ export class Facile extends Core implements IFacile {
 									
 						<span class="jsdoc-message">
 						Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a>
-						on Tue Oct 11 2016 06:48:11 GMT-0700 (PDT) using the <a href="https://github.com/xperiments/TSDoc">TSDoc template</a>.
+						on Thu Oct 13 2016 14:44:58 GMT-0700 (PDT) using the <a href="https://github.com/xperiments/TSDoc">TSDoc template</a>.
 						</span>
 				</footer>
 			</div>

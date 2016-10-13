@@ -6,8 +6,8 @@ import { IController, IFacile } from '../interfaces';
  * @class Controller
  */
 export declare class Controller implements IController {
-    static _type: string;
-    private _facile;
+    static type: string;
+    protected facile: IFacile;
     /**
      * Creates an instance of Controller.
      *

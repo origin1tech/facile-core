@@ -119,7 +119,8 @@ export class Facile extends Core implements IFacile {
 	 * init:done
 	 * core:start
 	 *
-	 * @method enableHooks
+	 * @private
+	 * @method _enableListeners
 	 * @returns {Facile}
 	 * @memberOf Facile
 	 */
@@ -159,7 +160,8 @@ export class Facile extends Core implements IFacile {
 	/**
 	 * Start Listening for Connections
 	 *
-	 * @method
+	 * @private
+	 * @method _listen
 	 * @returns {Facile}
 	 *
 	 * @memberOf Facile
@@ -178,48 +180,6 @@ export class Facile extends Core implements IFacile {
 			if (err)
 				throw err;
 		});
-
-	}
-
-	/**
-	 * Generic method for add controllers,
-	 * models, filters and services.
-	 *
-	 * @param {*} name
-	 * @param {*} Type
-	 * @param {*} map
-	 * @returns {Facile}
-	 *
-	 * @memberOf Facile
-	 */
-	private _registerComponent<T>(name: any, Component: any, collection?: Collection<T>): Facile {
-
-		// If not type try to get name
-		// from function/class name.
-		if (isFunction(name)) {
-			Component = name;
-			name = utils.constructorName(name);
-		}
-
-		// Adding single component by name and class/function.
-		if (isString(name)) {
-			collection.add(name, Component);
-		}
-
-		// Otherwise iterate object.
-		else if (isPlainObject(name)) {
-			each(name, (v, k) => {
-				collection.add(k, v);
-			});
-		}
-
-		// Otherwise log error.
-		else {
-			this.logger.error('Failed ot add component expected type ' +
-												'string or object but got "' + typeof name + ' ".');
-		}
-
-		return this;
 
 	}
 
@@ -392,7 +352,7 @@ export class Facile extends Core implements IFacile {
 	/**
 	 * Start Server.
 	 *
-	 * @method
+	 * @method start
 	 * @param {Function} [fn]
 	 * @method
 	 * @memberof Facile
@@ -530,7 +490,7 @@ export class Facile extends Core implements IFacile {
 	/**
 	 * Stops the server.
 	 *
-	 * @method
+	 * @method stop
 	 * @param {string} [msg]
 	 * @param {number} [code]
 	 * @returns {void}
@@ -568,7 +528,7 @@ export class Facile extends Core implements IFacile {
 	/**
 	 * Adds a Configuration.
 	 *
-	 * @method
+	 * @method registerConfig
 	 * @param {string} name
 	 * @param {IConfig} config
 	 * @returns {Facile}
@@ -583,7 +543,7 @@ export class Facile extends Core implements IFacile {
 	/**
 	 * Adds/Creates a Router.
 	 *
-	 * @method
+	 * @method registerRouter
 	 * @param {string} name
 	 * @param {express.Router} [router]
 	 * @returns {express.Router}
@@ -618,7 +578,7 @@ export class Facile extends Core implements IFacile {
 	/**
 	 * Registers Middleware or Middlewares to Express.
 	 *
-	 * @method
+	 * @method registerMiddleware
 	 * @param {string} name
 	 * @param {IRequestHandler} fn
 	 * @param {number} [order]
@@ -677,7 +637,7 @@ export class Facile extends Core implements IFacile {
 	/**
 	 * Adds a route to the map.
 	 *
-	 * @method
+	 * @method registerRoute
 	 * @param {(string | IRoute)} method
 	 * @param {string} url
 	 * @param {(express.Handler | Array<express.Handler>)} handlers
@@ -733,64 +693,92 @@ export class Facile extends Core implements IFacile {
 
 	}
 
+
 	registerComponent(Component: IComponent): IFacile;
 
 	registerComponent(components: IComponentsMap): IFacile;
 
 	registerComponent(name: string, Component: IComponent): IFacile;
 
+	/**
+	 * registerComponent
+	 *
+	 * @desc registers a Service, Filter, Controller or Model
+	 * @method registerComponent
+	 * @param {(string | IComponent | IComponentsMap)} name
+	 * @param {IComponent} [Component]
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
 	registerComponent(name: string | IComponent | IComponentsMap, Component?: IComponent): Facile {
 
 		let self = this;
 		let Comp: any;
 
-		function registerFailed(t) {
-				self.logger.error('Failed to register using unsupported type "' + t + '".');
+		function registerFailed(type) {
+				self.logger.error('Failed to register using unsupported type "' + type + '".');
 				process.exit();
 		}
 
-		function registerByType(_type) {
+		function registerByType(type) {
 
-			if (_type === 'Service') {
-				return self._registerComponent<IService>(name, Component, self._services);
+			let collection;
+
+			if (type === 'Service')
+				collection = self._services as Collection<IService>;
+			else if (type === 'Filter')
+				collection = self._filters as Collection<IFilter>;
+			else if (type === 'Controller')
+				collection = self._controllers as Collection<IController>;
+			else if (type === 'Model')
+				collection = self._models as Collection<IModel>;
+			else
+				registerFailed(typeof type);
+
+			// If not type try to get name
+			// from function/class name.
+			if (isFunction(name)) {
+				Component = name;
+				name = utils.constructorName(name);
 			}
-			else if (_type === 'Filter') {
-				return self._registerComponent<IFilter>(name, Component, self._filters);
+
+			// Adding single component by name and class/function.
+			if (isString(name)) {
+				collection.add(name, Component);
 			}
-			else if (_type === 'Controller') {
-				return self._registerComponent<IController>(name, Component, self._controllers);
+
+			// Otherwise iterate object.
+			else if (isPlainObject(name)) {
+				each(name, (v, k) => {
+					collection.add(k, v);
+				});
 			}
-			else if (_type === 'Model') {
-				return self._registerComponent<IModel>(name, Component, self._models);
-			}
-			else if (_type === 'Middleware') {
-				return self._registerComponent<IModel>(name, Component, self._models);
-			}
+
+			// Otherwise log error.
 			else {
-				registerFailed(_type);
+				let failedType = typeof Component || typeof name;
+				self.logger.error('Failed ot register component using unsupported type "' +
+													failedType + ' ".');
 			}
 
+			return self;
+
 		}
 
-		// Get the component static _type
-		// then register by it.
-		if (Component) {
+		// Get the Component Type
+		// before attempting to register.
+		if (Component)
 			Comp = Component;
-		}
-
-		else if (isPlainObject(name)) {
+		else if (isPlainObject(name))
 			Comp = values(name)[0];
-		}
-
-		else if (isFunction(name)) {
+		else if (isFunction(name))
 			Comp = name;
-		}
-
-		else {
+		else
 			registerFailed(typeof Component || typeof name);
-		}
 
-		return registerByType(Comp._type);
+		return registerByType(Comp.type);
+
 
 	}
 
@@ -798,15 +786,10 @@ export class Facile extends Core implements IFacile {
 	// INSTANCE HELPERS
 	///////////////////////////////////////////////////
 
-	component(name: string, map: any) {
-		let obj = this[map] || {};
-		return obj[name];
-	}
-
 	/**
 	 * Gets a Router by name.
 	 *
-	 * @method
+	 * @method router
 	 * @param {string} name
 	 * @returns {express.Router}
 	 *
@@ -819,7 +802,7 @@ export class Facile extends Core implements IFacile {
 	/**
 	 * Gets a Config by name.
 	 *
-	 * @method
+	 * @method config
 	 * @param {string} name
 	 * @returns {IConfig}
 	 *
@@ -832,7 +815,7 @@ export class Facile extends Core implements IFacile {
 	/**
 	 * Gets a Service
 	 *
-	 * @member service
+	 * @method service
 	 * @template T
 	 * @param {string} name
 	 * @returns {T}
@@ -847,7 +830,7 @@ export class Facile extends Core implements IFacile {
 	/**
 	 * Gets a Filter
 	 *
-	 * @member filter
+	 * @method filter
 	 * @template T
 	 * @param {string} name
 	 * @returns {T}
@@ -862,7 +845,7 @@ export class Facile extends Core implements IFacile {
 	/**
 	 * Gets a Model
 	 *
-	 * @member model
+	 * @method model
 	 * @template T
 	 * @param {string} name
 	 * @returns {T}
@@ -877,7 +860,7 @@ export class Facile extends Core implements IFacile {
 	/**
 	 * Gets a Controller.
 	 *
-	 * @member controller
+	 * @method controller
 	 * @template T
 	 * @param {string} name
 	 * @returns {T}
@@ -892,7 +875,7 @@ export class Facile extends Core implements IFacile {
 	/**
 	 * Convenience wrapper for lodash extend.
 	 *
-	 * @member extend
+	 * @method extend
 	 * @param {...any[]} args
 	 * @returns {*}
 	 *
@@ -905,7 +888,7 @@ export class Facile extends Core implements IFacile {
 	/**
 	 * Extends configuration files.
 	 *
-	 * @member extendConfig
+	 * @method extendConfig
 	 * @param {...any[]} configs
 	 * @returns {IConfig}
 	 *

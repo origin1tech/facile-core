@@ -187,7 +187,7 @@ export function validateRoute(route: IRoute): IRoute {
  * Function for non operation.
  *
  * @method noop
- * @methodOf utils
+ * @memberOf utils
  * @export
  */
 export function noop () {}
@@ -220,7 +220,7 @@ export function truncate(str: string, length: number, omission: string = '...'):
  * @memberOf utils
  * @export
  * @param {Function} fn
- * @returns
+ * @returns {string}
  */
 export function constructorName(fn: Function) {
 	if (fn.constructor && fn.constructor.name) {
@@ -238,6 +238,7 @@ export function constructorName(fn: Function) {
  * Gets function name.
  *
  * @method functionName
+ * @memberOf utils
  * @export
  * @param {Function} fn
  * @returns {string}

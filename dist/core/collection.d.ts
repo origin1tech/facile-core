@@ -82,6 +82,17 @@ export declare class Collection<T> {
      */
     get<T>(name: string): T;
     /**
+     * getAll
+     *
+     * @desc gets all components.
+     * @method getAll
+     * @returns {{  [name: string]: T }}
+     * @memberOf Collection
+     */
+    getAll(): {
+        [name: string]: T;
+    };
+    /**
      * add
      *
      * @desc adds a component to the collection

@@ -20,7 +20,14 @@
 	{
 		"includePattern": "(\\.d)?\\.ts$",
 		"excludePattern": "typings",
-		"exclude": ["./src/core/events.ts", "./src/core/defaults.ts"]
+		"exclude": [
+			"./src/core/server.ts",
+			"./src/core/services.ts",
+			"./src/core/routes.ts",
+			"./src/core/models.ts",
+			"./src/core/filters.ts",
+			"./src/core/controllers.ts",
+			"./src/core/defaults.ts"]
 	},
 	"markdown"  : {
 		"parser"   : "gfm",

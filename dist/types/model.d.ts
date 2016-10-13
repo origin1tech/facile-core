@@ -6,8 +6,8 @@ import { IModel, IFacile } from '../interfaces';
  * @class Model
  */
 export declare class Model implements IModel {
-    static _type: string;
-    private _facile;
+    static type: string;
+    protected facile: IFacile;
     /**
      * Creates an instance of Model.
      *

@@ -88,6 +88,17 @@ var Collection = (function () {
         return component;
     };
     /**
+     * getAll
+     *
+     * @desc gets all components.
+     * @method getAll
+     * @returns {{  [name: string]: T }}
+     * @memberOf Collection
+     */
+    Collection.prototype.getAll = function () {
+        return this._components;
+    };
+    /**
      * add
      *
      * @desc adds a component to the collection

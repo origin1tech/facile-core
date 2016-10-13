@@ -14,13 +14,13 @@ var Service = (function () {
      * @memberOf Service
      */
     function Service(facile) {
-        Object.defineProperty(this, '_facile', {
+        Object.defineProperty(this, 'facile', {
             enumerable: false,
             value: facile
         });
         return this;
     }
-    Service._type = 'Service';
+    Service.type = 'Service';
     return Service;
 }());
 exports.Service = Service;

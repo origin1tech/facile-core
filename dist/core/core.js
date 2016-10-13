@@ -29,6 +29,7 @@ var Core = (function (_super) {
         _super.call(this);
         this._configs = {};
         this._routers = {};
+        this._middlewares = {};
         this._routes = [];
         this._nextSocketId = 0;
         this._sockets = {};
@@ -59,7 +60,6 @@ var Core = (function (_super) {
         this._filters = new collection_1.Collection('filters');
         this._models = new collection_1.Collection('models');
         this._controllers = new collection_1.Collection('controllers');
-        this._middlewares = new collection_1.Collection('middleware');
     }
     /**
      * Adds before event listener

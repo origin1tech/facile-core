@@ -10,9 +10,9 @@ import { IFilter, IFacile } from '../interfaces';
  */
 export class Filter implements IFilter {
 
-	static _type = 'Filter';
+	static type = 'Filter';
 
-	private _facile: IFacile;
+	protected facile: IFacile;
 
 	/**
 	 * Creates an instance of Filter.
@@ -22,7 +22,7 @@ export class Filter implements IFilter {
 	 * @memberOf Filter
 	 */
 	constructor(facile: IFacile) {
-		Object.defineProperty(this, '_facile', {
+		Object.defineProperty(this, 'facile', {
 			enumerable: false,
 			value: facile
 		});
