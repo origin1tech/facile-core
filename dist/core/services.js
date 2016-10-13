@@ -1,11 +1,10 @@
 "use strict";
-var utils_1 = require('./utils');
 function init(facile) {
     return function (fn) {
         function handleServices() {
             facile.logger.debug('Initializing Services');
             // Initialize the services.
-            utils_1.initMap(facile._services, facile);
+            //initMap(facile._services, facile);
             if (facile._config.auto)
                 facile.execAfter('init:services', function () {
                     facile.emit('init:filters');

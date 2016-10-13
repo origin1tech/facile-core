@@ -58,41 +58,6 @@ export function extendMap(key: any, val: any, obj?: any) {
 }
 
 /**
- * Extends object with supplied Type.
- *
- * @method initMap
- * @memberOf utils
- * @export
- * @param {*} Type
- * @param {*} obj
- * @param {IFacile} [instance]
- */
-export function initMap(Type: any, obj: any, instance?: any) {
-
-	// Check if map instead of single
-	// class was provided.
-	if (!instance) {
-		instance = obj;
-		obj = Type;
-		Type = undefined;
-	}
-
-	// Instantiate class and update in map.
-	if (Type) {
-		let name = Type.constructor.name;
-		obj[name] = new Type(instance);
-	}
-
-	// Otherwise iterate and instantiate all.
-	else {
-		each(obj, (T, k) => {
-			obj[k] = new T(instance);
-		});
-	}
-
-}
-
-/**
  * Gets max value in object
  * of objects by property.
  *

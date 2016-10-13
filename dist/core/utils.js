@@ -43,36 +43,6 @@ function extendMap(key, val, obj) {
 }
 exports.extendMap = extendMap;
 /**
- * Extends object with supplied Type.
- *
- * @method initMap
- * @memberOf utils
- * @export
- * @param {*} Type
- * @param {*} obj
- * @param {IFacile} [instance]
- */
-function initMap(Type, obj, instance) {
-    // Check if map instead of single
-    // class was provided.
-    if (!instance) {
-        instance = obj;
-        obj = Type;
-        Type = undefined;
-    }
-    // Instantiate class and update in map.
-    if (Type) {
-        var name = Type.constructor.name;
-        obj[name] = new Type(instance);
-    }
-    else {
-        lodash_1.each(obj, function (T, k) {
-            obj[k] = new T(instance);
-        });
-    }
-}
-exports.initMap = initMap;
-/**
  * Gets max value in object
  * of objects by property.
  *

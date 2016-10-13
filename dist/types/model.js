@@ -10,17 +10,17 @@ var Model = (function () {
      * Creates an instance of Model.
      *
      * @param {IFacile} facile
-     *
+     * @constructor
      * @memberOf Model
      */
     function Model(facile) {
-        Object.defineProperty(this, 'facile', {
+        Object.defineProperty(this, '_facile', {
             enumerable: false,
             value: facile
         });
         return this;
     }
-    Model.type = 'Model';
+    Model._type = 'Model';
     return Model;
 }());
 exports.Model = Model;

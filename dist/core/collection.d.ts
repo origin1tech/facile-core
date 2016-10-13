@@ -28,14 +28,6 @@ export declare class Collection<T> {
      */
     private _name;
     /**
-     * Creates an instance of Components.
-     *
-     * @param {string} name
-     * @constructor
-     * @memberOf Components
-     */
-    constructor(name: string);
-    /**
      * _get
      *
      * @method _get
@@ -60,6 +52,14 @@ export declare class Collection<T> {
      * @methodOf Components
      */
     private _activate(Type, args?);
+    /**
+     * Creates an instance of Components.
+     *
+     * @param {string} name
+     * @constructor
+     * @memberOf Components
+     */
+    constructor(name: string);
     /**
      * name
      *
@@ -92,7 +92,7 @@ export declare class Collection<T> {
      *
      * @methodOf Components
      */
-    add(name: string, item: T): this;
+    add(name: string, component: T): this;
     /**
      * initialize
      *

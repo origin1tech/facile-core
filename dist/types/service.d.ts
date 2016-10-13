@@ -6,12 +6,13 @@ import { IService, IFacile } from '../interfaces';
  * @class Service
  */
 export declare class Service implements IService {
-    facile: IFacile;
+    static _type: string;
+    private _facile;
     /**
      * Creates an instance of Service.
      *
      * @param {IFacile} facile
-     *
+     * @constructor
      * @memberOf Service
      */
     constructor(facile: IFacile);

@@ -6,13 +6,13 @@ import { IController, IFacile } from '../interfaces';
  * @class Controller
  */
 export declare class Controller implements IController {
-    static type: string;
-    facile: IFacile;
+    static _type: string;
+    private _facile;
     /**
      * Creates an instance of Controller.
      *
      * @param {IFacile} facile
-     *
+     * @constructor
      * @memberOf Controller
      */
     constructor(facile: IFacile);

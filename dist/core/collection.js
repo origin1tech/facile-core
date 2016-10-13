@@ -98,8 +98,8 @@ var Collection = (function () {
      *
      * @methodOf Components
      */
-    Collection.prototype.add = function (name, item) {
-        this._components[name] = item;
+    Collection.prototype.add = function (name, component) {
+        this._components[name] = component;
         return this;
     };
     /**

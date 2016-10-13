@@ -1,6 +1,6 @@
 import * as express from 'express';
 import { Core } from './core';
-import { IFacile, IConfig, IRouters, IRoute, IFilter, IMiddlewares, IModel, IController, IConfigs, IRoutesMap, IService, IInit } from '../interfaces';
+import { IFacile, IConfig, IRouters, IRoute, IFilter, IModel, IController, IConfigs, IRequestHandler, IRoutesMap, IService, IInit, IMiddlewaresMap, IComponentsMap, IComponent, IErrorRequestHandler } from '../interfaces';
 /**
  * Facile Core
  *
@@ -43,7 +43,7 @@ export declare class Facile extends Core implements IFacile {
      * @returns {Facile}
      * @memberOf Facile
      */
-    private enableListeners();
+    private _enableListeners();
     /**
      * Start Listening for Connections
      *
@@ -52,7 +52,7 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    private listen();
+    private _listen();
     /**
      * Generic method for add controllers,
      * models, filters and services.
@@ -64,7 +64,7 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    private addComponent(name, Type, collection?);
+    private _register<T>(name, Component, collection?);
     /**
      * Configure
        *
@@ -135,17 +135,15 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    addMiddleware(name: string | IMiddlewares, fn?: any, order?: number): Facile;
-    /**
-     * Registers a Service.
-     *
-     * @method
-     * @param {(IService | Array<IService>)} Service
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
-    addService(name: string | IService, Service?: IService): Facile;
+    addMiddleware(name: string | IMiddlewaresMap, fn?: IRequestHandler | IErrorRequestHandler, order?: number): Facile;
+    register(Component: IComponent): IFacile;
+    register(components: IComponentsMap): IFacile;
+    register(middlewares: IMiddlewaresMap): IFacile;
+    register(name: string, Component: IComponent): IFacile;
+    register(name: string, middleware: IRequestHandler | IErrorRequestHandler, order?: number): IFacile;
+    addService(Service: IService): IFacile;
+    addService(services: IComponentsMap): IFacile;
+    addService(name: string, Service: IService): IFacile;
     /**
      * Registers Filter or Map of Filters.
      *
@@ -156,7 +154,7 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    addFilter(name: string | IFilter, Filter?: IFilter): Facile;
+    addFilter(name: string | IFilter | IComponentsMap, Filter?: IFilter): Facile;
     /**
      * Registers a Model.
      *
@@ -166,7 +164,7 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    addModel(name: string | IModel, Model?: IModel): Facile;
+    addModel(name: string | IModel | IComponentsMap, Model?: IModel): Facile;
     /**
      * Registers a Controller.
      *
@@ -176,7 +174,7 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    addController(name: string | IController, Controller?: IController): Facile;
+    addController(name: string | IController | IComponentsMap, Controller?: IController): Facile;
     /**
      * Adds a route to the map.
      *

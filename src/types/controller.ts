@@ -9,18 +9,19 @@ import { IController, IFacile } from '../interfaces';
  */
 export class Controller implements IController {
 
-	static type = 'Controller';
-	facile: IFacile;
+	static _type = 'Controller';
+
+	private _facile: IFacile;
 
 	/**
 	 * Creates an instance of Controller.
 	 *
 	 * @param {IFacile} facile
-	 *
+	 * @constructor
 	 * @memberOf Controller
 	 */
 	constructor(facile: IFacile) {
-		Object.defineProperty(this, 'facile', {
+		Object.defineProperty(this, '_facile', {
 			enumerable: false,
 			value: facile
 		});

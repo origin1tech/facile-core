@@ -10,17 +10,19 @@ import { wrap, create, badRequest, unauthorized, forbidden, notFound, notImpleme
 import { Server, Socket } from 'net';
 import { readFileSync } from 'fs';
 import { extend as _extend, isPlainObject, each, isFunction,
-				isString, maxBy, has, isBoolean, bind } from 'lodash';
+				isString, maxBy, has, isBoolean, bind, values } from 'lodash';
 import { red, cyan } from 'chalk';
 
 // Internal Dependencies.
 import * as utils from './utils';
 import { Core } from './core';
 import * as defaults from './defaults';
-import { IFacile, ICertificate, IConfig, IRouters, IRoute, IBoom, ICallbackResult, IFilter,
+import { IFacile, ICertificate, IConfig, IRouters, IRoute,
+				IBoom, ICallbackResult, IFilter,
 				IMiddleware, ISockets, IModel, IController,
 				IUtils, IConfigs, IRequestHandler, IRoutesMap, IService,
-				IViewConfig, IInit, ICallback } from '../interfaces';
+				IViewConfig, IInit, ICallback, IMiddlewaresMap, IComponentsMap,
+				IComponent, IErrorRequestHandler } from '../interfaces';
 import { Collection } from './collection';
 
 import * as server from './server';
@@ -121,7 +123,7 @@ export class Facile extends Core implements IFacile {
 	 * @returns {Facile}
 	 * @memberOf Facile
 	 */
-	private enableListeners(): Facile {
+	private _enableListeners(): Facile {
 
 		let init = this.init();
 
@@ -143,7 +145,7 @@ export class Facile extends Core implements IFacile {
 
 		this.on('core:start', this.start);
 
-		this.on('core:listen', this.listen);
+		this.on('core:listen', this._listen);
 
 		// Set flag indicating that
 		// init hooks are listening
@@ -162,7 +164,7 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	private listen(): void {
+	private _listen(): void {
 
 		if (!this._started) {
 			this.logger.error('Facile.listen() cannot be called directly please use .start().');
@@ -190,11 +192,18 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	private addComponent<T>(name: any, Type: any, collection?: Collection<T>): Facile {
+	private _registerComponent<T>(name: any, Component: any, collection?: Collection<T>): Facile {
+
+		// If not type try to get name
+		// from function/class name.
+		if (isFunction(name)) {
+			Component = name;
+			name = utils.constructorName(name);
+		}
 
 		// Adding single component by name and class/function.
 		if (isString(name)) {
-			collection.add(name, Type);
+			collection.add(name, Component);
 		}
 
 		// Otherwise iterate object.
@@ -217,7 +226,6 @@ export class Facile extends Core implements IFacile {
 	///////////////////////////////////////////////////
 	// CONFIGURE & MANAGE SERVER
 	///////////////////////////////////////////////////
-
 
   /**
    * Configure
@@ -482,7 +490,7 @@ export class Facile extends Core implements IFacile {
 				// ensures manual init is not called while auto is set.
 				this._autoInit = true;
 
-				this.enableListeners();
+				this._enableListeners();
 				this.init().run();
 
 			}
@@ -567,7 +575,7 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	addConfig(name: string | IConfigs, config: IConfig): Facile {
+	registerConfig(name: string | IConfigs, config: IConfig): Facile {
 		utils.extendMap(name, config, this._configs);
 		return this;
 	}
@@ -582,7 +590,7 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	addRouter(name: string | IRouters, router?: express.Router): express.Router {
+	registerRouter(name: string | IRouters, router?: express.Router): express.Router {
 
 		// If object check if "default" was passed.
 		let hasDefault = isPlainObject(name) && has(name, 'default');
@@ -618,9 +626,9 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	addMiddleware(name: string | IMiddlewares, fn?: any, order?: number): Facile {
+	registerMiddleware(name: string | IMiddlewaresMap, fn?: IRequestHandler | IErrorRequestHandler, order?: number): Facile {
 
-		let middlewares: IMiddlewares = {};
+		let middlewares: any = {};
 
 		// Adding single middleware.
 		if (isString(name))
@@ -667,61 +675,6 @@ export class Facile extends Core implements IFacile {
 	}
 
 	/**
-	 * Registers a Service.
-	 *
-	 * @method
-	 * @param {(IService | Array<IService>)} Service
-	 * @returns {Facile}
-	 *
-	 * @memberOf Facile
-	 */
-	addService(name: string | IService, Service?: IService): Facile {
-		let collection: Collection<any> = this._services;
-		return this.addComponent(name, Service, this._services);
-	}
-
-	/**
-	 * Registers Filter or Map of Filters.
-	 *
-	 * @method
-	 * @param {(string | IFilters)} name
-	 * @param {IRequestHandler} fn
-	 * @returns {Facile}
-	 *
-	 * @memberOf Facile
-	 */
-	addFilter(name: string | IFilter, Filter?: IFilter): Facile {
-		return this.addComponent(name, Filter, this._filters);
-	}
-
-	/**
-	 * Registers a Model.
-	 *
-	 * @method
-	 * @param {(IModel | Array<IModel>)} Model
-	 * @returns {Facile}
-	 *
-	 * @memberOf Facile
-	 */
-	addModel(name: string | IModel, Model?: IModel): Facile {
-		return this.addComponent(name, Model, this._models);
-	}
-
-	/**
-	 * Registers a Controller.
-	 *
-	 * @method
-	 * @param {(IController | Array<IController>)} Controller
-	 * @returns {Facile}
-	 *
-	 * @memberOf Facile
-	 */
-	addController(name: string | IController,
-								Controller?: IController): Facile {
-		return this.addComponent(name, Controller, this._controllers);
-	}
-
-	/**
 	 * Adds a route to the map.
 	 *
 	 * @method
@@ -733,7 +686,7 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	addRoute(route: IRoute | IRoutesMap | IRoute[]): Facile {
+	registerRoute(route: IRoute | IRoutesMap | IRoute[]): Facile {
 
 		let self = this;
 
@@ -780,6 +733,66 @@ export class Facile extends Core implements IFacile {
 
 	}
 
+	registerComponent(Component: IComponent): IFacile;
+
+	registerComponent(components: IComponentsMap): IFacile;
+
+	registerComponent(name: string, Component: IComponent): IFacile;
+
+	registerComponent(name: string | IComponent | IComponentsMap, Component?: IComponent): Facile {
+
+		let self = this;
+		let Comp: any;
+
+		function registerFailed(t) {
+				self.logger.error('Failed to register using unsupported type "' + t + '".');
+				process.exit();
+		}
+
+		function registerByType(_type) {
+
+			if (_type === 'Service') {
+				return self._registerComponent<IService>(name, Component, self._services);
+			}
+			else if (_type === 'Filter') {
+				return self._registerComponent<IFilter>(name, Component, self._filters);
+			}
+			else if (_type === 'Controller') {
+				return self._registerComponent<IController>(name, Component, self._controllers);
+			}
+			else if (_type === 'Model') {
+				return self._registerComponent<IModel>(name, Component, self._models);
+			}
+			else if (_type === 'Middleware') {
+				return self._registerComponent<IModel>(name, Component, self._models);
+			}
+			else {
+				registerFailed(_type);
+			}
+
+		}
+
+		// Get the component static _type
+		// then register by it.
+		if (Component) {
+			Comp = Component;
+		}
+
+		else if (isPlainObject(name)) {
+			Comp = values(name)[0];
+		}
+
+		else if (isFunction(name)) {
+			Comp = name;
+		}
+
+		else {
+			registerFailed(typeof Component || typeof name);
+		}
+
+		return registerByType(Comp._type);
+
+	}
 
 	///////////////////////////////////////////////////
 	// INSTANCE HELPERS
@@ -857,7 +870,7 @@ export class Facile extends Core implements IFacile {
 	 * @memberOf Facile
 	 */
 	model<T>(name: string): T {
-			let component: T = this._models[name];
+		let component: T = this._models[name];
 		return component;
 	}
 

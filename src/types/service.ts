@@ -9,17 +9,19 @@ import { IService, IFacile } from '../interfaces';
  */
 export class Service implements IService {
 
-	facile: IFacile;
+	static _type = 'Service';
+
+	private _facile: IFacile;
 
 	/**
 	 * Creates an instance of Service.
 	 *
 	 * @param {IFacile} facile
-	 *
+	 * @constructor
 	 * @memberOf Service
 	 */
 	constructor(facile: IFacile) {
-		Object.defineProperty(this, 'facile', {
+		Object.defineProperty(this, '_facile', {
 			enumerable: false,
 			value: facile
 		});

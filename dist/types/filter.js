@@ -11,17 +11,17 @@ var Filter = (function () {
      * Creates an instance of Filter.
      *
      * @param {IFacile} facile
-     *
+     * @contructor
      * @memberOf Filter
      */
     function Filter(facile) {
-        Object.defineProperty(this, 'facile', {
+        Object.defineProperty(this, '_facile', {
             enumerable: false,
             value: facile
         });
         return this;
     }
-    Filter.type = 'Filter';
+    Filter._type = 'Filter';
     return Filter;
 }());
 exports.Filter = Filter;

@@ -89,7 +89,7 @@ var Facile = (function (_super) {
      * @returns {Facile}
      * @memberOf Facile
      */
-    Facile.prototype.enableListeners = function () {
+    Facile.prototype._enableListeners = function () {
         var init = this.init();
         this.on('init', init.run);
         this.on('init:server', init.server);
@@ -100,7 +100,7 @@ var Facile = (function (_super) {
         this.on('init:routes', init.routes);
         this.on('init:done', init.done);
         this.on('core:start', this.start);
-        this.on('core:listen', this.listen);
+        this.on('core:listen', this._listen);
         // Set flag indicating that
         // init hooks are listening
         // in case called manually.
@@ -115,7 +115,7 @@ var Facile = (function (_super) {
      *
      * @memberOf Facile
      */
-    Facile.prototype.listen = function () {
+    Facile.prototype._listen = function () {
         if (!this._started) {
             this.logger.error('Facile.listen() cannot be called directly please use .start().');
             process.exit();
@@ -138,7 +138,26 @@ var Facile = (function (_super) {
      *
      * @memberOf Facile
      */
-    Facile.prototype.addComponent = function (name, Type, collection) {
+    Facile.prototype._register = function (name, Component, collection) {
+        // If not type try to get name
+        // from function/class name.
+        if (lodash_1.isFunction(name)) {
+            Component = name;
+            name = utils.constructorName(name);
+        }
+        // Adding single component by name and class/function.
+        if (lodash_1.isString(name)) {
+            collection.add(name, Component);
+        }
+        else if (lodash_1.isPlainObject(name)) {
+            lodash_1.each(name, function (v, k) {
+                collection.add(k, v);
+            });
+        }
+        else {
+            this.logger.error('Failed ot add component expected type ' +
+                'string or object but got "' + typeof name + ' ".');
+        }
         return this;
     };
     ///////////////////////////////////////////////////
@@ -220,8 +239,10 @@ var Facile = (function (_super) {
          * @memberOf Facile
          */
         function run() {
-            if (!facile._config.auto)
-                throw new Error('The method init().run() cannot be called manually use { auto: true } in your configuration.');
+            if (!facile._config.auto) {
+                this.logger.error('The method init().run() cannot be called manually use { auto: true } in your configuration.');
+                process.exit();
+            }
             facile.execBefore('init', function () {
                 facile.emit('init:server');
             });
@@ -346,7 +367,7 @@ var Facile = (function (_super) {
             if (!this._initialized) {
                 // ensures manual init is not called while auto is set.
                 this._autoInit = true;
-                this.enableListeners();
+                this._enableListeners();
                 this.init().run();
             }
             else {
@@ -431,8 +452,10 @@ var Facile = (function (_super) {
         // If object check if "default" was passed.
         var hasDefault = lodash_1.isPlainObject(name) && lodash_1.has(name, 'default');
         // Check for default router.
-        if (name === 'default' || hasDefault)
-            throw new Error('Router name cannot be "default".');
+        if (name === 'default' || hasDefault) {
+            this.logger.warn('Default router is readonly previously defined router.');
+            return this.router('default');
+        }
         // Add router to map.
         if (lodash_1.isString(name))
             this._routers[name] = router || express.Router();
@@ -487,18 +510,55 @@ var Facile = (function (_super) {
         });
         return this;
     };
-    /**
-     * Registers a Service.
-     *
-     * @method
-     * @param {(IService | Array<IService>)} Service
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
+    Facile.prototype.register = function (name, Component, order) {
+        var self = this;
+        var Comp;
+        var isMiddlware = false;
+        function registerFailed(t) {
+            self.logger.error('Failed to register using unsupported type "' + t + '".');
+            process.exit();
+        }
+        function registerByType(_type) {
+            if (_type === 'Service') {
+                return self._register(name, Component, self._services);
+            }
+            else if (_type === 'Filter') {
+                return self._register(name, Component, self._filters);
+            }
+            else if (_type === 'Controller') {
+                return self._register(name, Component, self._controllers);
+            }
+            else if (_type === 'Model') {
+                return self._register(name, Component, self._models);
+            }
+            else if (_type === 'Middleware') {
+                return self._register(name, Component, self._models);
+            }
+            else {
+                registerFailed(_type);
+            }
+        }
+        // Get the component static _type
+        // then register by it.
+        if (Component) {
+            Comp = Component;
+        }
+        else if (lodash_1.isPlainObject(name)) {
+            Comp = lodash_1.values(name)[0];
+            isMiddlware = Comp.fn;
+        }
+        else if (lodash_1.isFunction(name)) {
+            Comp = name;
+        }
+        else {
+            registerFailed(typeof Component || typeof name);
+        }
+        // Check if is middleware
+        if (lodash_1.isPlainObject)
+            return registerByType(Comp._type);
+    };
     Facile.prototype.addService = function (name, Service) {
-        var collection = this._services;
-        return this.addComponent(name, Service, this._services);
+        return this._register(name, Service, this._services);
     };
     /**
      * Registers Filter or Map of Filters.
@@ -511,7 +571,7 @@ var Facile = (function (_super) {
      * @memberOf Facile
      */
     Facile.prototype.addFilter = function (name, Filter) {
-        return this.addComponent(name, Filter, this._filters);
+        return this._register(name, Filter, this._filters);
     };
     /**
      * Registers a Model.
@@ -523,7 +583,7 @@ var Facile = (function (_super) {
      * @memberOf Facile
      */
     Facile.prototype.addModel = function (name, Model) {
-        return this.addComponent(name, Model, this._models);
+        return this._register(name, Model, this._models);
     };
     /**
      * Registers a Controller.
@@ -535,7 +595,7 @@ var Facile = (function (_super) {
      * @memberOf Facile
      */
     Facile.prototype.addController = function (name, Controller) {
-        return this.addComponent(name, Controller, this._controllers);
+        return this._register(name, Controller, this._controllers);
     };
     /**
      * Adds a route to the map.

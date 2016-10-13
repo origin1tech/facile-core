@@ -56,7 +56,7 @@ export interface ICore extends EventEmitter {
     _configs: IConfigs;
     _routers: IRouters;
     _routes: Array<IRoute>;
-    _middlewares: IMiddlewares;
+    _middlewares: any;
     _services: any;
     _filters: any;
     _models: any;
@@ -78,7 +78,17 @@ export interface IFacile extends ICore {
     stop(msg?: string, code?: number): void;
     addConfig(name: string, config: IConfig): IFacile;
     addRouter(name: string, router?: Router): Router;
-    addMiddleware(name: string, fn?: any, order?: number): IFacile;
+    addMiddleware(name: string | IMiddlewaresMap, fn?: any, order?: number): IFacile;
+    register(Component: IComponent): IFacile;
+    register(components: IComponentsMap): IFacile;
+    register(name: string, Component: IComponent): IFacile;
+    register(name: string | IComponent | IComponentsMap, Component?: IComponent): IFacile;
+    addService(Service: IService): IFacile;
+    addService(services: IComponentsMap): IFacile;
+    addService(name: string | IService | IComponentsMap, Service?: IService): IFacile;
+    addFilter(name: string | IFilter | IComponentsMap, Filter?: IFilter): IFacile;
+    addModel(name: string | IModel | IComponentsMap, Model?: IModel): IFacile;
+    addController(name: string | IController | IComponentsMap, Controller?: IController): IFacile;
     addRoute(method: string | string[] | IRoutesMap | IRoute[], url?: string, handler?: IRequestHandler, filters?: IRequestHandler | IRequestHandler[], router?: string): IFacile;
     router(name: string): Router;
     config(name: string): IConfig;
@@ -197,16 +207,10 @@ export interface ISockets {
  * @interface IMiddleware
  */
 export interface IMiddleware {
-    fn: any;
+    fn: IRequestHandler | IErrorRequestHandler;
     order?: number;
 }
-/**
- * Map of middleware.
- *
- * @export
- * @interface IMiddlewares
- */
-export interface IMiddlewares {
+export interface IMiddlewaresMap {
     [name: string]: IMiddleware;
 }
 /**
@@ -287,14 +291,62 @@ export interface IRoute {
 export interface IRoutesMap {
     [url: string]: IRequestHandler | Array<IRequestHandler> | string | IRoute;
 }
+/**
+ * IComponent
+ *
+ * @desc base interfaces for components.
+ * @export
+ * @interface IComponent
+ */
 export interface IComponent {
-    facile: IFacile;
 }
+/**
+ * IComponentsMap
+ *
+ * @desc key value map of IComponents.
+ * @export
+ * @interface IComponentsMap
+ */
+export interface IComponentsMap {
+    [name: string]: IComponent;
+}
+/**
+ * IFilter
+ *
+ * @desc interfaces for filters.
+ * @export
+ * @interface IFilter
+ * @extends {IComponent}
+ */
 export interface IFilter extends IComponent {
 }
-export interface IModel {
+/**
+ * IModel
+ *
+ * @desc interfaces for models.
+ * @export
+ * @interface IModel
+ * @extends {IComponent}
+ */
+export interface IModel extends IComponent {
 }
-export interface IController {
+/**
+ * IController
+ *
+ * @desc interfaces for controllers.
+ * @export
+ * @interface IController
+ * @extends {IComponent}
+ */
+export interface IController extends IComponent {
 }
-export interface IService {
+/**
+ * IService
+ *
+ * @desc interface for services.
+ * @export
+ * @interface IService
+ * @extends {IComponent}
+ */
+export interface IService extends IComponent {
 }

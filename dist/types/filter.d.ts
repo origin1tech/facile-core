@@ -7,13 +7,13 @@ import { IFilter, IFacile } from '../interfaces';
  * @implements {IFilter}
  */
 export declare class Filter implements IFilter {
-    static type: string;
-    facile: IFacile;
+    static _type: string;
+    private _facile;
     /**
      * Creates an instance of Filter.
      *
      * @param {IFacile} facile
-     *
+     * @contructor
      * @memberOf Filter
      */
     constructor(facile: IFacile);

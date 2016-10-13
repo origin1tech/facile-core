@@ -11,17 +11,6 @@ import { IRoute, IRequestHandler } from '../interfaces';
  */
 export declare function extendMap(key: any, val: any, obj?: any): void;
 /**
- * Extends object with supplied Type.
- *
- * @method initMap
- * @memberOf utils
- * @export
- * @param {*} Type
- * @param {*} obj
- * @param {IFacile} [instance]
- */
-export declare function initMap(Type: any, obj: any, instance?: any): void;
-/**
  * Gets max value in object
  * of objects by property.
  *

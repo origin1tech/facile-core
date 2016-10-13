@@ -8,7 +8,6 @@ import { series as asyncSeries } from 'async';
 import { truncate } from './utils';
 import { IFacile, ICore, ICallbackResult, ICallback,
 				IConfig, IConfigs, IListenersMap, IBoom, IInit,
-				IMiddlewares,
 				IRouters, ISockets, IRoute } from '../interfaces';
 import { Collection } from './collection';
 
