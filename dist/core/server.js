@@ -7,13 +7,6 @@ function init(facile) {
     return function (fn) {
         function handleServer() {
             ////////////////////////////////
-            // Ensure Router.
-            ////////////////////////////////
-            facile.logger.debug('Initializing Server Router.');
-            facile._routers = facile._routers || {};
-            if (!facile._routers['default'])
-                facile._routers['default'] = facile.app._router;
-            ////////////////////////////////
             // Configure Views
             ////////////////////////////////
             // Check if engine in config is string

@@ -1,6 +1,6 @@
 import * as express from 'express';
 import { Core } from './core';
-import { IFacile, IConfig, IRouters, IRoute, IConfigs, IRequestHandler, IRoutesMap, IInit, IMiddlewaresMap, IComponentsMap, IComponent, IErrorRequestHandler } from '../interfaces';
+import { IFacile, IConfig, IRoute, IConfigs, IRequestHandler, IRoutes, IInit, IMiddlewares, IComponents, IComponent, IErrorRequestHandler, IPolicies } from '../interfaces';
 /**
  * Facile Core
  *
@@ -93,29 +93,37 @@ export declare class Facile extends Core implements IFacile {
      */
     stop(msg?: string, code?: number): void;
     /**
-     * Adds a Configuration.
+     * registerConfig
      *
      * @method registerConfig
      * @param {string} name
-     * @param {IConfig} config
+     * @param {...any[]} extend
+     *
+     * @memberOf Facile
+     */
+    registerConfig(name: string, ...extend: any[]): Facile;
+    /**
+     * registerConfig
+     *
+     * @method registerConfig
+     * @param {IConfigs} configs
+     * @param {...any[]} extend
+     *
+     * @memberOf Facile
+     */
+    registerConfig(configs: IConfigs, ...extend: any[]): Facile;
+    /**
+     * registerMiddleware
+     *
+     * @method registerMiddleware
+     * @param {IMiddlewares} middlewares
      * @returns {Facile}
      *
      * @memberOf Facile
      */
-    registerConfig(name: string | IConfigs, config: IConfig): Facile;
+    registerMiddleware(middlewares: IMiddlewares): Facile;
     /**
-     * Adds/Creates a Router.
-     *
-     * @method registerRouter
-     * @param {string} name
-     * @param {express.Router} [router]
-     * @returns {express.Router}
-     *
-     * @memberOf Facile
-     */
-    registerRouter(name: string | IRouters, router?: express.Router): express.Router;
-    /**
-     * Registers Middleware or Middlewares to Express.
+     * registerMiddleware
      *
      * @method registerMiddleware
      * @param {string} name
@@ -125,38 +133,152 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    registerMiddleware(name: string | IMiddlewaresMap, fn?: IRequestHandler | IErrorRequestHandler, order?: number): Facile;
+    registerMiddleware(name: string, fn: IRequestHandler, order?: number): Facile;
     /**
-     * Adds a route to the map.
+     * registerMiddleware
      *
-     * @method registerRoute
-     * @param {(string | IRoute)} method
-     * @param {string} url
-     * @param {(express.Handler | Array<express.Handler>)} handlers
-     * @param {string} [router]
-     * @returns {RecRent}
+     * @method registerMiddleware
+     * @param {string} name
+     * @param {IErrorRequestHandler} fn
+     * @param {number} [order]
+     * @returns {Facile}
      *
      * @memberOf Facile
      */
-    registerRoute(route: IRoute | IRoutesMap | IRoute[]): Facile;
-    registerComponent(Component: IComponent): IFacile;
-    registerComponent(components: IComponentsMap): IFacile;
-    registerComponent(name: string, Component: IComponent): IFacile;
-    component(name: string, map: any): any;
+    registerMiddleware(name: string, fn: IErrorRequestHandler, order?: number): Facile;
     /**
-     * Gets a Router by name.
+     * registerRoute
      *
-     * @method
+     * @method registerRoute
+     * @param {Array<IRoute>} routes
+     * @returns {IFacile}
+     *
+     * @memberOf Facile
+     */
+    registerRoute(routes: Array<IRoute>): IFacile;
+    /**
+     * registerRoute
+     *
+     * @method registerRoute
+     * @param {IRoutes} routes
+     * @returns {IFacile}
+     *
+     * @memberOf Facile
+     */
+    registerRoute(routes: IRoutes): IFacile;
+    /**
+     * registerPolicy
+     *
+     * @method registerPolicy
+     * @param {string} name
+     * @param {boolean} filter
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    registerPolicy(name: string, filter: boolean): Facile;
+    /**
+     * registerPolicy
+     *
+     * @method registerPolicy
+     * @param {string} name
+     * @param {string} filter
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    registerPolicy(name: string, filter: string): Facile;
+    /**
+     * registerPolicy
+     *
+     * @method registerPolicy
+     * @param {string} name
+     * @param {string[]} filter
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    registerPolicy(name: string, filter: string[]): Facile;
+    /**
+     * registerPolicy
+     *
+     * @method registerPolicy
+     * @param {string} name
+     * @param {IRequestHandler} filter
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    registerPolicy(name: string, filter: IRequestHandler): Facile;
+    /**
+     * registerPolicy
+     *
+     * @method registerPolicy
+     * @param {string} name
+     * @param {Array<IRequestHandler>} filter
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    registerPolicy(name: string, filter: Array<IRequestHandler>): Facile;
+    /**
+     * registerPolicy
+     *
+     * @method registerPolicy
+     * @param {IPolicies} policies
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    registerPolicy(policies: IPolicies): Facile;
+    /**
+     * registerComponent
+     *
+     * @method registerComponent
+     * @param {IComponent} Component
+     * @returns {IFacile}
+     *
+     * @memberOf Facile
+     */
+    registerComponent(Component: IComponent): IFacile;
+    /**
+     * registerComponent
+     *
+     * @method registerComponent
+     *
+     * @param {IComponents} components
+     * @returns {IFacile}
+     *
+     * @memberOf Facile
+     */
+    registerComponent(components: IComponents): IFacile;
+    /**
+     * registerComponent
+     *
+     * @method registerComponent
+     *
+     * @param {string} name
+     * @param {IComponent} Component
+     * @returns {IFacile}
+     *
+     * @memberOf Facile
+     */
+    registerComponent(name: string, Component: IComponent): IFacile;
+    /**
+     * router
+     *
+     * @desc gets or creates a router.
+     * @method router
      * @param {string} name
      * @returns {express.Router}
      *
      * @memberOf Facile
      */
-    router(name: string): express.Router;
+    router(name: string, options?: any): express.Router;
     /**
      * Gets a Config by name.
      *
-     * @method
+     * @method config
      * @param {string} name
      * @returns {IConfig}
      *
@@ -166,7 +288,7 @@ export declare class Facile extends Core implements IFacile {
     /**
      * Gets a Service
      *
-     * @member service
+     * @method service
      * @template T
      * @param {string} name
      * @returns {T}
@@ -177,7 +299,7 @@ export declare class Facile extends Core implements IFacile {
     /**
      * Gets a Filter
      *
-     * @member filter
+     * @method filter
      * @template T
      * @param {string} name
      * @returns {T}
@@ -188,7 +310,7 @@ export declare class Facile extends Core implements IFacile {
     /**
      * Gets a Model
      *
-     * @member model
+     * @method model
      * @template T
      * @param {string} name
      * @returns {T}
@@ -199,7 +321,7 @@ export declare class Facile extends Core implements IFacile {
     /**
      * Gets a Controller.
      *
-     * @member controller
+     * @method controller
      * @template T
      * @param {string} name
      * @returns {T}
@@ -210,21 +332,11 @@ export declare class Facile extends Core implements IFacile {
     /**
      * Convenience wrapper for lodash extend.
      *
-     * @member extend
+     * @method extend
      * @param {...any[]} args
      * @returns {*}
      *
      * @memberOf Facile
      */
     extend(...args: any[]): any;
-    /**
-     * Extends configuration files.
-     *
-     * @member extendConfig
-     * @param {...any[]} configs
-     * @returns {IConfig}
-     *
-     * @memberOf Facile
-     */
-    extendConfig(...configs: any[]): IConfig;
 }

@@ -1,11 +1,14 @@
 "use strict";
+var lodash_1 = require('lodash');
 function init(facile) {
     return function (fn) {
         function handleRoutes() {
             facile.logger.debug('Initializing Routes');
-            // each(facile._routes, (route) => {
-            // 	console.log(route);
-            // });
+            // Iterate and add routes.
+            lodash_1.each(facile._routes, function (route) {
+                var router = facile.router(route.router);
+                var methods = route.method;
+            });
             if (facile._config.auto)
                 facile.execAfter('init:routes', function () {
                     facile.emit('init:done');

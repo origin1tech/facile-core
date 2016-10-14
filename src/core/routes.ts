@@ -1,6 +1,7 @@
-import { IFacile, IInit } from '../interfaces';
+import { IFacile, IInit, IRoute } from '../interfaces';
 import { Facile } from './';
 import { each } from 'lodash';
+import { Router } from 'express';
 
 export function init(facile: Facile): any {
 
@@ -10,9 +11,14 @@ export function init(facile: Facile): any {
 
 			facile.logger.debug('Initializing Routes');
 
-			// each(facile._routes, (route) => {
-			// 	console.log(route);
-			// });
+			// Iterate and add routes.
+			each(facile._routes, (route: IRoute) => {
+
+				let router: Router = facile.router(route.router);
+				let methods = route.method as string[];
+
+
+			});
 
 			if (facile._config.auto)
 				facile.execAfter('init:routes', () => {

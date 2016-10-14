@@ -65,7 +65,7 @@ export declare function validateRoute(route: IRoute): IRoute;
  * Function for non operation.
  *
  * @method noop
- * @methodOf utils
+ * @memberOf utils
  * @export
  */
 export declare function noop(): void;
@@ -90,13 +90,14 @@ export declare function truncate(str: string, length: number, omission?: string)
  * @memberOf utils
  * @export
  * @param {Function} fn
- * @returns
+ * @returns {string}
  */
 export declare function constructorName(fn: Function): string;
 /**
  * Gets function name.
  *
  * @method functionName
+ * @memberOf utils
  * @export
  * @param {Function} fn
  * @returns {string}

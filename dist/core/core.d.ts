@@ -3,7 +3,7 @@ import { LoggerInstance } from 'winston';
 import { Express } from 'express';
 import { Server } from 'net';
 import { EventEmitter } from 'events';
-import { ICore, ICallbackResult, ICallback, IConfig, IConfigs, IListenersMap, IBoom, IRouters, ISockets, IRoute, IMiddlewaresMap } from '../interfaces';
+import { ICore, ICallbackResult, ICallback, IConfig, IConfigs, IListenersMap, IBoom, IRouters, ISockets, IRoute, IMiddlewares } from '../interfaces';
 /**
  * Facile Core
  *
@@ -13,30 +13,220 @@ import { ICore, ICallbackResult, ICallback, IConfig, IConfigs, IListenersMap, IB
  * @implements {IEvents}
  */
 export declare class Core extends EventEmitter implements ICore {
+    /**
+     * Boom
+     *
+     * @member Boom
+     * @type {IBoom}
+     * @memberOf Core
+     */
     Boom: IBoom;
+    /**
+     * express
+     *
+     * @member express
+     * @type {*}
+     * @memberOf Core
+     */
     express: any;
+    /**
+     * app
+     *
+     * @member app
+     * @type {Express}
+     * @memberOf Core
+     */
     app: Express;
+    /**
+     * server
+     *
+     * @member server
+     * @type {Server}
+     * @memberOf Core
+     */
     server: Server;
+    /**
+     * logger
+     *
+     * @member logger
+     * @type {LoggerInstance}
+     * @memberOf Core
+     */
     logger: LoggerInstance;
+    /**
+     * _pkg
+     *
+     * @member _pkg
+     * @type {*}
+     * @memberOf Core
+     */
     _pkg: any;
+    /**
+     * _apppkg
+     *
+     * @member _apppkg
+     * @type {*}
+     * @memberOf Core
+     */
     _apppkg: any;
+    /**
+     * _config
+     *
+     * @member _config
+     * @type {IConfig}
+     * @memberOf Core
+     */
     _config: IConfig;
+    /**
+     * _configs
+     *
+     * @member _configs
+     * @type {IConfigs}
+     * @memberOf Core
+     */
     _configs: IConfigs;
+    /**
+     * _routers
+     *
+     * @member _routers
+     * @type {IRouters}
+     * @memberOf Core
+     */
     _routers: IRouters;
-    _middlewares: IMiddlewaresMap;
+    /**
+     * _middlewares
+     *
+     * @member _middlewares
+     * @type {IMiddlewaresMap}
+     * @memberOf Core
+     */
+    _middlewares: IMiddlewares;
+    /**
+     * _services
+     *
+     * @member _services
+     * @type {*}
+     * @memberOf Core
+     */
     _services: any;
+    /**
+     * _filters
+     *
+     * @member _filters
+     * @type {*}
+     * @memberOf Core
+     */
     _filters: any;
+    /**
+     * _models
+     *
+     * @member _models
+     * @type {*}
+     * @memberOf Core
+     */
     _models: any;
+    /**
+     * _controllers
+     *
+     * @member _controllers
+     * @type {*}
+     * @memberOf Core
+     */
     _controllers: any;
+    /**
+     * _policies
+     *
+     * @member _policies
+     * @type {*}
+     * @memberOf Core
+     */
+    _policies: any;
+    /**
+     * _routes
+     *
+     * @member _routes
+     * @type {Array<IRoute>}
+     * @memberOf Core
+     */
     _routes: Array<IRoute>;
+    /**
+     * _nextSocketId
+     *
+     * @member _nextSocketId
+     * @type {number}
+     * @memberOf Core
+     */
     _nextSocketId: number;
+    /**
+     * _sockets
+     *
+     * @member _sockets
+     * @type {ISockets}
+     * @memberOf Core
+     */
     _sockets: ISockets;
+    /**
+     * _listeners
+     *
+     * @member _listeners
+     * @protected
+     * @type {IListenersMap}
+     * @memberOf Core
+     */
     protected _listeners: IListenersMap;
+    /**
+     * _beforeEvents
+     *
+     * @member _beforeEvents
+     * @protected
+     * @type {*}
+     * @memberOf Core
+     */
     protected _beforeEvents: any;
+    /**
+     * _afterEvents
+     *
+     * @member _afterEvents
+     * @protected
+     * @type {*}
+     * @memberOf Core
+     */
     protected _afterEvents: any;
+    /**
+     * _configured
+     *
+     * @member _configured
+     * @protected
+     * @type {boolean}
+     * @memberOf Core
+     */
     protected _configured: boolean;
+    /**
+     * _initialized
+     *
+     * @member _initialized
+     * @protected
+     * @type {boolean}
+     * @memberOf Core
+     */
     protected _initialized: boolean;
+    /**
+     * _started
+     *
+     * @member _started
+     * @protected
+     * @type {boolean}
+     * @memberOf Core
+     */
     protected _started: boolean;
+    /**
+     * _autoInit
+     *
+     * @member _autoInit
+     * @protected
+     * @type {boolean}
+     * @memberOf Core
+     */
     protected _autoInit: boolean;
     /**
      * Creates an instance of Core.
@@ -49,7 +239,7 @@ export declare class Core extends EventEmitter implements ICore {
      * Adds before event listener
      * to known Facile event.
      *
-     * @member before
+     * @method before
      * @param {string} name the name of the Facile event.
      * @param {Function} event the event to be called.
      *
@@ -60,7 +250,7 @@ export declare class Core extends EventEmitter implements ICore {
      * Adds after event listener
      * to known Facile event.
      *
-     * @member after
+     * @method after
      * @param {string} name the name of the Facile event.
      * @param {Function} event the event to be called.
      *
@@ -70,7 +260,7 @@ export declare class Core extends EventEmitter implements ICore {
     /**
      * Checks if before listeners exist for event.
      *
-     * @member hasBefore
+     * @method hasBefore
      * @param {string} name
      * @returns {boolean}
      *
@@ -80,7 +270,7 @@ export declare class Core extends EventEmitter implements ICore {
     /**
      * Checks if after listeners exist for event.
      *
-     * @member hasAfter
+     * @method hasAfter
      * @param {string} name
      * @returns {boolean}
      *
@@ -90,7 +280,7 @@ export declare class Core extends EventEmitter implements ICore {
     /**
      * Executes before event listeners.
      *
-     * @member execBefore
+     * @method execBefore
      * @param {string} name
      * @param {ICallbackResult} [fn]
      *
@@ -100,7 +290,7 @@ export declare class Core extends EventEmitter implements ICore {
     /**
      * Executes after event listeners.
      *
-     * @member execAfter
+     * @method execAfter
      * @param {string} name
      * @param {ICallbackResult} [fn]
      *
@@ -133,7 +323,7 @@ export declare class Core extends EventEmitter implements ICore {
      *
      * });
      *
-     * @member execEvents
+     * @method execEvents
      * @param {string} name
      * @param {string} type
      * @param {ICallback} [fn]

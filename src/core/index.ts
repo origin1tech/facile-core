@@ -20,9 +20,9 @@ import * as defaults from './defaults';
 import { IFacile, ICertificate, IConfig, IRouters, IRoute,
 				IBoom, ICallbackResult, IFilter,
 				IMiddleware, ISockets, IModel, IController,
-				IUtils, IConfigs, IRequestHandler, IRoutesMap, IService,
-				IViewConfig, IInit, ICallback, IMiddlewaresMap, IComponentsMap,
-				IComponent, IErrorRequestHandler } from '../interfaces';
+				IUtils, IConfigs, IRequestHandler, IRoutes, IService,
+				IViewConfig, IInit, ICallback, IMiddlewares, IComponents,
+				IComponent, IErrorRequestHandler, IPolicies } from '../interfaces';
 import { Collection } from './collection';
 
 import * as server from './server';
@@ -70,6 +70,9 @@ export class Facile extends Core implements IFacile {
 		// Set Facile's package.json to variable.
 		this._pkg = packages.pkg;
 
+		// set the app's package.json.
+		this._apppkg = packages.apppkg;
+
 		// Create the default logger.
 		// This will likely be overwritten.
 		let defaultLogger = new Logger({
@@ -92,6 +95,9 @@ export class Facile extends Core implements IFacile {
 		this.app = express();
 		this._initialized = false;
 		this._started = false;
+
+		// support v5.x see app.router instead of app._router.
+		this._routers['default'] = this.app.router || this.app._router;
 
 		// Set the instance.
 		Facile.instance = this;
@@ -526,57 +532,74 @@ export class Facile extends Core implements IFacile {
 	///////////////////////////////////////////////////
 
 	/**
-	 * Adds a Configuration.
+	 * registerConfig
 	 *
 	 * @method registerConfig
 	 * @param {string} name
-	 * @param {IConfig} config
+	 * @param {...any[]} extend
+	 *
+	 * @memberOf Facile
+	 */
+	registerConfig(name: string, ...extend: any[]): Facile
+
+	/**
+	 * registerConfig
+	 *
+	 * @method registerConfig
+	 * @param {IConfigs} configs
+	 * @param {...any[]} extend
+	 *
+	 * @memberOf Facile
+	 */
+	registerConfig(configs: IConfigs, ...extend: any[]): Facile;
+	registerConfig(name: string | IConfigs, ...configs: any[]): Facile {
+
+		let self = this;
+		let _configs: IConfig[] = [];
+
+		function normalizeConfigs(arr, reset) {
+			if (reset)
+				_configs = [{}];
+			arr.forEach((c) => {
+				if (isString(c))
+					_configs.push(self.config(c) || {});
+				else if (isPlainObject(c))
+					_configs.push(c);
+			});
+		}
+
+		if (isPlainObject(name)) {
+			each(name, (v, k) => {
+				normalizeConfigs(configs, true);
+				_configs.push(v);
+				this._configs[k] = _extend.apply(null, _configs);
+			});
+		}
+
+		else {
+
+			normalizeConfigs(configs, true);
+			this._configs[name as string] = _extend.apply(null, _configs);
+
+		}
+
+		return this;
+
+	}
+
+	/**
+	 * registerMiddleware
+	 *
+	 * @method registerMiddleware
+	 * @param {IMiddlewares} middlewares
 	 * @returns {Facile}
 	 *
 	 * @memberOf Facile
 	 */
-	registerConfig(name: string | IConfigs, config: IConfig): Facile {
-		utils.extendMap(name, config, this._configs);
-		return this;
-	}
+	registerMiddleware(middlewares: IMiddlewares): Facile;
 
 	/**
-	 * Adds/Creates a Router.
-	 *
-	 * @method registerRouter
-	 * @param {string} name
-	 * @param {express.Router} [router]
-	 * @returns {express.Router}
-	 *
-	 * @memberOf Facile
-	 */
-	registerRouter(name: string | IRouters, router?: express.Router): express.Router {
-
-		// If object check if "default" was passed.
-		let hasDefault = isPlainObject(name) && has(name, 'default');
-
-		// Check for default router.
-		if (name === 'default' || hasDefault) {
-			this.logger.warn('Default router is readonly previously defined router.');
-			return this.router('default');
-		}
-
-		// Add router to map.
-		if (isString(name))
-			this._routers[name] = router || express.Router();
-
-		// Add multiple
-		else
-			Object.keys(name).forEach((k) => {
-				this._routers[k] = name[k] || express.Router();
-			});
-
-		return router;
-
-	}
-
-	/**
-	 * Registers Middleware or Middlewares to Express.
+	 * registerMiddleware
 	 *
 	 * @method registerMiddleware
 	 * @param {string} name
@@ -586,7 +609,22 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	registerMiddleware(name: string | IMiddlewaresMap, fn?: IRequestHandler | IErrorRequestHandler, order?: number): Facile {
+	registerMiddleware(name: string, fn: IRequestHandler, order?: number): Facile;
+
+	/**
+	 * registerMiddleware
+	 *
+	 * @method registerMiddleware
+	 * @param {string} name
+	 * @param {IErrorRequestHandler} fn
+	 * @param {number} [order]
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	registerMiddleware(name: string, fn: IErrorRequestHandler, order?: number): Facile;
+
+	registerMiddleware(name: string | IMiddlewares, fn?: IRequestHandler | IErrorRequestHandler, order?: number): Facile {
 
 		let middlewares: any = {};
 
@@ -635,18 +673,27 @@ export class Facile extends Core implements IFacile {
 	}
 
 	/**
-	 * Adds a route to the map.
+	 * registerRoute
 	 *
 	 * @method registerRoute
-	 * @param {(string | IRoute)} method
-	 * @param {string} url
-	 * @param {(express.Handler | Array<express.Handler>)} handlers
-	 * @param {string} [router]
-	 * @returns {RecRent}
+	 * @param {Array<IRoute>} routes
+	 * @returns {IFacile}
 	 *
 	 * @memberOf Facile
 	 */
-	registerRoute(route: IRoute | IRoutesMap | IRoute[]): Facile {
+	registerRoute(routes: Array<IRoute>): IFacile;
+
+	/**
+	 * registerRoute
+	 *
+	 * @method registerRoute
+	 * @param {IRoutes} routes
+	 * @returns {IFacile}
+	 *
+	 * @memberOf Facile
+	 */
+	registerRoute(routes: IRoutes): IFacile;
+	registerRoute(route: IRoute | IRoutes | IRoute[]): Facile {
 
 		let self = this;
 
@@ -655,7 +702,7 @@ export class Facile extends Core implements IFacile {
 		function validate(_route: IRoute) {
 
 			// Validate the route.
-			_route = utils.validateRoute(route);
+			_route = utils.validateRoute(_route);
 
 			// Push the route to the collection
 			// if is valid.
@@ -678,7 +725,7 @@ export class Facile extends Core implements IFacile {
 
 		// Handle Routes map.
 		else if (isPlainObject(route)) {
-			let routes = route as IRoutesMap;
+			let routes = route as IRoutes;
 			each(routes, (v, k) => {
 				let rte = utils.parseRoute(k, v);
 				validate(rte);
@@ -693,25 +740,130 @@ export class Facile extends Core implements IFacile {
 
 	}
 
-
-	registerComponent(Component: IComponent): IFacile;
-
-	registerComponent(components: IComponentsMap): IFacile;
-
-	registerComponent(name: string, Component: IComponent): IFacile;
-
 	/**
-	 * registerComponent
+	 * registerPolicy
 	 *
-	 * @desc registers a Service, Filter, Controller or Model
-	 * @method registerComponent
-	 * @param {(string | IComponent | IComponentsMap)} name
-	 * @param {IComponent} [Component]
+	 * @method registerPolicy
+	 * @param {string} name
+	 * @param {boolean} filter
 	 * @returns {Facile}
 	 *
 	 * @memberOf Facile
 	 */
-	registerComponent(name: string | IComponent | IComponentsMap, Component?: IComponent): Facile {
+	registerPolicy(name: string, filter: boolean): Facile;
+
+	/**
+	 * registerPolicy
+	 *
+	 * @method registerPolicy
+	 * @param {string} name
+	 * @param {string} filter
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	registerPolicy(name: string, filter: string): Facile;
+
+	/**
+	 * registerPolicy
+	 *
+	 * @method registerPolicy
+	 * @param {string} name
+	 * @param {string[]} filter
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	registerPolicy(name: string, filter: string[]): Facile;
+
+	/**
+	 * registerPolicy
+	 *
+	 * @method registerPolicy
+	 * @param {string} name
+	 * @param {IRequestHandler} filter
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	registerPolicy(name: string, filter: IRequestHandler): Facile;
+
+	/**
+	 * registerPolicy
+	 *
+	 * @method registerPolicy
+	 * @param {string} name
+	 * @param {Array<IRequestHandler>} filter
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	registerPolicy(name: string, filter: Array<IRequestHandler>): Facile;
+
+	/**
+	 * registerPolicy
+	 *
+	 * @method registerPolicy
+	 * @param {IPolicies} policies
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	registerPolicy(policies: IPolicies): Facile;
+	registerPolicy(name: string | IPolicies,
+								filter?: boolean | string | string[] | IRequestHandler | Array<IRequestHandler>): Facile {
+
+		// Adding map of policies.
+		if (!filter) {
+
+		}
+
+		// Adding single policy.
+		else {
+
+		}
+
+		return this;
+
+	}
+
+	/**
+	 * registerComponent
+	 *
+	 * @method registerComponent
+	 * @param {IComponent} Component
+	 * @returns {IFacile}
+	 *
+	 * @memberOf Facile
+	 */
+	registerComponent(Component: IComponent): IFacile;
+
+	/**
+	 * registerComponent
+	 *
+	 * @method registerComponent
+	 *
+	 * @param {IComponents} components
+	 * @returns {IFacile}
+	 *
+	 * @memberOf Facile
+	 */
+	registerComponent(components: IComponents): IFacile;
+
+	/**
+	 * registerComponent
+	 *
+	 * @method registerComponent
+	 *
+	 * @param {string} name
+	 * @param {IComponent} Component
+	 * @returns {IFacile}
+	 *
+	 * @memberOf Facile
+	 */
+	registerComponent(name: string, Component: IComponent): IFacile;
+
+	registerComponent(name: string | IComponent | IComponents, Component?: IComponent): Facile {
 
 		let self = this;
 		let Comp: any;
@@ -787,15 +939,18 @@ export class Facile extends Core implements IFacile {
 	///////////////////////////////////////////////////
 
 	/**
-	 * Gets a Router by name.
+	 * router
 	 *
+	 * @desc gets or creates a router.
 	 * @method router
 	 * @param {string} name
 	 * @returns {express.Router}
 	 *
 	 * @memberOf Facile
 	 */
-	router(name: string): express.Router {
+	router(name: string, options?: any): express.Router {
+		if (!this._routers[name])
+			this._routers[name] = express.Router(options);
 		return this._routers[name];
 	}
 
@@ -883,31 +1038,6 @@ export class Facile extends Core implements IFacile {
 	 */
 	extend(...args: any[]): any {
 		return _extend.apply(null, args);
-	}
-
-	/**
-	 * Extends configuration files.
-	 *
-	 * @method extendConfig
-	 * @param {...any[]} configs
-	 * @returns {IConfig}
-	 *
-	 * @memberOf Facile
-	 */
-	extendConfig(...configs: any[]): IConfig {
-
-		let arr: IConfig[] = [];
-
-		configs.forEach((c) => {
-			if (isString(c))
-				c = this._configs[c];
-			arr.push(c);
-		});
-
-		arr.unshift({});
-
-		return _extend.apply(null, arr);
-
 	}
 
 }

@@ -27,16 +27,106 @@ var Core = (function (_super) {
     function Core() {
         var _this = this;
         _super.call(this);
+        /**
+         * _configs
+         *
+         * @member _configs
+         * @type {IConfigs}
+         * @memberOf Core
+         */
         this._configs = {};
+        /**
+         * _routers
+         *
+         * @member _routers
+         * @type {IRouters}
+         * @memberOf Core
+         */
         this._routers = {};
+        /**
+         * _middlewares
+         *
+         * @member _middlewares
+         * @type {IMiddlewaresMap}
+         * @memberOf Core
+         */
         this._middlewares = {};
+        /**
+         * _policies
+         *
+         * @member _policies
+         * @type {*}
+         * @memberOf Core
+         */
+        this._policies = {};
+        /**
+         * _routes
+         *
+         * @member _routes
+         * @type {Array<IRoute>}
+         * @memberOf Core
+         */
         this._routes = [];
+        /**
+         * _nextSocketId
+         *
+         * @member _nextSocketId
+         * @type {number}
+         * @memberOf Core
+         */
         this._nextSocketId = 0;
+        /**
+         * _sockets
+         *
+         * @member _sockets
+         * @type {ISockets}
+         * @memberOf Core
+         */
         this._sockets = {};
+        /**
+         * _beforeEvents
+         *
+         * @member _beforeEvents
+         * @protected
+         * @type {*}
+         * @memberOf Core
+         */
         this._beforeEvents = {};
+        /**
+         * _afterEvents
+         *
+         * @member _afterEvents
+         * @protected
+         * @type {*}
+         * @memberOf Core
+         */
         this._afterEvents = {};
+        /**
+         * _initialized
+         *
+         * @member _initialized
+         * @protected
+         * @type {boolean}
+         * @memberOf Core
+         */
         this._initialized = false;
+        /**
+         * _started
+         *
+         * @member _started
+         * @protected
+         * @type {boolean}
+         * @memberOf Core
+         */
         this._started = false;
+        /**
+         * _autoInit
+         *
+         * @member _autoInit
+         * @protected
+         * @type {boolean}
+         * @memberOf Core
+         */
         this._autoInit = false;
         this._listeners = {
             'init': { before: true, after: true },
@@ -65,7 +155,7 @@ var Core = (function (_super) {
      * Adds before event listener
      * to known Facile event.
      *
-     * @member before
+     * @method before
      * @param {string} name the name of the Facile event.
      * @param {Function} event the event to be called.
      *
@@ -86,7 +176,7 @@ var Core = (function (_super) {
      * Adds after event listener
      * to known Facile event.
      *
-     * @member after
+     * @method after
      * @param {string} name the name of the Facile event.
      * @param {Function} event the event to be called.
      *
@@ -106,7 +196,7 @@ var Core = (function (_super) {
     /**
      * Checks if before listeners exist for event.
      *
-     * @member hasBefore
+     * @method hasBefore
      * @param {string} name
      * @returns {boolean}
      *
@@ -118,7 +208,7 @@ var Core = (function (_super) {
     /**
      * Checks if after listeners exist for event.
      *
-     * @member hasAfter
+     * @method hasAfter
      * @param {string} name
      * @returns {boolean}
      *
@@ -130,7 +220,7 @@ var Core = (function (_super) {
     /**
      * Executes before event listeners.
      *
-     * @member execBefore
+     * @method execBefore
      * @param {string} name
      * @param {ICallbackResult} [fn]
      *
@@ -142,7 +232,7 @@ var Core = (function (_super) {
     /**
      * Executes after event listeners.
      *
-     * @member execAfter
+     * @method execAfter
      * @param {string} name
      * @param {ICallbackResult} [fn]
      *
@@ -177,7 +267,7 @@ var Core = (function (_super) {
      *
      * });
      *
-     * @member execEvents
+     * @method execEvents
      * @param {string} name
      * @param {string} type
      * @param {ICallback} [fn]

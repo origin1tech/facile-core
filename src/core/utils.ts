@@ -168,7 +168,7 @@ export function validateRoute(route: IRoute): IRoute {
 	// Otherwise normalize single method.
 	else {
 		let method: string = route.method as string;
-		route.method = (method || 'GET').toUpperCase();
+		route.method = [route.method.toUpperCase()];
 	}
 
 	// Ensure default router.
@@ -177,7 +177,6 @@ export function validateRoute(route: IRoute): IRoute {
 	// Mehod, Handler and Url path are required.
 	if (!route.method || !route.handler || !route.url)
 		route.valid = false;
-
 
 	return route;
 

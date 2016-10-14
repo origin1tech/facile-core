@@ -5,13 +5,13 @@ import { IConfig } from '../interfaces';
 
 export let packages: any = {
 	pkg: require('../../package.json'),
-	appPkg: require(join(process.cwd(), 'package.json'))
+	apppkg: require(join(process.cwd(), 'package.json'))
 };
 
 export let config: IConfig = {
 
 	cwd: process.cwd(),
-	pkg: packages.appPkg,
+	pkg: packages.apppkg,
 	env: 'development',
 	logLevel: 'info',
 	host: '127.0.0.1',

@@ -8,7 +8,7 @@ import { series as asyncSeries } from 'async';
 import { truncate } from './utils';
 import { IFacile, ICore, ICallbackResult, ICallback,
 				IConfig, IConfigs, IListenersMap, IBoom, IInit,
-				IRouters, ISockets, IRoute, IMiddlewaresMap } from '../interfaces';
+				IRouters, ISockets, IRoute, IMiddlewares } from '../interfaces';
 import { Collection } from './collection';
 
 /**
@@ -118,7 +118,7 @@ export class Core extends EventEmitter implements ICore {
 	 * @type {IMiddlewaresMap}
 	 * @memberOf Core
 	 */
-	_middlewares: IMiddlewaresMap = {};
+	_middlewares: IMiddlewares = {};
 
 	/**
 	 * _services
@@ -155,6 +155,15 @@ export class Core extends EventEmitter implements ICore {
 	 * @memberOf Core
 	 */
 	_controllers: any;
+
+	/**
+	 * _policies
+	 *
+	 * @member _policies
+	 * @type {*}
+	 * @memberOf Core
+	 */
+	_policies: any = {};
 
 	/**
 	 * _routes

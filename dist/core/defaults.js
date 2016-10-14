@@ -3,11 +3,11 @@ var cons = require('consolidate');
 var path_1 = require('path');
 exports.packages = {
     pkg: require('../../package.json'),
-    appPkg: require(path_1.join(process.cwd(), 'package.json'))
+    apppkg: require(path_1.join(process.cwd(), 'package.json'))
 };
 exports.config = {
     cwd: process.cwd(),
-    pkg: exports.packages.appPkg,
+    pkg: exports.packages.apppkg,
     env: 'development',
     logLevel: 'info',
     host: '127.0.0.1',

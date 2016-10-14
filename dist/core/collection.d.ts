@@ -1,9 +1,9 @@
 /**
- * Components Collection
+ * Collection
  * @desc stores collection of components.
  *
  * @export
- * @class Components
+ * @class Collection
  * @template T
  */
 export declare class Collection<T> {
@@ -13,8 +13,8 @@ export declare class Collection<T> {
      * @desc contains map of components.
      * @member _components;
      * @private
-     * @type {{ [name: string]: T }}
-     * @methodOf Components
+     * @type {ICollectionMap<T>}
+     * @memberOf Collection
      */
     private _components;
     /**
@@ -24,7 +24,7 @@ export declare class Collection<T> {
      * @member _name;
      * @private
      * @type {string}
-     * @memberOf Components
+     * @memberOf Collection
      */
     private _name;
     /**
@@ -36,7 +36,7 @@ export declare class Collection<T> {
      * @param {string} name
      * @returns {*}
      *
-     * @methodOf Components
+     * @memberOf Collection
      */
     private _get(name);
     /**
@@ -45,11 +45,11 @@ export declare class Collection<T> {
      * @desc activates a class as instance.
      * @method activate
      * @private
-     * @param {{ new (): T }} Type
+     * @param {ICollectionType<T>} Type
      * @param {any[]} [args]
      * @returns {T}
      *
-     * @methodOf Components
+     * @memberOf Collection
      */
     private _activate(Type, args?);
     /**
@@ -57,7 +57,7 @@ export declare class Collection<T> {
      *
      * @param {string} name
      * @constructor
-     * @memberOf Components
+     * @memberOf Collection
      */
     constructor(name: string);
     /**
@@ -66,7 +66,7 @@ export declare class Collection<T> {
      * @desc returns the name of the collection.
      * @method name
      * @returns {string}
-     * @memberOf Components
+     * @memberOf Collection
      */
     name(): string;
     /**
@@ -78,7 +78,7 @@ export declare class Collection<T> {
      * @param {string} name
      * @returns {T}
      *
-     * @methodOf Components
+     * @memberOf Collection
      */
     get<T>(name: string): T;
     /**
@@ -86,12 +86,10 @@ export declare class Collection<T> {
      *
      * @desc gets all components.
      * @method getAll
-     * @returns {{  [name: string]: T }}
+     * @returns {}
      * @memberOf Collection
      */
-    getAll(): {
-        [name: string]: T;
-    };
+    getAll(): {};
     /**
      * add
      *
@@ -99,9 +97,9 @@ export declare class Collection<T> {
      * @method add
      * @param {string} name
      * @param {T} item
-     * @returns
+     * @returns {Collection}
      *
-     * @methodOf Components
+     * @memberOf Collection
      */
     add(name: string, component: T): this;
     /**
@@ -113,7 +111,7 @@ export declare class Collection<T> {
      * @param {...any[]} args
      * @returns {*}
      *
-     * @methodOf Components
+     * @memberOf Collection
      */
     init(name: string, ...args: any[]): T;
     /**
@@ -122,9 +120,9 @@ export declare class Collection<T> {
      * @desc removes a component from the collection.
      * @method remove
      * @param {string} name
-     * @returns
+     * @returns {Collection}
      *
-     * @methodOf Components
+     * @memberOf Collection
      */
     remove(name: string): this;
 }

@@ -14,15 +14,6 @@ export function init(facile: Facile): any {
 		function handleServer(): IInit {
 
 			////////////////////////////////
-			// Ensure Router.
-			////////////////////////////////
-
-			facile.logger.debug('Initializing Server Router.');
-			facile._routers = facile._routers || {};
-			if (!facile._routers['default'])
-				facile._routers['default'] = facile.app._router;
-
-			////////////////////////////////
 			// Configure Views
 			////////////////////////////////
 

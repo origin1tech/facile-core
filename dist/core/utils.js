@@ -139,7 +139,7 @@ function validateRoute(route) {
     }
     else {
         var method = route.method;
-        route.method = (method || 'GET').toUpperCase();
+        route.method = [route.method.toUpperCase()];
     }
     // Ensure default router.
     route.router = route.router || 'default';
@@ -153,7 +153,7 @@ exports.validateRoute = validateRoute;
  * Function for non operation.
  *
  * @method noop
- * @methodOf utils
+ * @memberOf utils
  * @export
  */
 function noop() { }
@@ -187,7 +187,7 @@ exports.truncate = truncate;
  * @memberOf utils
  * @export
  * @param {Function} fn
- * @returns
+ * @returns {string}
  */
 function constructorName(fn) {
     if (fn.constructor && fn.constructor.name) {
@@ -205,6 +205,7 @@ exports.constructorName = constructorName;
  * Gets function name.
  *
  * @method functionName
+ * @memberOf utils
  * @export
  * @param {Function} fn
  * @returns {string}

@@ -1060,149 +1060,6 @@
         
             
 <dt>
-    <a name="extendConfig"></a>
-
-    <h4 class="name" id=".extendConfig"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> extendConfig( configs: <span class="paramSignature">Array&#46;&#60;any&#62;</span> ) &rarr; { <span class='paramSignature'>IConfig</span> }
-
-    
-
-    </h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Extends configuration files.</p>
-    </div>
-    
-
-
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-		<th>Argument</th>
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>configs</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;any></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                    &lt;repeatable><br>
-                
-                </td>
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    <!-- xperiments
-    
-    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_index.ts.html">core/index.ts</a></dt>
-    -->
-
-    
-
-    
-
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <span>Returns:</span>
-    
-            
-
-
-        
-    
-    
-</dd>
-
- 
-        
-            
-<dt>
     <a name="filter"></a>
 
     <h4 class="name" id=".filter"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> filter( name: <span class="paramSignature">string</span> ) &rarr; { <span class='paramSignature'>T</span> }
@@ -1549,7 +1406,7 @@
 <dt>
     <a name="registerComponent"></a>
 
-    <h4 class="name" id=".registerComponent"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> registerComponent( name: <span class="paramSignature">string</span>, Component: <span class="paramSignature">IComponent</span> ) &rarr; { <span class='paramSignature'>Facile</span> }
+    <h4 class="name" id=".registerComponent"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> registerComponent( name: <span class="paramSignature">string</span>, Component: <span class="paramSignature">IComponent</span> ) &rarr; { <span class='paramSignature'>IFacile</span> }
 
     
 
@@ -1561,7 +1418,423 @@
     
     
     <div class="description">
-        <p>registers a Service, Filter, Controller or Model</p>
+        <p>registerComponent</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>Component</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="IComponent.html">IComponent</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_index.ts.html">core/index.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <span>Returns:</span>
+    
+            
+
+
+        
+    
+    
+</dd>
+
+ 
+        
+            
+<dt>
+    <a name="registerComponent"></a>
+
+    <h4 class="name" id=".registerComponent"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> registerComponent( components: <span class="paramSignature">IComponents</span> ) &rarr; { <span class='paramSignature'>IFacile</span> }
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>registerComponent</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>components</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">IComponents</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_index.ts.html">core/index.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <span>Returns:</span>
+    
+            
+
+
+        
+    
+    
+</dd>
+
+ 
+        
+            
+<dt>
+    <a name="registerComponent"></a>
+
+    <h4 class="name" id=".registerComponent"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> registerComponent( Component: <span class="paramSignature">IComponent</span> ) &rarr; { <span class='paramSignature'>IFacile</span> }
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>registerComponent</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>Component</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="IComponent.html">IComponent</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_index.ts.html">core/index.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <span>Returns:</span>
+    
+            
+
+
+        
+    
+    
+</dd>
+
+ 
+        
+            
+<dt>
+    <a name="registerConfig"></a>
+
+    <h4 class="name" id=".registerConfig"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> registerConfig( name: <span class="paramSignature">string</span>, extend: <span class="paramSignature">Array&#46;&#60;any&#62;</span> )
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>registerConfig</p>
     </div>
     
 
@@ -1606,12 +1879,6 @@
             
                 
 <span class="param-type">string</span>
-|
-
-<span class="param-type"><a href="IComponent.html">IComponent</a></span>
-|
-
-<span class="param-type"><a href="IComponentsMap.html">IComponentsMap</a></span>
 
 
             
@@ -1636,13 +1903,511 @@
 
         <tr>
             
-                <td class="name"><code>Component</code></td>
+                <td class="name"><code>extend</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="IComponent.html">IComponent</a></span>
+<span class="param-type">Array.&lt;any></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                    &lt;repeatable><br>
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_index.ts.html">core/index.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+ 
+        
+            
+<dt>
+    <a name="registerConfig"></a>
+
+    <h4 class="name" id=".registerConfig"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> registerConfig( configs: <span class="paramSignature">IConfigs</span>, extend: <span class="paramSignature">Array&#46;&#60;any&#62;</span> )
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>registerConfig</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+		<th>Argument</th>
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>configs</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="IConfigs.html">IConfigs</a></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>extend</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;any></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                    &lt;repeatable><br>
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_index.ts.html">core/index.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+</dd>
+
+ 
+        
+            
+<dt>
+    <a name="registerMiddleware"></a>
+
+    <h4 class="name" id=".registerMiddleware"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> registerMiddleware( middlewares: <span class="paramSignature">IMiddlewares</span> ) &rarr; { <span class='paramSignature'>Facile</span> }
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>registerMiddleware</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>middlewares</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">IMiddlewares</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_index.ts.html">core/index.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <span>Returns:</span>
+    
+            
+
+
+        
+    
+    
+</dd>
+
+ 
+        
+            
+<dt>
+    <a name="registerMiddleware"></a>
+
+    <h4 class="name" id=".registerMiddleware"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> registerMiddleware( name: <span class="paramSignature">string</span>, fn: <span class="paramSignature">IErrorRequestHandler</span>, order: <span class="paramSignature">number</span> ) &rarr; { <span class='paramSignature'>Facile</span> }
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>registerMiddleware</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+		<th>Argument</th>
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>fn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">IErrorRequestHandler</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>order</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
 
 
             
@@ -1727,160 +2492,6 @@
         
             
 <dt>
-    <a name="registerConfig"></a>
-
-    <h4 class="name" id=".registerConfig"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> registerConfig( name: <span class="paramSignature">string</span>, config: <span class="paramSignature">IConfig</span> ) &rarr; { <span class='paramSignature'>Facile</span> }
-
-    
-
-    </h4>
-    
-    
-</dt>
-<dd>
-    
-    
-    <div class="description">
-        <p>Adds a Configuration.</p>
-    </div>
-    
-
-
-
-    
-    
-    
-    
-    
-        <h5>Parameters:</h5>
-        
-
-<table class="params table table-striped">
-    <thead>
-	<tr>
-		
-		<th>Name</th>
-		
-
-		<th>Type</th>
-
-		
-
-		
-
-		<th class="last">Description</th>
-	</tr>
-	</thead>
-
-	<tbody>
-	
-
-        <tr>
-            
-                <td class="name"><code>name</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>config</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="IConfig.html">IConfig</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-	
-	</tbody>
-</table>
-
-    
-    
-    
-<dl class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    <!-- xperiments
-    
-    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_index.ts.html">core/index.ts</a></dt>
-    -->
-
-    
-
-    
-
-    
-</dl>
-
-    
-    
-
-    
-
-    
-    
-    
-    
-    
-    <span>Returns:</span>
-    
-            
-
-
-        
-    
-    
-</dd>
-
- 
-        
-            
-<dt>
     <a name="registerMiddleware"></a>
 
     <h4 class="name" id=".registerMiddleware"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> registerMiddleware( name: <span class="paramSignature">string</span>, fn: <span class="paramSignature">IRequestHandler</span>, order: <span class="paramSignature">number</span> ) &rarr; { <span class='paramSignature'>Facile</span> }
@@ -1895,7 +2506,7 @@
     
     
     <div class="description">
-        <p>Registers Middleware or Middlewares to Express.</p>
+        <p>registerMiddleware</p>
     </div>
     
 
@@ -2086,9 +2697,9 @@
         
             
 <dt>
-    <a name="registerRoute"></a>
+    <a name="registerPolicy"></a>
 
-    <h4 class="name" id=".registerRoute"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> registerRoute( method: <span class="paramSignature">string</span>, url: <span class="paramSignature">string</span>, handlers: <span class="paramSignature">express&#46;Handler</span>, router: <span class="paramSignature">string</span> ) &rarr; { <span class='paramSignature'>RecRent</span> }
+    <h4 class="name" id=".registerPolicy"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> registerPolicy( policies: <span class="paramSignature">IPolicies</span> ) &rarr; { <span class='paramSignature'>Facile</span> }
 
     
 
@@ -2100,7 +2711,7 @@
     
     
     <div class="description">
-        <p>Adds a route to the map.</p>
+        <p>registerPolicy</p>
     </div>
     
 
@@ -2124,8 +2735,6 @@
 		<th>Type</th>
 
 		
-		<th>Argument</th>
-		
 
 		
 
@@ -2138,127 +2747,18 @@
 
         <tr>
             
-                <td class="name"><code>method</code></td>
+                <td class="name"><code>policies</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">string</span>
-|
-
-<span class="param-type"><a href="IRoute.html">IRoute</a></span>
+<span class="param-type">IPolicies</span>
 
 
             
             </td>
 
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>url</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>handlers</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">express.Handler</span>
-|
-
-<span class="param-type">Array.&lt;express.Handler></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-	
-
-        <tr>
-            
-                <td class="name"><code>router</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
             
 
             
@@ -2328,9 +2828,9 @@
         
             
 <dt>
-    <a name="registerRouter"></a>
+    <a name="registerPolicy"></a>
 
-    <h4 class="name" id=".registerRouter"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> registerRouter( name: <span class="paramSignature">string</span>, router: <span class="paramSignature">express&#46;Router</span> ) &rarr; { <span class='paramSignature'>express.Router</span> }
+    <h4 class="name" id=".registerPolicy"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> registerPolicy( name: <span class="paramSignature">string</span>, filter: <span class="paramSignature">IRequestHandler</span> ) &rarr; { <span class='paramSignature'>Facile</span> }
 
     
 
@@ -2342,7 +2842,7 @@
     
     
     <div class="description">
-        <p>Adds/Creates a Router.</p>
+        <p>registerPolicy</p>
     </div>
     
 
@@ -2365,8 +2865,6 @@
 
 		<th>Type</th>
 
-		
-		<th>Argument</th>
 		
 
 		
@@ -2393,13 +2891,159 @@
             </td>
 
             
-                <td class="attributes">
-                
 
-                
+            
 
+            <td class="description last"></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>filter</code></td>
+            
+
+            <td class="type">
+            
                 
-                </td>
+<span class="param-type">IRequestHandler</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_index.ts.html">core/index.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <span>Returns:</span>
+    
+            
+
+
+        
+    
+    
+</dd>
+
+ 
+        
+            
+<dt>
+    <a name="registerPolicy"></a>
+
+    <h4 class="name" id=".registerPolicy"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> registerPolicy( name: <span class="paramSignature">string</span>, filter: <span class="paramSignature">Array&#46;&#60;string&#62;</span> ) &rarr; { <span class='paramSignature'>Facile</span> }
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>registerPolicy</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
             
 
             
@@ -2411,28 +3055,742 @@
 
         <tr>
             
-                <td class="name"><code>router</code></td>
+                <td class="name"><code>filter</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">express.Router</span>
+<span class="param-type">Array.&lt;string></span>
 
 
             
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
 
-                
+            
 
+            <td class="description last"></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_index.ts.html">core/index.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <span>Returns:</span>
+    
+            
+
+
+        
+    
+    
+</dd>
+
+ 
+        
+            
+<dt>
+    <a name="registerPolicy"></a>
+
+    <h4 class="name" id=".registerPolicy"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> registerPolicy( name: <span class="paramSignature">string</span>, filter: <span class="paramSignature">string</span> ) &rarr; { <span class='paramSignature'>Facile</span> }
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>registerPolicy</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
                 
-                </td>
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>filter</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_index.ts.html">core/index.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <span>Returns:</span>
+    
+            
+
+
+        
+    
+    
+</dd>
+
+ 
+        
+            
+<dt>
+    <a name="registerPolicy"></a>
+
+    <h4 class="name" id=".registerPolicy"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> registerPolicy( name: <span class="paramSignature">string</span>, filter: <span class="paramSignature">boolean</span> ) &rarr; { <span class='paramSignature'>Facile</span> }
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>registerPolicy</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>filter</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_index.ts.html">core/index.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <span>Returns:</span>
+    
+            
+
+
+        
+    
+    
+</dd>
+
+ 
+        
+            
+<dt>
+    <a name="registerPolicy"></a>
+
+    <h4 class="name" id=".registerPolicy"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> registerPolicy( name: <span class="paramSignature">string</span>, filter: <span class="paramSignature">Array&#46;&#60;IRequestHandler&#62;</span> ) &rarr; { <span class='paramSignature'>Facile</span> }
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>registerPolicy</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+
+        <tr>
+            
+                <td class="name"><code>filter</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;IRequestHandler></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_index.ts.html">core/index.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <span>Returns:</span>
+    
+            
+
+
+        
+    
+    
+</dd>
+
+ 
+        
+            
+<dt>
+    <a name="registerRoute"></a>
+
+    <h4 class="name" id=".registerRoute"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> registerRoute( routes: <span class="paramSignature">Array&#46;&#60;IRoute&#62;</span> ) &rarr; { <span class='paramSignature'>IFacile</span> }
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>registerRoute</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>routes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Array.&lt;<a href="IRoute.html">IRoute</a>></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+	
+	</tbody>
+</table>
+
+    
+    
+    
+<dl class="details">
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    <!-- xperiments
+    
+    <dt style="font-weight:lighter;" class="btn"><i class="icon-eye-open"></i> <a href="core_index.ts.html">core/index.ts</a></dt>
+    -->
+
+    
+
+    
+
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    <span>Returns:</span>
+    
+            
+
+
+        
+    
+    
+</dd>
+
+ 
+        
+            
+<dt>
+    <a name="registerRoute"></a>
+
+    <h4 class="name" id=".registerRoute"><span class="btn btn-mini btn btn-inverse">S</span> <span class="btn btn-mini btn-success" title="public">M</span> registerRoute( routes: <span class="paramSignature">IRoutes</span> ) &rarr; { <span class='paramSignature'>IFacile</span> }
+
+    
+
+    </h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        <p>registerRoute</p>
+    </div>
+    
+
+
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params table table-striped">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+
+		<th>Type</th>
+
+		
+
+		
+
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+
+	<tbody>
+	
+
+        <tr>
+            
+                <td class="name"><code>routes</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">IRoutes</span>
+
+
+            
+            </td>
+
             
 
             
@@ -2516,7 +3874,7 @@
     
     
     <div class="description">
-        <p>Gets a Router by name.</p>
+        <p>gets or creates a router.</p>
     </div>
     
 
@@ -3136,7 +4494,7 @@
 									
 						<span class="jsdoc-message">
 						Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a>
-						on Thu Oct 13 2016 14:44:58 GMT-0700 (PDT) using the <a href="https://github.com/xperiments/TSDoc">TSDoc template</a>.
+						on Thu Oct 13 2016 20:22:09 GMT-0700 (PDT) using the <a href="https://github.com/xperiments/TSDoc">TSDoc template</a>.
 						</span>
 				</footer>
 			</div>

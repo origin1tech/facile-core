@@ -1,10 +1,10 @@
 "use strict";
 /**
- * Components Collection
+ * Collection
  * @desc stores collection of components.
  *
  * @export
- * @class Components
+ * @class Collection
  * @template T
  */
 var Collection = (function () {
@@ -13,7 +13,7 @@ var Collection = (function () {
      *
      * @param {string} name
      * @constructor
-     * @memberOf Components
+     * @memberOf Collection
      */
     function Collection(name) {
         /**
@@ -22,8 +22,8 @@ var Collection = (function () {
          * @desc contains map of components.
          * @member _components;
          * @private
-         * @type {{ [name: string]: T }}
-         * @methodOf Components
+         * @type {ICollectionMap<T>}
+         * @memberOf Collection
          */
         this._components = {};
         this._name = name;
@@ -37,7 +37,7 @@ var Collection = (function () {
      * @param {string} name
      * @returns {*}
      *
-     * @methodOf Components
+     * @memberOf Collection
      */
     Collection.prototype._get = function (name) {
         return this._components[name];
@@ -48,11 +48,11 @@ var Collection = (function () {
      * @desc activates a class as instance.
      * @method activate
      * @private
-     * @param {{ new (): T }} Type
+     * @param {ICollectionType<T>} Type
      * @param {any[]} [args]
      * @returns {T}
      *
-     * @methodOf Components
+     * @memberOf Collection
      */
     Collection.prototype._activate = function (Type, args) {
         function F() {
@@ -67,7 +67,7 @@ var Collection = (function () {
      * @desc returns the name of the collection.
      * @method name
      * @returns {string}
-     * @memberOf Components
+     * @memberOf Collection
      */
     Collection.prototype.name = function () {
         return this._name;
@@ -81,7 +81,7 @@ var Collection = (function () {
      * @param {string} name
      * @returns {T}
      *
-     * @methodOf Components
+     * @memberOf Collection
      */
     Collection.prototype.get = function (name) {
         var component = this._get(name);
@@ -92,7 +92,7 @@ var Collection = (function () {
      *
      * @desc gets all components.
      * @method getAll
-     * @returns {{  [name: string]: T }}
+     * @returns {}
      * @memberOf Collection
      */
     Collection.prototype.getAll = function () {
@@ -105,9 +105,9 @@ var Collection = (function () {
      * @method add
      * @param {string} name
      * @param {T} item
-     * @returns
+     * @returns {Collection}
      *
-     * @methodOf Components
+     * @memberOf Collection
      */
     Collection.prototype.add = function (name, component) {
         this._components[name] = component;
@@ -122,7 +122,7 @@ var Collection = (function () {
      * @param {...any[]} args
      * @returns {*}
      *
-     * @methodOf Components
+     * @memberOf Collection
      */
     Collection.prototype.init = function (name) {
         var args = [];
@@ -139,9 +139,9 @@ var Collection = (function () {
      * @desc removes a component from the collection.
      * @method remove
      * @param {string} name
-     * @returns
+     * @returns {Collection}
      *
-     * @methodOf Components
+     * @memberOf Collection
      */
     Collection.prototype.remove = function (name) {
         delete this._components[name];

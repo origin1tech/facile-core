@@ -43,6 +43,8 @@ var Facile = (function (_super) {
             return Facile.instance;
         // Set Facile's package.json to variable.
         this._pkg = packages.pkg;
+        // set the app's package.json.
+        this._apppkg = packages.apppkg;
         // Create the default logger.
         // This will likely be overwritten.
         var defaultLogger = new winston_1.Logger({
@@ -63,6 +65,8 @@ var Facile = (function (_super) {
         this.app = express();
         this._initialized = false;
         this._started = false;
+        // support v5.x see app.router instead of app._router.
+        this._routers['default'] = this.app.router || this.app._router;
         // Set the instance.
         Facile.instance = this;
         return this;
@@ -389,62 +393,37 @@ var Facile = (function (_super) {
             console.log(chalk_1.cyan('\nServer successfully closed.'));
         });
     };
-    ///////////////////////////////////////////////////
-    // REGISTERING RESOURCES
-    ///////////////////////////////////////////////////
-    /**
-     * Adds a Configuration.
-     *
-     * @method registerConfig
-     * @param {string} name
-     * @param {IConfig} config
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
-    Facile.prototype.registerConfig = function (name, config) {
-        utils.extendMap(name, config, this._configs);
+    Facile.prototype.registerConfig = function (name) {
+        var _this = this;
+        var configs = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            configs[_i - 1] = arguments[_i];
+        }
+        var self = this;
+        var _configs = [];
+        function normalizeConfigs(arr, reset) {
+            if (reset)
+                _configs = [{}];
+            arr.forEach(function (c) {
+                if (lodash_1.isString(c))
+                    _configs.push(self.config(c) || {});
+                else if (lodash_1.isPlainObject(c))
+                    _configs.push(c);
+            });
+        }
+        if (lodash_1.isPlainObject(name)) {
+            lodash_1.each(name, function (v, k) {
+                normalizeConfigs(configs, true);
+                _configs.push(v);
+                _this._configs[k] = lodash_1.extend.apply(null, _configs);
+            });
+        }
+        else {
+            normalizeConfigs(configs, true);
+            this._configs[name] = lodash_1.extend.apply(null, _configs);
+        }
         return this;
     };
-    /**
-     * Adds/Creates a Router.
-     *
-     * @method registerRouter
-     * @param {string} name
-     * @param {express.Router} [router]
-     * @returns {express.Router}
-     *
-     * @memberOf Facile
-     */
-    Facile.prototype.registerRouter = function (name, router) {
-        var _this = this;
-        // If object check if "default" was passed.
-        var hasDefault = lodash_1.isPlainObject(name) && lodash_1.has(name, 'default');
-        // Check for default router.
-        if (name === 'default' || hasDefault) {
-            this.logger.warn('Default router is readonly previously defined router.');
-            return this.router('default');
-        }
-        // Add router to map.
-        if (lodash_1.isString(name))
-            this._routers[name] = router || express.Router();
-        else
-            Object.keys(name).forEach(function (k) {
-                _this._routers[k] = name[k] || express.Router();
-            });
-        return router;
-    };
-    /**
-     * Registers Middleware or Middlewares to Express.
-     *
-     * @method registerMiddleware
-     * @param {string} name
-     * @param {IRequestHandler} fn
-     * @param {number} [order]
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
     Facile.prototype.registerMiddleware = function (name, fn, order) {
         var _this = this;
         var middlewares = {};
@@ -479,25 +458,13 @@ var Facile = (function (_super) {
         });
         return this;
     };
-    /**
-     * Adds a route to the map.
-     *
-     * @method registerRoute
-     * @param {(string | IRoute)} method
-     * @param {string} url
-     * @param {(express.Handler | Array<express.Handler>)} handlers
-     * @param {string} [router]
-     * @returns {RecRent}
-     *
-     * @memberOf Facile
-     */
     Facile.prototype.registerRoute = function (route) {
         var self = this;
         // Helper function to validate
         // the route and log if invalid.
         function validate(_route) {
             // Validate the route.
-            _route = utils.validateRoute(route);
+            _route = utils.validateRoute(_route);
             // Push the route to the collection
             // if is valid.
             if (_route.valid)
@@ -524,17 +491,14 @@ var Facile = (function (_super) {
         }
         return this;
     };
-    /**
-     * registerComponent
-     *
-     * @desc registers a Service, Filter, Controller or Model
-     * @method registerComponent
-     * @param {(string | IComponent | IComponentsMap)} name
-     * @param {IComponent} [Component]
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
+    Facile.prototype.registerPolicy = function (name, filter) {
+        // Adding map of policies.
+        if (!filter) {
+        }
+        else {
+        }
+        return this;
+    };
     Facile.prototype.registerComponent = function (name, Component) {
         var self = this;
         var Comp;
@@ -591,26 +555,25 @@ var Facile = (function (_super) {
     ///////////////////////////////////////////////////
     // INSTANCE HELPERS
     ///////////////////////////////////////////////////
-    Facile.prototype.component = function (name, map) {
-        var obj = this[map] || {};
-        return obj[name];
-    };
     /**
-     * Gets a Router by name.
+     * router
      *
-     * @method
+     * @desc gets or creates a router.
+     * @method router
      * @param {string} name
      * @returns {express.Router}
      *
      * @memberOf Facile
      */
-    Facile.prototype.router = function (name) {
+    Facile.prototype.router = function (name, options) {
+        if (!this._routers[name])
+            this._routers[name] = express.Router(options);
         return this._routers[name];
     };
     /**
      * Gets a Config by name.
      *
-     * @method
+     * @method config
      * @param {string} name
      * @returns {IConfig}
      *
@@ -622,7 +585,7 @@ var Facile = (function (_super) {
     /**
      * Gets a Service
      *
-     * @member service
+     * @method service
      * @template T
      * @param {string} name
      * @returns {T}
@@ -636,7 +599,7 @@ var Facile = (function (_super) {
     /**
      * Gets a Filter
      *
-     * @member filter
+     * @method filter
      * @template T
      * @param {string} name
      * @returns {T}
@@ -650,7 +613,7 @@ var Facile = (function (_super) {
     /**
      * Gets a Model
      *
-     * @member model
+     * @method model
      * @template T
      * @param {string} name
      * @returns {T}
@@ -664,7 +627,7 @@ var Facile = (function (_super) {
     /**
      * Gets a Controller.
      *
-     * @member controller
+     * @method controller
      * @template T
      * @param {string} name
      * @returns {T}
@@ -678,7 +641,7 @@ var Facile = (function (_super) {
     /**
      * Convenience wrapper for lodash extend.
      *
-     * @member extend
+     * @method extend
      * @param {...any[]} args
      * @returns {*}
      *
@@ -690,30 +653,6 @@ var Facile = (function (_super) {
             args[_i - 0] = arguments[_i];
         }
         return lodash_1.extend.apply(null, args);
-    };
-    /**
-     * Extends configuration files.
-     *
-     * @member extendConfig
-     * @param {...any[]} configs
-     * @returns {IConfig}
-     *
-     * @memberOf Facile
-     */
-    Facile.prototype.extendConfig = function () {
-        var _this = this;
-        var configs = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            configs[_i - 0] = arguments[_i];
-        }
-        var arr = [];
-        configs.forEach(function (c) {
-            if (lodash_1.isString(c))
-                c = _this._configs[c];
-            arr.push(c);
-        });
-        arr.unshift({});
-        return lodash_1.extend.apply(null, arr);
     };
     return Facile;
 }(core_1.Core));
