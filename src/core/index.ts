@@ -304,7 +304,7 @@ export class Facile extends Core implements IFacile {
 		 *
 		 * @member done
 		 * @private
-		 * @returns {IFacile}
+		 * @returns {Facile}
 		 * @memberOf Facile
 		 */
 		function done(): Facile {
@@ -552,7 +552,7 @@ export class Facile extends Core implements IFacile {
 	 * @memberOf Facile
 	 */
 	registerConfig(configs: IConfigs, ...extend: any[]): Facile;
-	registerConfig(name: string | IConfigs, ...configs: any[]): Facile {
+	registerConfig(name: string | IConfigs, ...extend: any[]): Facile {
 
 		let self = this;
 		let _configs: IConfig[] = [];
@@ -570,7 +570,7 @@ export class Facile extends Core implements IFacile {
 
 		if (isPlainObject(name)) {
 			each(name, (v, k) => {
-				normalizeConfigs(configs, true);
+				normalizeConfigs(extend, true);
 				_configs.push(v);
 				this._configs[k] = _extend.apply(null, _configs);
 			});
@@ -578,7 +578,7 @@ export class Facile extends Core implements IFacile {
 
 		else {
 
-			normalizeConfigs(configs, true);
+			normalizeConfigs(extend, true);
 			this._configs[name as string] = _extend.apply(null, _configs);
 
 		}
@@ -676,23 +676,24 @@ export class Facile extends Core implements IFacile {
 	 * registerRoute
 	 *
 	 * @method registerRoute
-	 * @param {Array<IRoute>} routes
-	 * @returns {IFacile}
+	 * @param {IRoutes} routes
+	 * @returns {Facile}
 	 *
 	 * @memberOf Facile
 	 */
-	registerRoute(routes: Array<IRoute>): IFacile;
+	registerRoute(routes: IRoutes): Facile;
 
 	/**
 	 * registerRoute
 	 *
 	 * @method registerRoute
-	 * @param {IRoutes} routes
-	 * @returns {IFacile}
+	 * @param {Array<IRoute>} routes
+	 * @returns {Facile}
 	 *
 	 * @memberOf Facile
 	 */
-	registerRoute(routes: IRoutes): IFacile;
+	registerRoute(routes: Array<IRoute>): Facile;
+
 	registerRoute(route: IRoute | IRoutes | IRoute[]): Facile {
 
 		let self = this;
@@ -744,13 +745,24 @@ export class Facile extends Core implements IFacile {
 	 * registerPolicy
 	 *
 	 * @method registerPolicy
+	 * @param {IPolicies} policies
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	registerPolicy(name: IPolicies): Facile;
+
+	/**
+	 * registerPolicy
+	 *
+	 * @method registerPolicy
 	 * @param {string} name
 	 * @param {boolean} filter
 	 * @returns {Facile}
 	 *
 	 * @memberOf Facile
 	 */
-	registerPolicy(name: string, filter: boolean): Facile;
+	registerPolicy(name: string, policy: boolean): Facile;
 
 	/**
 	 * registerPolicy
@@ -762,7 +774,7 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	registerPolicy(name: string, filter: string): Facile;
+	registerPolicy(name: string, policy: string): Facile;
 
 	/**
 	 * registerPolicy
@@ -774,7 +786,7 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	registerPolicy(name: string, filter: string[]): Facile;
+	registerPolicy(name: string, policy: string[]): Facile;
 
 	/**
 	 * registerPolicy
@@ -786,7 +798,7 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	registerPolicy(name: string, filter: IRequestHandler): Facile;
+	registerPolicy(name: string, policy: IRequestHandler): Facile;
 
 	/**
 	 * registerPolicy
@@ -798,28 +810,147 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	registerPolicy(name: string, filter: Array<IRequestHandler>): Facile;
+	registerPolicy(name: string, policy: Array<IRequestHandler>): Facile;
 
 	/**
 	 * registerPolicy
 	 *
 	 * @method registerPolicy
-	 * @param {IPolicies} policies
+	 * @param {string} name
+	 * @param {IPolicies} policy
 	 * @returns {Facile}
 	 *
 	 * @memberOf Facile
 	 */
-	registerPolicy(policies: IPolicies): Facile;
+	registerPolicy(name: string, policy: IPolicies): Facile;
+
+	/**
+	 * registerPolicy
+	 *
+	 * @method registerPolicy
+	 * @param {string} name
+	 * @param {string} action
+	 * @param {boolean} policy
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	registerPolicy(name: string, action: string, policy: boolean): Facile;
+
+	/**
+	 * registerPolicy
+	 *
+	 * @method registerPolicy
+	 *
+	 * @param {string} name
+	 * @param {string} action
+	 * @param {string} policy
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	registerPolicy(name: string, action: string, policy: string): Facile;
+
+	/**
+	 * registerPolicy
+	 *
+	 * @method registerPolicy
+	 * @param {string} name
+	 * @param {string} action
+	 * @param {string[]} policy
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	registerPolicy(name: string, action: string, policy: string[]): Facile;
+
+	/**
+	 * registerPolicy
+	 *
+	 * @method registerPolicy
+	 * @param {string} name
+	 * @param {string} action
+	 * @param {IRequestHandler} policy
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	registerPolicy(name: string, action: string, policy: IRequestHandler): Facile;
+
+	/**
+	 * registerPolicy
+	 *
+	 * @method registerPolicy
+	 * @param {string} name
+	 * @param {string} action
+	 * @param {Array<IRequestHandler>} policy
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	registerPolicy(name: string, action: string, policy: Array<IRequestHandler>): Facile;
+
+	/**
+	 * registerPolicy
+	 *
+	 * @method registerPolicy
+	 * @param {string} name
+	 * @param {string} action
+	 * @param {IPolicies} policy
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	registerPolicy(name: string, action: string, policy: IPolicies): Facile;
+
 	registerPolicy(name: string | IPolicies,
-								filter?: boolean | string | string[] | IRequestHandler | Array<IRequestHandler>): Facile {
+								action?: string | boolean | string[] | IRequestHandler | Array<IRequestHandler> | IPolicies,
+								policy?: string | boolean | string[] | IRequestHandler | Array<IRequestHandler> | IPolicies): Facile {
+
+		let self = this;
+
+		function isValidParent(key, val) {
+			if (key !== '*' && !isPlainObject(val)) {
+				self.logger.warn('Invalid parent policy key "' + key + '" ignored, parent policy values must be objects execpt global policy key.');
+				return false;
+			}
+			else if (key === '*' && (!isString(val) && !Array.isArray(val)) || isPlainObject(val)) {
+				self.logger.warn('Invalid global policy key ignored, only boolean, strings, arrays of string or arrays of functions are supported.');
+				return false;
+			}
+			return true;
+		}
+
+		// Adding policy with action plicy.
+		if (arguments.length === 3) {
+
+		}
 
 		// Adding map of policies.
-		if (!filter) {
+		else if (isPlainObject(name)) {
+
+			Object.keys(name).forEach((key) => {
+
+				let val = Object[key];
+				this._policies[key] = this._policies[key] || {};
+
+				if (isValidParent(key, val)) {
+					if (key === '*')
+						this._policies[key] = val;
+					else
+						this._policies[key] = _extend(this._policies[key], val);
+				}
+
+			});
 
 		}
 
 		// Adding single policy.
 		else {
+
+			this._policies[name as string] = this._policies[name as string] || {};
+			// if (isValidParent(name, action))
+
 
 		}
 
@@ -832,11 +963,11 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @method registerComponent
 	 * @param {IComponent} Component
-	 * @returns {IFacile}
+	 * @returns {Facile}
 	 *
 	 * @memberOf Facile
 	 */
-	registerComponent(Component: IComponent): IFacile;
+	registerComponent(Component: IComponent): Facile;
 
 	/**
 	 * registerComponent
@@ -844,11 +975,11 @@ export class Facile extends Core implements IFacile {
 	 * @method registerComponent
 	 *
 	 * @param {IComponents} components
-	 * @returns {IFacile}
+	 * @returns {Facile}
 	 *
 	 * @memberOf Facile
 	 */
-	registerComponent(components: IComponents): IFacile;
+	registerComponent(components: IComponents): Facile;
 
 	/**
 	 * registerComponent
@@ -857,11 +988,11 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @param {string} name
 	 * @param {IComponent} Component
-	 * @returns {IFacile}
+	 * @returns {Facile}
 	 *
 	 * @memberOf Facile
 	 */
-	registerComponent(name: string, Component: IComponent): IFacile;
+	registerComponent(name: string, Component: IComponent): Facile;
 
 	registerComponent(name: string | IComponent | IComponents, Component?: IComponent): Facile {
 

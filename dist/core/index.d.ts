@@ -150,22 +150,32 @@ export declare class Facile extends Core implements IFacile {
      * registerRoute
      *
      * @method registerRoute
-     * @param {Array<IRoute>} routes
-     * @returns {IFacile}
+     * @param {IRoutes} routes
+     * @returns {Facile}
      *
      * @memberOf Facile
      */
-    registerRoute(routes: Array<IRoute>): IFacile;
+    registerRoute(routes: IRoutes): Facile;
     /**
      * registerRoute
      *
      * @method registerRoute
-     * @param {IRoutes} routes
-     * @returns {IFacile}
+     * @param {Array<IRoute>} routes
+     * @returns {Facile}
      *
      * @memberOf Facile
      */
-    registerRoute(routes: IRoutes): IFacile;
+    registerRoute(routes: Array<IRoute>): Facile;
+    /**
+     * registerPolicy
+     *
+     * @method registerPolicy
+     * @param {IPolicies} policies
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    registerPolicy(name: IPolicies): Facile;
     /**
      * registerPolicy
      *
@@ -176,7 +186,7 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    registerPolicy(name: string, filter: boolean): Facile;
+    registerPolicy(name: string, policy: boolean): Facile;
     /**
      * registerPolicy
      *
@@ -187,7 +197,7 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    registerPolicy(name: string, filter: string): Facile;
+    registerPolicy(name: string, policy: string): Facile;
     /**
      * registerPolicy
      *
@@ -198,7 +208,7 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    registerPolicy(name: string, filter: string[]): Facile;
+    registerPolicy(name: string, policy: string[]): Facile;
     /**
      * registerPolicy
      *
@@ -209,7 +219,7 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    registerPolicy(name: string, filter: IRequestHandler): Facile;
+    registerPolicy(name: string, policy: IRequestHandler): Facile;
     /**
      * registerPolicy
      *
@@ -220,38 +230,112 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    registerPolicy(name: string, filter: Array<IRequestHandler>): Facile;
+    registerPolicy(name: string, policy: Array<IRequestHandler>): Facile;
     /**
      * registerPolicy
      *
      * @method registerPolicy
-     * @param {IPolicies} policies
+     * @param {string} name
+     * @param {IPolicies} policy
      * @returns {Facile}
      *
      * @memberOf Facile
      */
-    registerPolicy(policies: IPolicies): Facile;
+    registerPolicy(name: string, policy: IPolicies): Facile;
+    /**
+     * registerPolicy
+     *
+     * @method registerPolicy
+     * @param {string} name
+     * @param {string} action
+     * @param {boolean} policy
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    registerPolicy(name: string, action: string, policy: boolean): Facile;
+    /**
+     * registerPolicy
+     *
+     * @method registerPolicy
+     *
+     * @param {string} name
+     * @param {string} action
+     * @param {string} policy
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    registerPolicy(name: string, action: string, policy: string): Facile;
+    /**
+     * registerPolicy
+     *
+     * @method registerPolicy
+     * @param {string} name
+     * @param {string} action
+     * @param {string[]} policy
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    registerPolicy(name: string, action: string, policy: string[]): Facile;
+    /**
+     * registerPolicy
+     *
+     * @method registerPolicy
+     * @param {string} name
+     * @param {string} action
+     * @param {IRequestHandler} policy
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    registerPolicy(name: string, action: string, policy: IRequestHandler): Facile;
+    /**
+     * registerPolicy
+     *
+     * @method registerPolicy
+     * @param {string} name
+     * @param {string} action
+     * @param {Array<IRequestHandler>} policy
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    registerPolicy(name: string, action: string, policy: Array<IRequestHandler>): Facile;
+    /**
+     * registerPolicy
+     *
+     * @method registerPolicy
+     * @param {string} name
+     * @param {string} action
+     * @param {IPolicies} policy
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    registerPolicy(name: string, action: string, policy: IPolicies): Facile;
     /**
      * registerComponent
      *
      * @method registerComponent
      * @param {IComponent} Component
-     * @returns {IFacile}
+     * @returns {Facile}
      *
      * @memberOf Facile
      */
-    registerComponent(Component: IComponent): IFacile;
+    registerComponent(Component: IComponent): Facile;
     /**
      * registerComponent
      *
      * @method registerComponent
      *
      * @param {IComponents} components
-     * @returns {IFacile}
+     * @returns {Facile}
      *
      * @memberOf Facile
      */
-    registerComponent(components: IComponents): IFacile;
+    registerComponent(components: IComponents): Facile;
     /**
      * registerComponent
      *
@@ -259,11 +343,11 @@ export declare class Facile extends Core implements IFacile {
      *
      * @param {string} name
      * @param {IComponent} Component
-     * @returns {IFacile}
+     * @returns {Facile}
      *
      * @memberOf Facile
      */
-    registerComponent(name: string, Component: IComponent): IFacile;
+    registerComponent(name: string, Component: IComponent): Facile;
     /**
      * router
      *

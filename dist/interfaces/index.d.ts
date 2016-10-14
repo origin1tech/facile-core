@@ -87,13 +87,20 @@ export interface IFacile extends ICore {
     registerRoute(routes: IRoutes): IFacile;
     registerRoute(routes: Array<IRoute>): IFacile;
     registerRoute(route: IRoute | IRoutes | IRoute[]): IFacile;
-    registerPolicy(name: string, filter: boolean): IFacile;
-    registerPolicy(name: string, filter: string): IFacile;
-    registerPolicy(name: string, filter: string[]): IFacile;
-    registerPolicy(name: string, filter: IRequestHandler): IFacile;
-    registerPolicy(name: string, filter: Array<IRequestHandler>): IFacile;
-    registerPolicy(policies: IPolicies): IFacile;
-    registerPolicy(name: string | IPolicies, filter?: boolean | string | string[] | IRequestHandler | Array<IRequestHandler>): IFacile;
+    registerPolicy(name: IPolicies): IFacile;
+    registerPolicy(name: string, policy: boolean): IFacile;
+    registerPolicy(name: string, policy: string): IFacile;
+    registerPolicy(name: string, policy: string[]): IFacile;
+    registerPolicy(name: string, policy: IRequestHandler): IFacile;
+    registerPolicy(name: string, policy: Array<IRequestHandler>): IFacile;
+    registerPolicy(name: string, policy: IPolicies): IFacile;
+    registerPolicy(name: string, action: string, policy: boolean): IFacile;
+    registerPolicy(name: string, action: string, policy: string): IFacile;
+    registerPolicy(name: string, action: string, policy: string[]): IFacile;
+    registerPolicy(name: string, action: string, policy: IRequestHandler): IFacile;
+    registerPolicy(name: string, action: string, policy: Array<IRequestHandler>): IFacile;
+    registerPolicy(name: string, action: string, policy: IPolicies): IFacile;
+    registerPolicy(name: string | IPolicies, action?: string | boolean | string[] | IRequestHandler | Array<IRequestHandler> | IPolicies, policy?: string | boolean | string[] | IRequestHandler | Array<IRequestHandler> | IPolicies): IFacile;
     registerComponent(Component: IComponent): IFacile;
     registerComponent(components: IComponents): IFacile;
     registerComponent(name: string, Component: IComponent): IFacile;
@@ -297,8 +304,11 @@ export interface IRoute {
 export interface IRoutes {
     [url: string]: IRequestHandler | Array<IRequestHandler> | string | IRoute;
 }
+export interface IPolicy {
+    [name: string]: boolean | string | string[] | IRequestHandler | Array<IRequestHandler> | IPolicies;
+}
 export interface IPolicies {
-    [name: string]: boolean | string | string[] | IRequestHandler | Array<IRequestHandler>;
+    [name: string]: IPolicy;
 }
 /**
  * IComponent

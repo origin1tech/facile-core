@@ -226,7 +226,7 @@ var Facile = (function (_super) {
          *
          * @member done
          * @private
-         * @returns {IFacile}
+         * @returns {Facile}
          * @memberOf Facile
          */
         function done() {
@@ -395,9 +395,9 @@ var Facile = (function (_super) {
     };
     Facile.prototype.registerConfig = function (name) {
         var _this = this;
-        var configs = [];
+        var extend = [];
         for (var _i = 1; _i < arguments.length; _i++) {
-            configs[_i - 1] = arguments[_i];
+            extend[_i - 1] = arguments[_i];
         }
         var self = this;
         var _configs = [];
@@ -413,13 +413,13 @@ var Facile = (function (_super) {
         }
         if (lodash_1.isPlainObject(name)) {
             lodash_1.each(name, function (v, k) {
-                normalizeConfigs(configs, true);
+                normalizeConfigs(extend, true);
                 _configs.push(v);
                 _this._configs[k] = lodash_1.extend.apply(null, _configs);
             });
         }
         else {
-            normalizeConfigs(configs, true);
+            normalizeConfigs(extend, true);
             this._configs[name] = lodash_1.extend.apply(null, _configs);
         }
         return this;
@@ -491,11 +491,37 @@ var Facile = (function (_super) {
         }
         return this;
     };
-    Facile.prototype.registerPolicy = function (name, filter) {
-        // Adding map of policies.
-        if (!filter) {
+    Facile.prototype.registerPolicy = function (name, action, policy) {
+        var _this = this;
+        var self = this;
+        function isValidParent(key, val) {
+            if (key !== '*' && !lodash_1.isPlainObject(val)) {
+                self.logger.warn('Invalid parent policy key "' + key + '" ignored, parent policy values must be objects execpt global policy key.');
+                return false;
+            }
+            else if (key === '*' && (!lodash_1.isString(val) && !Array.isArray(val)) || lodash_1.isPlainObject(val)) {
+                self.logger.warn('Invalid global policy key ignored, only boolean, strings, arrays of string or arrays of functions are supported.');
+                return false;
+            }
+            return true;
+        }
+        // Adding policy with action plicy.
+        if (arguments.length === 3) {
+        }
+        else if (lodash_1.isPlainObject(name)) {
+            Object.keys(name).forEach(function (key) {
+                var val = Object[key];
+                _this._policies[key] = _this._policies[key] || {};
+                if (isValidParent(key, val)) {
+                    if (key === '*')
+                        _this._policies[key] = val;
+                    else
+                        _this._policies[key] = lodash_1.extend(_this._policies[key], val);
+                }
+            });
         }
         else {
+            this._policies[name] = this._policies[name] || {};
         }
         return this;
     };

@@ -136,22 +136,32 @@ declare module 'facile/core' {
                 * registerRoute
                 *
                 * @method registerRoute
-                * @param {Array<IRoute>} routes
-                * @returns {IFacile}
+                * @param {IRoutes} routes
+                * @returns {Facile}
                 *
                 * @memberOf Facile
                 */
-            registerRoute(routes: Array<IRoute>): IFacile;
+            registerRoute(routes: IRoutes): Facile;
             /**
                 * registerRoute
                 *
                 * @method registerRoute
-                * @param {IRoutes} routes
-                * @returns {IFacile}
+                * @param {Array<IRoute>} routes
+                * @returns {Facile}
                 *
                 * @memberOf Facile
                 */
-            registerRoute(routes: IRoutes): IFacile;
+            registerRoute(routes: Array<IRoute>): Facile;
+            /**
+                * registerPolicy
+                *
+                * @method registerPolicy
+                * @param {IPolicies} policies
+                * @returns {Facile}
+                *
+                * @memberOf Facile
+                */
+            registerPolicy(name: IPolicies): Facile;
             /**
                 * registerPolicy
                 *
@@ -162,7 +172,7 @@ declare module 'facile/core' {
                 *
                 * @memberOf Facile
                 */
-            registerPolicy(name: string, filter: boolean): Facile;
+            registerPolicy(name: string, policy: boolean): Facile;
             /**
                 * registerPolicy
                 *
@@ -173,7 +183,7 @@ declare module 'facile/core' {
                 *
                 * @memberOf Facile
                 */
-            registerPolicy(name: string, filter: string): Facile;
+            registerPolicy(name: string, policy: string): Facile;
             /**
                 * registerPolicy
                 *
@@ -184,7 +194,7 @@ declare module 'facile/core' {
                 *
                 * @memberOf Facile
                 */
-            registerPolicy(name: string, filter: string[]): Facile;
+            registerPolicy(name: string, policy: string[]): Facile;
             /**
                 * registerPolicy
                 *
@@ -195,7 +205,7 @@ declare module 'facile/core' {
                 *
                 * @memberOf Facile
                 */
-            registerPolicy(name: string, filter: IRequestHandler): Facile;
+            registerPolicy(name: string, policy: IRequestHandler): Facile;
             /**
                 * registerPolicy
                 *
@@ -206,38 +216,112 @@ declare module 'facile/core' {
                 *
                 * @memberOf Facile
                 */
-            registerPolicy(name: string, filter: Array<IRequestHandler>): Facile;
+            registerPolicy(name: string, policy: Array<IRequestHandler>): Facile;
             /**
                 * registerPolicy
                 *
                 * @method registerPolicy
-                * @param {IPolicies} policies
+                * @param {string} name
+                * @param {IPolicies} policy
                 * @returns {Facile}
                 *
                 * @memberOf Facile
                 */
-            registerPolicy(policies: IPolicies): Facile;
+            registerPolicy(name: string, policy: IPolicies): Facile;
+            /**
+                * registerPolicy
+                *
+                * @method registerPolicy
+                * @param {string} name
+                * @param {string} action
+                * @param {boolean} policy
+                * @returns {Facile}
+                *
+                * @memberOf Facile
+                */
+            registerPolicy(name: string, action: string, policy: boolean): Facile;
+            /**
+                * registerPolicy
+                *
+                * @method registerPolicy
+                *
+                * @param {string} name
+                * @param {string} action
+                * @param {string} policy
+                * @returns {Facile}
+                *
+                * @memberOf Facile
+                */
+            registerPolicy(name: string, action: string, policy: string): Facile;
+            /**
+                * registerPolicy
+                *
+                * @method registerPolicy
+                * @param {string} name
+                * @param {string} action
+                * @param {string[]} policy
+                * @returns {Facile}
+                *
+                * @memberOf Facile
+                */
+            registerPolicy(name: string, action: string, policy: string[]): Facile;
+            /**
+                * registerPolicy
+                *
+                * @method registerPolicy
+                * @param {string} name
+                * @param {string} action
+                * @param {IRequestHandler} policy
+                * @returns {Facile}
+                *
+                * @memberOf Facile
+                */
+            registerPolicy(name: string, action: string, policy: IRequestHandler): Facile;
+            /**
+                * registerPolicy
+                *
+                * @method registerPolicy
+                * @param {string} name
+                * @param {string} action
+                * @param {Array<IRequestHandler>} policy
+                * @returns {Facile}
+                *
+                * @memberOf Facile
+                */
+            registerPolicy(name: string, action: string, policy: Array<IRequestHandler>): Facile;
+            /**
+                * registerPolicy
+                *
+                * @method registerPolicy
+                * @param {string} name
+                * @param {string} action
+                * @param {IPolicies} policy
+                * @returns {Facile}
+                *
+                * @memberOf Facile
+                */
+            registerPolicy(name: string, action: string, policy: IPolicies): Facile;
             /**
                 * registerComponent
                 *
                 * @method registerComponent
                 * @param {IComponent} Component
-                * @returns {IFacile}
+                * @returns {Facile}
                 *
                 * @memberOf Facile
                 */
-            registerComponent(Component: IComponent): IFacile;
+            registerComponent(Component: IComponent): Facile;
             /**
                 * registerComponent
                 *
                 * @method registerComponent
                 *
                 * @param {IComponents} components
-                * @returns {IFacile}
+                * @returns {Facile}
                 *
                 * @memberOf Facile
                 */
-            registerComponent(components: IComponents): IFacile;
+            registerComponent(components: IComponents): Facile;
             /**
                 * registerComponent
                 *
@@ -245,11 +329,11 @@ declare module 'facile/core' {
                 *
                 * @param {string} name
                 * @param {IComponent} Component
-                * @returns {IFacile}
+                * @returns {Facile}
                 *
                 * @memberOf Facile
                 */
-            registerComponent(name: string, Component: IComponent): IFacile;
+            registerComponent(name: string, Component: IComponent): Facile;
             /**
                 * router
                 *
@@ -417,13 +501,20 @@ declare module 'facile/interfaces' {
             registerRoute(routes: IRoutes): IFacile;
             registerRoute(routes: Array<IRoute>): IFacile;
             registerRoute(route: IRoute | IRoutes | IRoute[]): IFacile;
-            registerPolicy(name: string, filter: boolean): IFacile;
-            registerPolicy(name: string, filter: string): IFacile;
-            registerPolicy(name: string, filter: string[]): IFacile;
-            registerPolicy(name: string, filter: IRequestHandler): IFacile;
-            registerPolicy(name: string, filter: Array<IRequestHandler>): IFacile;
-            registerPolicy(policies: IPolicies): IFacile;
-            registerPolicy(name: string | IPolicies, filter?: boolean | string | string[] | IRequestHandler | Array<IRequestHandler>): IFacile;
+            registerPolicy(name: IPolicies): IFacile;
+            registerPolicy(name: string, policy: boolean): IFacile;
+            registerPolicy(name: string, policy: string): IFacile;
+            registerPolicy(name: string, policy: string[]): IFacile;
+            registerPolicy(name: string, policy: IRequestHandler): IFacile;
+            registerPolicy(name: string, policy: Array<IRequestHandler>): IFacile;
+            registerPolicy(name: string, policy: IPolicies): IFacile;
+            registerPolicy(name: string, action: string, policy: boolean): IFacile;
+            registerPolicy(name: string, action: string, policy: string): IFacile;
+            registerPolicy(name: string, action: string, policy: string[]): IFacile;
+            registerPolicy(name: string, action: string, policy: IRequestHandler): IFacile;
+            registerPolicy(name: string, action: string, policy: Array<IRequestHandler>): IFacile;
+            registerPolicy(name: string, action: string, policy: IPolicies): IFacile;
+            registerPolicy(name: string | IPolicies, action?: string | boolean | string[] | IRequestHandler | Array<IRequestHandler> | IPolicies, policy?: string | boolean | string[] | IRequestHandler | Array<IRequestHandler> | IPolicies): IFacile;
             registerComponent(Component: IComponent): IFacile;
             registerComponent(components: IComponents): IFacile;
             registerComponent(name: string, Component: IComponent): IFacile;
@@ -627,8 +718,11 @@ declare module 'facile/interfaces' {
     export interface IRoutes {
             [url: string]: IRequestHandler | Array<IRequestHandler> | string | IRoute;
     }
+    export interface IPolicy {
+            [name: string]: boolean | string | string[] | IRequestHandler | Array<IRequestHandler> | IPolicies;
+    }
     export interface IPolicies {
-            [name: string]: boolean | string | string[] | IRequestHandler | Array<IRequestHandler>;
+            [name: string]: IPolicy;
     }
     /**
         * IComponent
