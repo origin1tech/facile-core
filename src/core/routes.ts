@@ -17,9 +17,11 @@ export function init(facile: Facile): any {
 
 	// Get the global policy.
 	let globalPol = policies['*'];
+	let globalPolNormalized;
 
 	// Get the global security filter.
 	let securityFilter = facile._config.routes && facile._config.routes.securityFilter;
+	let securityFilterNormalized;
 
 	// Map of cached global controller policies.
 	let ctrlPols: any = {};
@@ -37,6 +39,13 @@ export function init(facile: Facile): any {
 		facile.log.error('Security risk detected, please define a global security filter in "config.routes.securityFilter".');
 		process.exit();
 	}
+
+	// Resolve Secrity filter if string.
+	if (isString(securityFilter))
+		securityFilterNormalized = lookupFilter(securityFilter, filterCol);
+
+	// Normalize Global Policy.
+	globalPolNormalized = normalizeFilters(globalPol);
 
 	// Lookup a filter method from string.
 	function lookupFilter(filter: string, collection: any): IRequestHandler {
@@ -71,6 +80,9 @@ export function init(facile: Facile): any {
 		// request handlers.
 		filters.forEach((f, i) => {
 
+			if (f === undefined)
+				return;
+
 			// If function just push to normalized array.
 			if (isFunction(f)) {
 				return _normalized.push(f);
@@ -81,8 +93,8 @@ export function init(facile: Facile): any {
 
 				// Only normalize if true.
 				// if false skip.
-				if (f === false && securityFilter)
-					_normalized.push(securityFilter);
+				if (f === false)
+					_normalized.push(securityFilterNormalized);
 
 			}
 
@@ -131,22 +143,30 @@ export function init(facile: Facile): any {
 		let ctrlGlobalPol = get(policies, ctrlName + '.*');
 		let ctrlGlobalPols;
 		let actionFilters;
-		let result = [];
+		let result;
 
 		if (ctrlPols[ctrlName] && ctrlPols[ctrlName]['*'])
 			ctrlGlobalPols = ctrlPols[ctrlName]['*'];
 		else if (ctrlGlobalPol)
 			ctrlGlobalPols = normalizeFilters(ctrlGlobalPol);
 
-		if (ctrlGlobalPols && ctrlGlobalPols.length)
+		if (ctrlGlobalPols && ctrlGlobalPols.length) {
+			ctrlPols[ctrlName] = ctrlPols[ctrlName] || {};
 			ctrlPols[ctrlName]['*'] = ctrlGlobalPols;
+		}
 
 		ctrlGlobalPols = ctrlGlobalPols || [];
 
 		result = normalizeFilters(rawFilters);
 
+		// Set pols to controller global
+		// if no handler filer.
 		if (!result.length)
 			result = ctrlGlobalPols;
+
+		// Check global policies.
+		// Always cascade global.
+		result = globalPolNormalized.concat(result || []);
 
 		return result;
 

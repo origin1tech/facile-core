@@ -27,7 +27,8 @@
 			"./src/core/models.ts",
 			"./src/core/filters.ts",
 			"./src/core/controllers.ts",
-			"./src/core/defaults.ts"]
+			"./src/core/defaults.ts",
+			"./src/server.ts"]
 	},
 	"markdown"  : {
 		"parser"   : "gfm",

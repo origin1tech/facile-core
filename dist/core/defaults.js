@@ -10,7 +10,7 @@ exports.config = {
     cwd: process.cwd(),
     pkg: exports.packages.apppkg,
     env: 'development',
-    logLevel: 'info',
+    logLevel: 'debug',
     host: '127.0.0.1',
     port: 8080,
     maxConnections: 128,

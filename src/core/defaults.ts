@@ -13,7 +13,7 @@ export let config: IConfig = {
 	cwd: process.cwd(),
 	pkg: packages.apppkg,
 	env: 'development',
-	logLevel: 'info',
+	logLevel: 'debug',
 	host: '127.0.0.1',
 	port: 8080,
 	maxConnections: 128,

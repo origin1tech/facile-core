@@ -592,7 +592,7 @@ export interface IPolicy {
  * @interface IPolicies
  */
 export interface IPolicies {
-    [name: string]: IPolicy;
+    [name: string]: boolean | string | string[] | IRequestHandler | Array<IRequestHandler> | IPolicy;
 }
 /**
  * IComponent

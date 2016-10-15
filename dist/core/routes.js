@@ -9,8 +9,10 @@ function init(facile) {
     var policies = facile._policies;
     // Get the global policy.
     var globalPol = policies['*'];
+    var globalPolNormalized;
     // Get the global security filter.
     var securityFilter = facile._config.routes && facile._config.routes.securityFilter;
+    var securityFilterNormalized;
     // Map of cached global controller policies.
     var ctrlPols = {};
     // Global Policy should always be defined.
@@ -25,6 +27,11 @@ function init(facile) {
         facile.log.error('Security risk detected, please define a global security filter in "config.routes.securityFilter".');
         process.exit();
     }
+    // Resolve Secrity filter if string.
+    if (lodash_1.isString(securityFilter))
+        securityFilterNormalized = lookupFilter(securityFilter, filterCol);
+    // Normalize Global Policy.
+    globalPolNormalized = normalizeFilters(globalPol);
     // Lookup a filter method from string.
     function lookupFilter(filter, collection) {
         var arr = filter.split('.');
@@ -49,6 +56,8 @@ function init(facile) {
         // Iterate the array and normalize to
         // request handlers.
         filters.forEach(function (f, i) {
+            if (f === undefined)
+                return;
             // If function just push to normalized array.
             if (lodash_1.isFunction(f)) {
                 return _normalized.push(f);
@@ -56,8 +65,8 @@ function init(facile) {
             else if (lodash_1.isBoolean(f) && !ctrl) {
                 // Only normalize if true.
                 // if false skip.
-                if (f === false && securityFilter)
-                    _normalized.push(securityFilter);
+                if (f === false)
+                    _normalized.push(securityFilterNormalized);
             }
             else if (lodash_1.isString(f)) {
                 // May be in filters or controllers.
@@ -90,17 +99,24 @@ function init(facile) {
         var ctrlGlobalPol = lodash_1.get(policies, ctrlName + '.*');
         var ctrlGlobalPols;
         var actionFilters;
-        var result = [];
+        var result;
         if (ctrlPols[ctrlName] && ctrlPols[ctrlName]['*'])
             ctrlGlobalPols = ctrlPols[ctrlName]['*'];
         else if (ctrlGlobalPol)
             ctrlGlobalPols = normalizeFilters(ctrlGlobalPol);
-        if (ctrlGlobalPols && ctrlGlobalPols.length)
+        if (ctrlGlobalPols && ctrlGlobalPols.length) {
+            ctrlPols[ctrlName] = ctrlPols[ctrlName] || {};
             ctrlPols[ctrlName]['*'] = ctrlGlobalPols;
+        }
         ctrlGlobalPols = ctrlGlobalPols || [];
         result = normalizeFilters(rawFilters);
+        // Set pols to controller global
+        // if no handler filer.
         if (!result.length)
             result = ctrlGlobalPols;
+        // Check global policies.
+        // Always cascade global.
+        result = globalPolNormalized.concat(result || []);
         return result;
     }
     // Looks up filters and controller
