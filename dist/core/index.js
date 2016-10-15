@@ -59,7 +59,7 @@ var Facile = (function (_super) {
         });
         // Add default logger to map 
         // and set as "log" instance.
-        this.logger = defaultLogger;
+        this.log = defaultLogger;
         // Create Express app.
         this.express = express;
         this.app = express();
@@ -88,6 +88,7 @@ var Facile = (function (_super) {
      * init:routes
      * init:done
      * core:start
+     * core:listen
      *
      * @private
      * @method _enableListeners
@@ -123,11 +124,11 @@ var Facile = (function (_super) {
      */
     Facile.prototype._listen = function () {
         if (!this._started) {
-            this.logger.error('Facile.listen() cannot be called directly please use .start().');
+            this.log.error('Facile.listen() cannot be called directly please use .start().');
             process.exit();
         }
         // Listen for connections.
-        this.logger.debug('Server preparing to listen.');
+        this.log.debug('Server preparing to listen.');
         this.server.listen(this._config.port, this._config.host, function (err) {
             if (err)
                 throw err;
@@ -151,17 +152,17 @@ var Facile = (function (_super) {
         if (lodash_1.isString(config))
             config = this.config(config);
         // Extend options with defaults.
-        this._config = lodash_1.extend({}, defaults.config, config);
+        this._config = lodash_1.merge({}, defaults.config, config);
         // Setup the Logger.
         if (this._config.logger)
-            this.logger = this._config.logger;
+            this.log = this._config.logger;
         // If log level was set Iterate
         // transports and set level.
         if (this._config.logLevel)
-            lodash_1.each(this.logger.transports, function (t) {
+            lodash_1.each(this.log.transports, function (t) {
                 t.level = _this._config.logLevel;
             });
-        this.logger.debug('Defining Boom error handlers.');
+        this.log.debug('Defining Boom error handlers.');
         // Expose common Boom events to framework.
         this.Boom = {
             wrap: Boom.wrap,
@@ -173,7 +174,7 @@ var Facile = (function (_super) {
             notImplemented: Boom.notImplemented,
             badGateway: Boom.badGateway
         };
-        this.logger.debug('Defining node environment.');
+        this.log.debug('Defining node environment.');
         // Ensure environment.
         this._config.env = this._config.env || 'development';
         // Set Node environment.
@@ -194,12 +195,12 @@ var Facile = (function (_super) {
         var facile = this;
         // Ensure configuration.
         if (!this._config) {
-            this.logger.warn('Failed to initialize please run facile.configure()...exiting.');
+            this.log.warn('Failed to initialize please run facile.configure()...exiting.');
             process.exit();
         }
         if (this._config.auto && !this._autoInit) {
             console.log('');
-            this.logger.error('Facile config set to "auto" but attempted to init manually.');
+            this.log.error('Facile config set to "auto" but attempted to init manually.');
             process.exit();
         }
         /**
@@ -230,7 +231,7 @@ var Facile = (function (_super) {
          * @memberOf Facile
          */
         function done() {
-            facile.logger.debug('Facile initialization complete.');
+            facile.log.debug('Facile initialization complete.');
             facile._initialized = true;
             if (facile._config.auto) {
                 facile.execAfter('init', function () {
@@ -242,14 +243,6 @@ var Facile = (function (_super) {
             }
         }
         var inits = {
-            // run: 					run.bind(that),
-            // server: 				server.init.bind(that),
-            // services: 			services.init.bind(that),
-            // filters: 			filters.init.bind(that),
-            // models: 				models.init.bind(that),
-            // controllers: 	controllers.init.bind(that),
-            // routes: 				routes.init.bind(that),
-            // done: 					done.bind(that)
             run: run,
             server: server.init(facile),
             services: services.init(facile),
@@ -326,14 +319,14 @@ var Facile = (function (_super) {
         // Should never hit but just in case.
         if (!this._config) {
             console.log('');
-            this.logger.error('Failed to start Facile missing or invalid configuration.');
+            this.log.error('Failed to start Facile missing or invalid configuration.');
             process.exit();
         }
         /////////////////////////////
         // Manual or Auto Init
         /////////////////////////////
         if (this._config.auto) {
-            this.logger.debug('Auto configuration detected.');
+            this.log.debug('Auto configuration detected.');
             // Initialize first which will round
             // trip and call start again falling
             // through to the execution below.
@@ -356,7 +349,7 @@ var Facile = (function (_super) {
             // before starting.
             if (!this._initialized) {
                 console.log('');
-                this.logger.error('Facile failed to start call facile.init() before starting.');
+                this.log.error('Facile failed to start call facile.init() before starting.');
                 process.exit();
             }
             handleWaitStart.call(this);
@@ -381,23 +374,23 @@ var Facile = (function (_super) {
         }
         // Closing sockets.
         var socketKeys = Object.keys(this._sockets);
-        this.logger.debug('Closing active (' + socketKeys.length + ') socket connections.');
+        this.log.debug('Closing active (' + socketKeys.length + ') socket connections.');
         socketKeys.forEach(function (id) {
             var socket = _this._sockets[id];
             if (socket)
                 socket.destroy();
         });
         // Close the server.
-        this.logger.debug('Closing server.');
+        this.log.debug('Closing server.');
         this.server.close(function () {
             console.log(chalk_1.cyan('\nServer successfully closed.'));
         });
     };
     Facile.prototype.registerConfig = function (name) {
         var _this = this;
-        var extend = [];
+        var extendWith = [];
         for (var _i = 1; _i < arguments.length; _i++) {
-            extend[_i - 1] = arguments[_i];
+            extendWith[_i - 1] = arguments[_i];
         }
         var self = this;
         var _configs = [];
@@ -413,13 +406,13 @@ var Facile = (function (_super) {
         }
         if (lodash_1.isPlainObject(name)) {
             lodash_1.each(name, function (v, k) {
-                normalizeConfigs(extend, true);
+                normalizeConfigs(extendWith, true);
                 _configs.push(v);
                 _this._configs[k] = lodash_1.extend.apply(null, _configs);
             });
         }
         else {
-            normalizeConfigs(extend, true);
+            normalizeConfigs(extendWith, true);
             this._configs[name] = lodash_1.extend.apply(null, _configs);
         }
         return this;
@@ -470,7 +463,7 @@ var Facile = (function (_super) {
             if (_route.valid)
                 self._routes.push(_route);
             else
-                self.logger.warn("Failed to add route \"" + _route.url + "\", the configuration is invalid.", route);
+                self.log.warn("Failed to add route \"" + _route.url + "\", the configuration is invalid.", route);
         }
         // Handle array of route objects.
         if (Array.isArray(route)) {
@@ -496,32 +489,39 @@ var Facile = (function (_super) {
         var self = this;
         function isValidParent(key, val) {
             if (key !== '*' && !lodash_1.isPlainObject(val)) {
-                self.logger.warn('Invalid parent policy key "' + key + '" ignored, parent policy values must be objects execpt global policy key.');
+                self.log.warn('Invalid parent policy key "' + key + '" ignored, parent policy values must be objects execpt global policy key.');
                 return false;
             }
-            else if (key === '*' && (!lodash_1.isString(val) && !Array.isArray(val)) || lodash_1.isPlainObject(val)) {
-                self.logger.warn('Invalid global policy key ignored, only boolean, strings, arrays of string or arrays of functions are supported.');
+            else if (key === '*' && (!lodash_1.isString(val) && !Array.isArray(val) && !lodash_1.isBoolean(val))) {
+                self.log.warn('Invalid global policy key ignored, only boolean, strings, arrays of string or arrays of functions are supported.');
                 return false;
             }
             return true;
         }
         // Adding policy with action plicy.
         if (arguments.length === 3) {
+            var _name = name;
+            var _action = void 0;
+            this._policies[_name] = this._policies[_name] || {};
+            this._policies[_name][_action] = policy;
         }
         else if (lodash_1.isPlainObject(name)) {
             Object.keys(name).forEach(function (key) {
-                var val = Object[key];
+                var val = name[key];
                 _this._policies[key] = _this._policies[key] || {};
                 if (isValidParent(key, val)) {
                     if (key === '*')
                         _this._policies[key] = val;
                     else
-                        _this._policies[key] = lodash_1.extend(_this._policies[key], val);
+                        lodash_1.extend(_this._policies[key], val);
                 }
             });
         }
         else {
-            this._policies[name] = this._policies[name] || {};
+            var _name = name;
+            this._policies[_name] = this._policies[_name] || {};
+            if (isValidParent(name, action))
+                lodash_1.extend(this._policies[_name], action);
         }
         return this;
     };
@@ -529,7 +529,7 @@ var Facile = (function (_super) {
         var self = this;
         var Comp;
         function registerFailed(type) {
-            self.logger.error('Failed to register using unsupported type "' + type + '".');
+            self.log.error('Failed to register using unsupported type "' + type + '".');
             process.exit();
         }
         function registerByType(type) {
@@ -561,7 +561,7 @@ var Facile = (function (_super) {
             }
             else {
                 var failedType = typeof Component || typeof name;
-                self.logger.error('Failed ot register component using unsupported type "' +
+                self.log.error('Failed ot register component using unsupported type "' +
                     failedType + ' ".');
             }
             return self;
@@ -663,22 +663,6 @@ var Facile = (function (_super) {
     Facile.prototype.controller = function (name) {
         var component = this._controllers[name];
         return component;
-    };
-    /**
-     * Convenience wrapper for lodash extend.
-     *
-     * @method extend
-     * @param {...any[]} args
-     * @returns {*}
-     *
-     * @memberOf Facile
-     */
-    Facile.prototype.extend = function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i - 0] = arguments[_i];
-        }
-        return lodash_1.extend.apply(null, args);
     };
     return Facile;
 }(core_1.Core));

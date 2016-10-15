@@ -32,7 +32,7 @@ function init(facile) {
             ////////////////////////////////
             // Configure Middleware
             ////////////////////////////////
-            facile.logger.debug('Initializing Server Middleware.');
+            facile.log.debug('Initializing Server Middleware.');
             var middlewares = lodash_1.sortBy(facile._middlewares, 'order');
             lodash_1.each(middlewares, function (v) {
                 facile.app.use(v.fn);
@@ -40,7 +40,7 @@ function init(facile) {
             ////////////////////////////////
             // Server Protocol & Cert
             ////////////////////////////////
-            facile.logger.debug('Initializing Server protocol.');
+            facile.log.debug('Initializing Server protocol.');
             if (facile._config.certificate)
                 facile.server = https_1.createServer(facile._config.certificate, facile.app);
             else
@@ -50,14 +50,14 @@ function init(facile) {
             ////////////////////////////////
             // Listen for Connections
             ////////////////////////////////
-            facile.logger.debug('Initializing Server connection listener.');
+            facile.log.debug('Initializing Server connection listener.');
             facile.server.on('connection', function (socket) {
                 // Save the connection.
                 var socketId = facile._nextSocketId++;
                 facile._sockets[socketId] = socket;
                 // Listen for socket close.
                 socket.on('close', function () {
-                    facile.logger.debug('Socket ' + socketId + ' was closed.');
+                    facile.log.debug('Socket ' + socketId + ' was closed.');
                     delete facile._sockets[socketId];
                 });
             });

@@ -20,6 +20,21 @@ var Model = (function () {
         });
         return this;
     }
+    Object.defineProperty(Model.prototype, "log", {
+        /**
+         * log
+         *
+         * @desc exposes Facile.log to class.
+         * @readonly
+         * @method {LoggerInstance} log
+         * @memberOf Service
+         */
+        get: function () {
+            return this.facile.log;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Model.type = 'Model';
     return Model;
 }());

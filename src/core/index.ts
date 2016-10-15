@@ -9,8 +9,8 @@ import { LoggerInstance, Logger, transports, TransportInstance } from 'winston';
 import { wrap, create, badRequest, unauthorized, forbidden, notFound, notImplemented } from 'boom';
 import { Server, Socket } from 'net';
 import { readFileSync } from 'fs';
-import { extend as _extend, isPlainObject, each, isFunction,
-				isString, maxBy, has, isBoolean, bind, values } from 'lodash';
+import { extend, isPlainObject, each, isFunction, assign,
+				isString, maxBy, has, isBoolean, bind, values, merge } from 'lodash';
 import { red, cyan } from 'chalk';
 
 // Internal Dependencies.
@@ -22,7 +22,7 @@ import { IFacile, ICertificate, IConfig, IRouters, IRoute,
 				IMiddleware, ISockets, IModel, IController,
 				IUtils, IConfigs, IRequestHandler, IRoutes, IService,
 				IViewConfig, IInit, ICallback, IMiddlewares, IComponents,
-				IComponent, IErrorRequestHandler, IPolicies } from '../interfaces';
+				IComponent, IErrorRequestHandler, IPolicies, IPolicy } from '../interfaces';
 import { Collection } from './collection';
 
 import * as server from './server';
@@ -88,7 +88,7 @@ export class Facile extends Core implements IFacile {
 
 		// Add default logger to map 
 		// and set as "log" instance.
-		this.logger = defaultLogger;
+		this.log = defaultLogger;
 
 		// Create Express app.
 		this.express = express;
@@ -124,6 +124,7 @@ export class Facile extends Core implements IFacile {
 	 * init:routes
 	 * init:done
 	 * core:start
+	 * core:listen
 	 *
 	 * @private
 	 * @method _enableListeners
@@ -175,12 +176,12 @@ export class Facile extends Core implements IFacile {
 	private _listen(): void {
 
 		if (!this._started) {
-			this.logger.error('Facile.listen() cannot be called directly please use .start().');
+			this.log.error('Facile.listen() cannot be called directly please use .start().');
 			process.exit();
 		}
 
 		// Listen for connections.
-		this.logger.debug('Server preparing to listen.');
+		this.log.debug('Server preparing to listen.');
 
 		this.server.listen(this._config.port, this._config.host, (err: Error) => {
 			if (err)
@@ -209,20 +210,20 @@ export class Facile extends Core implements IFacile {
 			config = this.config(config);
 
 		// Extend options with defaults.
-		this._config = _extend({}, defaults.config, config);
+		this._config = merge({}, defaults.config, config);
 
 		// Setup the Logger.
 		if (this._config.logger)
-			this.logger = this._config.logger;
+			this.log = this._config.logger;
 
 		// If log level was set Iterate
 		// transports and set level.
 		if (this._config.logLevel)
-			each(this.logger.transports, (t: any) => {
+			each(this.log.transports, (t: any) => {
 				t.level = this._config.logLevel;
 			});
 
-		this.logger.debug('Defining Boom error handlers.');
+		this.log.debug('Defining Boom error handlers.');
 
 		// Expose common Boom events to framework.
 		this.Boom = {
@@ -236,7 +237,7 @@ export class Facile extends Core implements IFacile {
 			badGateway: Boom.badGateway
 		};
 
-		this.logger.debug('Defining node environment.');
+		this.log.debug('Defining node environment.');
 
 		// Ensure environment.
 		this._config.env = this._config.env || 'development';
@@ -266,13 +267,13 @@ export class Facile extends Core implements IFacile {
 
 		// Ensure configuration.
 		if (!this._config) {
-			this.logger.warn('Failed to initialize please run facile.configure()...exiting.');
+			this.log.warn('Failed to initialize please run facile.configure()...exiting.');
 			process.exit();
 		}
 
 		if (this._config.auto && !this._autoInit) {
 			console.log('');
-			this.logger.error('Facile config set to "auto" but attempted to init manually.');
+			this.log.error('Facile config set to "auto" but attempted to init manually.');
 			process.exit();
 		}
 
@@ -309,7 +310,7 @@ export class Facile extends Core implements IFacile {
 		 */
 		function done(): Facile {
 
-			facile.logger.debug('Facile initialization complete.');
+			facile.log.debug('Facile initialization complete.');
 
 			facile._initialized = true;
 
@@ -330,15 +331,6 @@ export class Facile extends Core implements IFacile {
 		}
 
 		let inits: IInit = {
-
-			// run: 					run.bind(that),
-			// server: 				server.init.bind(that),
-			// services: 			services.init.bind(that),
-			// filters: 			filters.init.bind(that),
-			// models: 				models.init.bind(that),
-			// controllers: 	controllers.init.bind(that),
-			// routes: 				routes.init.bind(that),
-			// done: 					done.bind(that)
 
 			run: 						run,
 			server: 				server.init(facile),
@@ -436,7 +428,7 @@ export class Facile extends Core implements IFacile {
 		// Should never hit but just in case.
 		if (!this._config) {
 			console.log('');
-			this.logger.error('Failed to start Facile missing or invalid configuration.');
+			this.log.error('Failed to start Facile missing or invalid configuration.');
 			process.exit();
 		}
 
@@ -446,7 +438,7 @@ export class Facile extends Core implements IFacile {
 
 		if (this._config.auto) {
 
-			this.logger.debug('Auto configuration detected.');
+			this.log.debug('Auto configuration detected.');
 
 			// Initialize first which will round
 			// trip and call start again falling
@@ -480,7 +472,7 @@ export class Facile extends Core implements IFacile {
 			// before starting.
 			if (!this._initialized) {
 				console.log('');
-				this.logger.error('Facile failed to start call facile.init() before starting.');
+				this.log.error('Facile failed to start call facile.init() before starting.');
 				process.exit();
 			}
 
@@ -511,7 +503,7 @@ export class Facile extends Core implements IFacile {
 
 		// Closing sockets.
 		let socketKeys = Object.keys(this._sockets);
-		this.logger.debug('Closing active (' + socketKeys.length + ') socket connections.');
+		this.log.debug('Closing active (' + socketKeys.length + ') socket connections.');
 
 		socketKeys.forEach((id) => {
 			let socket = this._sockets[id];
@@ -520,7 +512,7 @@ export class Facile extends Core implements IFacile {
 		});
 
 		// Close the server.
-		this.logger.debug('Closing server.');
+		this.log.debug('Closing server.');
 		this.server.close(() => {
 			console.log(cyan('\nServer successfully closed.'));
 		});
@@ -536,23 +528,24 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @method registerConfig
 	 * @param {string} name
-	 * @param {...any[]} extend
+	 * @param {...any[]} extendWith
 	 *
 	 * @memberOf Facile
 	 */
-	registerConfig(name: string, ...extend: any[]): Facile
+	registerConfig(name: string, ...extendWith: any[]): Facile
 
 	/**
 	 * registerConfig
 	 *
 	 * @method registerConfig
 	 * @param {IConfigs} configs
-	 * @param {...any[]} extend
+	 * @param {...any[]} extendWith
 	 *
 	 * @memberOf Facile
 	 */
-	registerConfig(configs: IConfigs, ...extend: any[]): Facile;
-	registerConfig(name: string | IConfigs, ...extend: any[]): Facile {
+	registerConfig(configs: IConfigs, ...extendWith: any[]): Facile;
+
+	registerConfig(name: string | IConfigs, ...extendWith: any[]): Facile {
 
 		let self = this;
 		let _configs: IConfig[] = [];
@@ -570,16 +563,16 @@ export class Facile extends Core implements IFacile {
 
 		if (isPlainObject(name)) {
 			each(name, (v, k) => {
-				normalizeConfigs(extend, true);
+				normalizeConfigs(extendWith, true);
 				_configs.push(v);
-				this._configs[k] = _extend.apply(null, _configs);
+				this._configs[k] = extend.apply(null, _configs);
 			});
 		}
 
 		else {
 
-			normalizeConfigs(extend, true);
-			this._configs[name as string] = _extend.apply(null, _configs);
+			normalizeConfigs(extendWith, true);
+			this._configs[name as string] = extend.apply(null, _configs);
 
 		}
 
@@ -712,7 +705,7 @@ export class Facile extends Core implements IFacile {
 
 			// Otherwise log a warning.
 			else
-				self.logger.warn(`Failed to add route "${_route.url}", the configuration is invalid.`, route);
+				self.log.warn(`Failed to add route "${_route.url}", the configuration is invalid.`, route);
 
 		}
 
@@ -750,67 +743,7 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	registerPolicy(name: IPolicies): Facile;
-
-	/**
-	 * registerPolicy
-	 *
-	 * @method registerPolicy
-	 * @param {string} name
-	 * @param {boolean} filter
-	 * @returns {Facile}
-	 *
-	 * @memberOf Facile
-	 */
-	registerPolicy(name: string, policy: boolean): Facile;
-
-	/**
-	 * registerPolicy
-	 *
-	 * @method registerPolicy
-	 * @param {string} name
-	 * @param {string} filter
-	 * @returns {Facile}
-	 *
-	 * @memberOf Facile
-	 */
-	registerPolicy(name: string, policy: string): Facile;
-
-	/**
-	 * registerPolicy
-	 *
-	 * @method registerPolicy
-	 * @param {string} name
-	 * @param {string[]} filter
-	 * @returns {Facile}
-	 *
-	 * @memberOf Facile
-	 */
-	registerPolicy(name: string, policy: string[]): Facile;
-
-	/**
-	 * registerPolicy
-	 *
-	 * @method registerPolicy
-	 * @param {string} name
-	 * @param {IRequestHandler} filter
-	 * @returns {Facile}
-	 *
-	 * @memberOf Facile
-	 */
-	registerPolicy(name: string, policy: IRequestHandler): Facile;
-
-	/**
-	 * registerPolicy
-	 *
-	 * @method registerPolicy
-	 * @param {string} name
-	 * @param {Array<IRequestHandler>} filter
-	 * @returns {Facile}
-	 *
-	 * @memberOf Facile
-	 */
-	registerPolicy(name: string, policy: Array<IRequestHandler>): Facile;
+	registerPolicy(name: IPolicy): Facile;
 
 	/**
 	 * registerPolicy
@@ -822,7 +755,7 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	registerPolicy(name: string, policy: IPolicies): Facile;
+	registerPolicy(name: string, policy: IPolicy): Facile;
 
 	/**
 	 * registerPolicy
@@ -890,39 +823,35 @@ export class Facile extends Core implements IFacile {
 	 */
 	registerPolicy(name: string, action: string, policy: Array<IRequestHandler>): Facile;
 
-	/**
-	 * registerPolicy
-	 *
-	 * @method registerPolicy
-	 * @param {string} name
-	 * @param {string} action
-	 * @param {IPolicies} policy
-	 * @returns {Facile}
-	 *
-	 * @memberOf Facile
-	 */
-	registerPolicy(name: string, action: string, policy: IPolicies): Facile;
-
-	registerPolicy(name: string | IPolicies,
-								action?: string | boolean | string[] | IRequestHandler | Array<IRequestHandler> | IPolicies,
-								policy?: string | boolean | string[] | IRequestHandler | Array<IRequestHandler> | IPolicies): Facile {
+	registerPolicy(name: string | IPolicy,
+								action?: string | boolean | string[] | IRequestHandler | Array<IRequestHandler> | IPolicy,
+								policy?: string | boolean | string[] | IRequestHandler | Array<IRequestHandler>): Facile {
 
 		let self = this;
 
 		function isValidParent(key, val) {
+
 			if (key !== '*' && !isPlainObject(val)) {
-				self.logger.warn('Invalid parent policy key "' + key + '" ignored, parent policy values must be objects execpt global policy key.');
+				self.log.warn('Invalid parent policy key "' + key + '" ignored, parent policy values must be objects execpt global policy key.');
 				return false;
 			}
-			else if (key === '*' && (!isString(val) && !Array.isArray(val)) || isPlainObject(val)) {
-				self.logger.warn('Invalid global policy key ignored, only boolean, strings, arrays of string or arrays of functions are supported.');
+
+			else if (key === '*' && (!isString(val) && !Array.isArray(val) && !isBoolean(val))) {
+				self.log.warn('Invalid global policy key ignored, only boolean, strings, arrays of string or arrays of functions are supported.');
 				return false;
 			}
+
 			return true;
+
 		}
 
 		// Adding policy with action plicy.
 		if (arguments.length === 3) {
+
+			let _name = name as string;
+			let _action;
+			this._policies[_name] = this._policies[_name] || {};
+			this._policies[_name][_action] = policy;
 
 		}
 
@@ -931,14 +860,14 @@ export class Facile extends Core implements IFacile {
 
 			Object.keys(name).forEach((key) => {
 
-				let val = Object[key];
+				let val = name[key];
 				this._policies[key] = this._policies[key] || {};
 
 				if (isValidParent(key, val)) {
 					if (key === '*')
 						this._policies[key] = val;
 					else
-						this._policies[key] = _extend(this._policies[key], val);
+						extend(this._policies[key], val);
 				}
 
 			});
@@ -948,10 +877,10 @@ export class Facile extends Core implements IFacile {
 		// Adding single policy.
 		else {
 
-			this._policies[name as string] = this._policies[name as string] || {};
-			// if (isValidParent(name, action))
-
-
+			let _name = name as string;
+			this._policies[_name] = this._policies[_name] || {};
+			if (isValidParent(name, action))
+				extend(this._policies[_name], action);
 		}
 
 		return this;
@@ -1000,7 +929,7 @@ export class Facile extends Core implements IFacile {
 		let Comp: any;
 
 		function registerFailed(type) {
-				self.logger.error('Failed to register using unsupported type "' + type + '".');
+				self.log.error('Failed to register using unsupported type "' + type + '".');
 				process.exit();
 		}
 
@@ -1041,7 +970,7 @@ export class Facile extends Core implements IFacile {
 			// Otherwise log error.
 			else {
 				let failedType = typeof Component || typeof name;
-				self.logger.error('Failed ot register component using unsupported type "' +
+				self.log.error('Failed ot register component using unsupported type "' +
 													failedType + ' ".');
 			}
 
@@ -1156,19 +1085,6 @@ export class Facile extends Core implements IFacile {
 	controller<T>(name: string): T {
 		let component: T = this._controllers[name];
 		return component;
-	}
-
-	/**
-	 * Convenience wrapper for lodash extend.
-	 *
-	 * @method extend
-	 * @param {...any[]} args
-	 * @returns {*}
-	 *
-	 * @memberOf Facile
-	 */
-	extend(...args: any[]): any {
-		return _extend.apply(null, args);
 	}
 
 }

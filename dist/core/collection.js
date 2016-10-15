@@ -1,4 +1,5 @@
 "use strict";
+var lodash_1 = require('lodash');
 /**
  * Collection
  * @desc stores collection of components.
@@ -59,7 +60,8 @@ var Collection = (function () {
             Type.apply(this, args);
         }
         F.prototype = Type.prototype;
-        return new F();
+        var Comp = new F();
+        return Comp;
     };
     /**
      * name
@@ -129,9 +131,22 @@ var Collection = (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        var component = this._activate(this._get(name), args);
-        this._components[name] = component;
-        return component;
+        this._components[name] = this._activate(this._get(name), args);
+        return this._components[name];
+    };
+    Collection.prototype.initAll = function () {
+        var _this = this;
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i - 0] = arguments[_i];
+        }
+        var keys = Object.keys(this._components);
+        keys.forEach(function (key) {
+            var _args = lodash_1.clone(args);
+            _args.unshift(key);
+            _this.init.apply(_this, _args);
+        });
+        return this;
     };
     /**
      * remove

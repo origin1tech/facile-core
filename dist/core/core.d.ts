@@ -16,152 +16,133 @@ export declare class Core extends EventEmitter implements ICore {
     /**
      * Boom
      *
-     * @member Boom
-     * @type {IBoom}
+     * @member {IBoom} Boom
      * @memberOf Core
      */
     Boom: IBoom;
     /**
      * express
      *
-     * @member express
-     * @type {*}
+     * @member {*} express
      * @memberOf Core
      */
     express: any;
     /**
      * app
      *
-     * @member app
-     * @type {Express}
+     * @member {Express} app
      * @memberOf Core
      */
     app: Express;
     /**
      * server
      *
-     * @member server
-     * @type {Server}
+     * @member {Server} server
      * @memberOf Core
      */
     server: Server;
     /**
-     * logger
+     * log
      *
-     * @member logger
-     * @type {LoggerInstance}
+     * @member {LoggerInstance} log
      * @memberOf Core
      */
-    logger: LoggerInstance;
+    log: LoggerInstance;
     /**
      * _pkg
      *
-     * @member _pkg
-     * @type {*}
+     * @member {*} _pkg
      * @memberOf Core
      */
     _pkg: any;
     /**
      * _apppkg
      *
-     * @member _apppkg
-     * @type {*}
+     * @member {*} _apppkg
      * @memberOf Core
      */
     _apppkg: any;
     /**
      * _config
      *
-     * @member _config
-     * @type {IConfig}
+     * @member {IConfig} _config
      * @memberOf Core
      */
     _config: IConfig;
     /**
      * _configs
      *
-     * @member _configs
-     * @type {IConfigs}
+     * @member {IConfigs} _configs
      * @memberOf Core
      */
     _configs: IConfigs;
     /**
      * _routers
      *
-     * @member _routers
-     * @type {IRouters}
+     * @member {IRouters} _routers
      * @memberOf Core
      */
     _routers: IRouters;
     /**
      * _middlewares
      *
-     * @member _middlewares
-     * @type {IMiddlewaresMap}
+     * @member {IMiddlewaresMap} _middlewares
      * @memberOf Core
      */
     _middlewares: IMiddlewares;
     /**
      * _services
      *
-     * @member _services
-     * @type {*}
+     * @member {*} _services
      * @memberOf Core
      */
     _services: any;
     /**
      * _filters
      *
-     * @member _filters
-     * @type {*}
+     * @member {*} _filters
      * @memberOf Core
      */
     _filters: any;
     /**
      * _models
      *
-     * @member _models
-     * @type {*}
+     * @member {*} _models
      * @memberOf Core
      */
     _models: any;
     /**
      * _controllers
      *
-     * @member _controllers
-     * @type {*}
+     * @member {*} _controllers
      * @memberOf Core
      */
     _controllers: any;
     /**
      * _policies
      *
-     * @member _policies
-     * @type {*}
+     * @member {*} _policies
      * @memberOf Core
      */
     _policies: any;
     /**
      * _routes
      *
-     * @member _routes
-     * @type {Array<IRoute>}
+     * @member {Array<IRoute>} _routes
      * @memberOf Core
      */
     _routes: Array<IRoute>;
     /**
      * _nextSocketId
      *
-     * @member _nextSocketId
-     * @type {number}
+     * @member {number} _nextSocketId
      * @memberOf Core
      */
     _nextSocketId: number;
     /**
      * _sockets
      *
-     * @member _sockets
-     * @type {ISockets}
+     * @member {ISockets} _sockets
      * @memberOf Core
      */
     _sockets: ISockets;
@@ -170,7 +151,7 @@ export declare class Core extends EventEmitter implements ICore {
      *
      * @member _listeners
      * @protected
-     * @type {IListenersMap}
+     * @member {IListenersMap}
      * @memberOf Core
      */
     protected _listeners: IListenersMap;
@@ -179,7 +160,7 @@ export declare class Core extends EventEmitter implements ICore {
      *
      * @member _beforeEvents
      * @protected
-     * @type {*}
+     * @member {*}
      * @memberOf Core
      */
     protected _beforeEvents: any;
@@ -188,7 +169,7 @@ export declare class Core extends EventEmitter implements ICore {
      *
      * @member _afterEvents
      * @protected
-     * @type {*}
+     * @member {*}
      * @memberOf Core
      */
     protected _afterEvents: any;
@@ -197,7 +178,7 @@ export declare class Core extends EventEmitter implements ICore {
      *
      * @member _configured
      * @protected
-     * @type {boolean}
+     * @member {boolean}
      * @memberOf Core
      */
     protected _configured: boolean;
@@ -206,7 +187,7 @@ export declare class Core extends EventEmitter implements ICore {
      *
      * @member _initialized
      * @protected
-     * @type {boolean}
+     * @member {boolean}
      * @memberOf Core
      */
     protected _initialized: boolean;
@@ -215,7 +196,7 @@ export declare class Core extends EventEmitter implements ICore {
      *
      * @member _started
      * @protected
-     * @type {boolean}
+     * @member {boolean}
      * @memberOf Core
      */
     protected _started: boolean;
@@ -224,7 +205,7 @@ export declare class Core extends EventEmitter implements ICore {
      *
      * @member _autoInit
      * @protected
-     * @type {boolean}
+     * @member {boolean}
      * @memberOf Core
      */
     protected _autoInit: boolean;

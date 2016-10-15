@@ -1,5 +1,6 @@
 
 import { IFilter, IFacile } from '../interfaces';
+import { LoggerInstance } from 'winston';
 
 /**
  * Base Filter Class
@@ -11,7 +12,6 @@ import { IFilter, IFacile } from '../interfaces';
 export class Filter implements IFilter {
 
 	static type = 'Filter';
-
 	protected facile: IFacile;
 
 	/**
@@ -27,6 +27,18 @@ export class Filter implements IFilter {
 			value: facile
 		});
 		return this;
+	}
+
+	/**
+	 * log
+	 *
+	 * @desc exposes Facile.log to class.
+	 * @readonly
+	 * @method {LoggerInstance} log
+	 * @memberOf Service
+	 */
+	get log(): LoggerInstance {
+		return this.facile.log;
 	}
 
 }

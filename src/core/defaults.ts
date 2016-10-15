@@ -9,7 +9,7 @@ export let packages: any = {
 };
 
 export let config: IConfig = {
-
+	auto: undefined,
 	cwd: process.cwd(),
 	pkg: packages.apppkg,
 	env: 'development',
@@ -23,9 +23,29 @@ export let config: IConfig = {
 			name: 'ejs',
 			renderer: cons.ejs
 		},
-		// 'view engine': 'ejs',
 		views: '/'
 	},
-	auto: undefined
+	// Set to false to disable.
+	routes: {
+		controller: 'DefaultController',
+		securityFilter: 'DefaultFilter.isAuthenticated',
+		// When defined rest routes created.
+		rest: {
+			find: 			'get /api/{model}',
+			findOne: 		'get /api/{model}/:id',
+			create: 		'post /api/{model}',
+			update: 		'put /api/{model}/:id',
+			destroy: 		'del /api/{model}/:id'
+		}
+		// When defined crud routes defined.
+		// crud: {
+		// 	find: 			'get /api/{model}/show',
+		// 	findOne: 		'get /api/{model}/show/:id',
+		// 	create: 		'post /api/{model}/create',
+		// 	update: 		'put /api/{model}/update/:id',
+		// 	destroy: 		'del /api/{model}/destroy/:id'
+		// }
+	}
+
 
 };

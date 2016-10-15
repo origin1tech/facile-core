@@ -30,56 +30,49 @@ var Core = (function (_super) {
         /**
          * _configs
          *
-         * @member _configs
-         * @type {IConfigs}
+         * @member {IConfigs} _configs
          * @memberOf Core
          */
         this._configs = {};
         /**
          * _routers
          *
-         * @member _routers
-         * @type {IRouters}
+         * @member {IRouters} _routers
          * @memberOf Core
          */
         this._routers = {};
         /**
          * _middlewares
          *
-         * @member _middlewares
-         * @type {IMiddlewaresMap}
+         * @member {IMiddlewaresMap} _middlewares
          * @memberOf Core
          */
         this._middlewares = {};
         /**
          * _policies
          *
-         * @member _policies
-         * @type {*}
+         * @member {*} _policies
          * @memberOf Core
          */
         this._policies = {};
         /**
          * _routes
          *
-         * @member _routes
-         * @type {Array<IRoute>}
+         * @member {Array<IRoute>} _routes
          * @memberOf Core
          */
         this._routes = [];
         /**
          * _nextSocketId
          *
-         * @member _nextSocketId
-         * @type {number}
+         * @member {number} _nextSocketId
          * @memberOf Core
          */
         this._nextSocketId = 0;
         /**
          * _sockets
          *
-         * @member _sockets
-         * @type {ISockets}
+         * @member {ISockets} _sockets
          * @memberOf Core
          */
         this._sockets = {};
@@ -88,7 +81,7 @@ var Core = (function (_super) {
          *
          * @member _beforeEvents
          * @protected
-         * @type {*}
+         * @member {*}
          * @memberOf Core
          */
         this._beforeEvents = {};
@@ -97,7 +90,7 @@ var Core = (function (_super) {
          *
          * @member _afterEvents
          * @protected
-         * @type {*}
+         * @member {*}
          * @memberOf Core
          */
         this._afterEvents = {};
@@ -106,7 +99,7 @@ var Core = (function (_super) {
          *
          * @member _initialized
          * @protected
-         * @type {boolean}
+         * @member {boolean}
          * @memberOf Core
          */
         this._initialized = false;
@@ -115,7 +108,7 @@ var Core = (function (_super) {
          *
          * @member _started
          * @protected
-         * @type {boolean}
+         * @member {boolean}
          * @memberOf Core
          */
         this._started = false;
@@ -124,7 +117,7 @@ var Core = (function (_super) {
          *
          * @member _autoInit
          * @protected
-         * @type {boolean}
+         * @member {boolean}
          * @memberOf Core
          */
         this._autoInit = false;
@@ -138,7 +131,7 @@ var Core = (function (_super) {
             'init:routes': { before: true, after: true },
             'init:done': { before: true, after: true },
             'core:start': { before: true, after: true },
-            'core:listening': { before: true, after: false }
+            'core:listen': { before: true, after: false }
         };
         // For each event initialize object.
         lodash_1.each(this._listeners, function (v, k) {
@@ -163,7 +156,7 @@ var Core = (function (_super) {
      */
     Core.prototype.before = function (name, event) {
         if (!this._listeners[name].before) {
-            this.logger.warn('Listener: ' + name + ' has no event "before".');
+            this.log.warn('Listener: ' + name + ' has no event "before".');
             return this;
         }
         // Get var to collection.
@@ -184,7 +177,7 @@ var Core = (function (_super) {
      */
     Core.prototype.after = function (name, event) {
         if (!this._listeners[name].after) {
-            this.logger.warn('Listener: ' + name + ' has no event "after".');
+            this.log.warn('Listener: ' + name + ' has no event "after".');
             return this;
         }
         // Get var to collection.
@@ -281,7 +274,7 @@ var Core = (function (_super) {
         // Execute events in series.
         async_1.series(events, function (err) {
             if (err)
-                _this.logger.error(err.message || 'Unknown error', err);
+                _this.log.error(err.message || 'Unknown error', err);
             if (lodash_1.isFunction(fn))
                 fn();
         });

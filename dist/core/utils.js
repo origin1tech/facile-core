@@ -133,16 +133,18 @@ function validateRoute(route) {
     if (Array.isArray(route.method)) {
         var methods_1 = [];
         route.method.forEach(function (m, k) {
-            methods_1.push(m.toUpperCase());
+            methods_1.push(m.toLowerCase());
         });
         route.method = methods_1;
     }
     else {
         var method = route.method;
-        route.method = [route.method.toUpperCase()];
+        route.method = [route.method.toLowerCase()];
     }
     // Ensure default router.
     route.router = route.router || 'default';
+    // Ensure filters array.
+    route.filters = route.filters || [];
     // Mehod, Handler and Url path are required.
     if (!route.method || !route.handler || !route.url)
         route.valid = false;

@@ -1,4 +1,5 @@
 import { IService, IFacile } from '../interfaces';
+import { LoggerInstance } from 'winston';
 /**
  * Base Service Class
  *
@@ -16,4 +17,13 @@ export declare class Service implements IService {
      * @memberOf Service
      */
     constructor(facile: IFacile);
+    /**
+     * log
+     *
+     * @desc exposes Facile.log to class.
+     * @readonly
+     * @method {LoggerInstance} log
+     * @memberOf Service
+     */
+    readonly log: LoggerInstance;
 }

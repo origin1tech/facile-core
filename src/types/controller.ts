@@ -1,5 +1,6 @@
 
 import { IController, IFacile } from '../interfaces';
+import { LoggerInstance } from 'winston';
 
 /**
  * Base Controller Class
@@ -10,7 +11,6 @@ import { IController, IFacile } from '../interfaces';
 export class Controller implements IController {
 
 	static type = 'Controller';
-
 	protected facile: IFacile;
 
 	/**
@@ -25,7 +25,19 @@ export class Controller implements IController {
 			enumerable: false,
 			value: facile
 		});
-		return this;
+
+	}
+
+	/**
+	 * log
+	 *
+	 * @desc exposes Facile.log to class.
+	 * @readonly
+	 * @method {LoggerInstance} log
+	 * @memberOf Service
+	 */
+	get log(): LoggerInstance {
+		return this.facile.log;
 	}
 
 }

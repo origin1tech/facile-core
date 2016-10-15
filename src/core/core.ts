@@ -24,8 +24,7 @@ export class Core extends EventEmitter implements ICore {
 	/**
 	 * Boom
 	 *
-	 * @member Boom
-	 * @type {IBoom}
+	 * @member {IBoom} Boom
 	 * @memberOf Core
 	 */
 	Boom: IBoom;
@@ -33,8 +32,7 @@ export class Core extends EventEmitter implements ICore {
 	/**
 	 * express
 	 *
-	 * @member express
-	 * @type {*}
+	 * @member {*} express
 	 * @memberOf Core
 	 */
 	express: any;
@@ -42,8 +40,7 @@ export class Core extends EventEmitter implements ICore {
 	/**
 	 * app
 	 *
-	 * @member app
-	 * @type {Express}
+	 * @member {Express} app
 	 * @memberOf Core
 	 */
 	app: Express;
@@ -51,26 +48,23 @@ export class Core extends EventEmitter implements ICore {
 	/**
 	 * server
 	 *
-	 * @member server
-	 * @type {Server}
+	 * @member {Server} server
 	 * @memberOf Core
 	 */
 	server: Server;
 
 	/**
-	 * logger
+	 * log
 	 *
-	 * @member logger
-	 * @type {LoggerInstance}
+	 * @member {LoggerInstance} log
 	 * @memberOf Core
 	 */
-	logger: LoggerInstance;
+	log: LoggerInstance;
 
 	/**
 	 * _pkg
 	 *
-	 * @member _pkg
-	 * @type {*}
+	 * @member {*} _pkg
 	 * @memberOf Core
 	 */
 	_pkg: any;
@@ -78,8 +72,7 @@ export class Core extends EventEmitter implements ICore {
 	/**
 	 * _apppkg
 	 *
-	 * @member _apppkg
-	 * @type {*}
+	 * @member {*} _apppkg
 	 * @memberOf Core
 	 */
 	_apppkg: any;
@@ -87,8 +80,7 @@ export class Core extends EventEmitter implements ICore {
 	/**
 	 * _config
 	 *
-	 * @member _config
-	 * @type {IConfig}
+	 * @member {IConfig} _config
 	 * @memberOf Core
 	 */
 	_config: IConfig;
@@ -96,8 +88,7 @@ export class Core extends EventEmitter implements ICore {
 	/**
 	 * _configs
 	 *
-	 * @member _configs
-	 * @type {IConfigs}
+	 * @member {IConfigs} _configs
 	 * @memberOf Core
 	 */
 	_configs: IConfigs = {};
@@ -105,8 +96,7 @@ export class Core extends EventEmitter implements ICore {
 	/**
 	 * _routers
 	 *
-	 * @member _routers
-	 * @type {IRouters}
+	 * @member {IRouters} _routers
 	 * @memberOf Core
 	 */
 	_routers: IRouters = {};
@@ -114,8 +104,7 @@ export class Core extends EventEmitter implements ICore {
 	/**
 	 * _middlewares
 	 *
-	 * @member _middlewares
-	 * @type {IMiddlewaresMap}
+	 * @member {IMiddlewaresMap} _middlewares
 	 * @memberOf Core
 	 */
 	_middlewares: IMiddlewares = {};
@@ -123,8 +112,7 @@ export class Core extends EventEmitter implements ICore {
 	/**
 	 * _services
 	 *
-	 * @member _services
-	 * @type {*}
+	 * @member {*} _services
 	 * @memberOf Core
 	 */
 	_services: any;
@@ -132,8 +120,7 @@ export class Core extends EventEmitter implements ICore {
 	/**
 	 * _filters
 	 *
-	 * @member _filters
-	 * @type {*}
+	 * @member {*} _filters
 	 * @memberOf Core
 	 */
 	_filters: any;
@@ -141,8 +128,7 @@ export class Core extends EventEmitter implements ICore {
 	/**
 	 * _models
 	 *
-	 * @member _models
-	 * @type {*}
+	 * @member {*} _models
 	 * @memberOf Core
 	 */
 	_models: any;
@@ -150,8 +136,7 @@ export class Core extends EventEmitter implements ICore {
 	/**
 	 * _controllers
 	 *
-	 * @member _controllers
-	 * @type {*}
+	 * @member {*} _controllers
 	 * @memberOf Core
 	 */
 	_controllers: any;
@@ -159,8 +144,7 @@ export class Core extends EventEmitter implements ICore {
 	/**
 	 * _policies
 	 *
-	 * @member _policies
-	 * @type {*}
+	 * @member {*} _policies
 	 * @memberOf Core
 	 */
 	_policies: any = {};
@@ -168,8 +152,7 @@ export class Core extends EventEmitter implements ICore {
 	/**
 	 * _routes
 	 *
-	 * @member _routes
-	 * @type {Array<IRoute>}
+	 * @member {Array<IRoute>} _routes
 	 * @memberOf Core
 	 */
 	_routes: Array<IRoute> = [];
@@ -177,8 +160,7 @@ export class Core extends EventEmitter implements ICore {
 	/**
 	 * _nextSocketId
 	 *
-	 * @member _nextSocketId
-	 * @type {number}
+	 * @member {number} _nextSocketId
 	 * @memberOf Core
 	 */
 	_nextSocketId: number = 0;
@@ -186,8 +168,7 @@ export class Core extends EventEmitter implements ICore {
 	/**
 	 * _sockets
 	 *
-	 * @member _sockets
-	 * @type {ISockets}
+	 * @member {ISockets} _sockets
 	 * @memberOf Core
 	 */
 	_sockets: ISockets = {};
@@ -197,7 +178,7 @@ export class Core extends EventEmitter implements ICore {
 	 *
 	 * @member _listeners
 	 * @protected
-	 * @type {IListenersMap}
+	 * @member {IListenersMap}
 	 * @memberOf Core
 	 */
 	protected _listeners: IListenersMap;
@@ -207,7 +188,7 @@ export class Core extends EventEmitter implements ICore {
 	 *
 	 * @member _beforeEvents
 	 * @protected
-	 * @type {*}
+	 * @member {*}
 	 * @memberOf Core
 	 */
 	protected _beforeEvents: any = {};
@@ -217,7 +198,7 @@ export class Core extends EventEmitter implements ICore {
 	 *
 	 * @member _afterEvents
 	 * @protected
-	 * @type {*}
+	 * @member {*}
 	 * @memberOf Core
 	 */
 	protected _afterEvents: any = {};
@@ -227,7 +208,7 @@ export class Core extends EventEmitter implements ICore {
 	 *
 	 * @member _configured
 	 * @protected
-	 * @type {boolean}
+	 * @member {boolean}
 	 * @memberOf Core
 	 */
 	protected _configured: boolean;
@@ -237,7 +218,7 @@ export class Core extends EventEmitter implements ICore {
 	 *
 	 * @member _initialized
 	 * @protected
-	 * @type {boolean}
+	 * @member {boolean}
 	 * @memberOf Core
 	 */
 	protected _initialized: boolean = false;
@@ -247,7 +228,7 @@ export class Core extends EventEmitter implements ICore {
 	 *
 	 * @member _started
 	 * @protected
-	 * @type {boolean}
+	 * @member {boolean}
 	 * @memberOf Core
 	 */
 	protected _started: boolean = false;
@@ -257,7 +238,7 @@ export class Core extends EventEmitter implements ICore {
 	 *
 	 * @member _autoInit
 	 * @protected
-	 * @type {boolean}
+	 * @member {boolean}
 	 * @memberOf Core
 	 */
 	protected _autoInit: boolean = false;
@@ -282,7 +263,7 @@ export class Core extends EventEmitter implements ICore {
 			'init:routes': { before: true, after: true },
 			'init:done': { before: true, after: true },
 			'core:start': { before: true, after: true },
-			'core:listening': { before: true, after: false }
+			'core:listen': { before: true, after: false }
 		};
 
 		// For each event initialize object.
@@ -312,7 +293,7 @@ export class Core extends EventEmitter implements ICore {
 	before(name: string, event: ICallback): Core {
 
 		if (!this._listeners[name].before) {
-			this.logger.warn('Listener: ' + name + ' has no event "before".');
+			this.log.warn('Listener: ' + name + ' has no event "before".');
 			return this;
 		}
 
@@ -339,7 +320,7 @@ export class Core extends EventEmitter implements ICore {
 	after(name: string, event: ICallback): Core {
 
 		if (!this._listeners[name].after) {
-			this.logger.warn('Listener: ' + name + ' has no event "after".');
+			this.log.warn('Listener: ' + name + ' has no event "after".');
 			return this;
 		}
 
@@ -446,7 +427,7 @@ export class Core extends EventEmitter implements ICore {
 		// Execute events in series.
 		asyncSeries(events, (err) => {
 			if (err)
-				this.logger.error(err.message || 'Unknown error', err);
+				this.log.error(err.message || 'Unknown error', err);
 			if (isFunction(fn))
 				fn();
 		});

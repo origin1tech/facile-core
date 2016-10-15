@@ -6,6 +6,7 @@ exports.packages = {
     apppkg: require(path_1.join(process.cwd(), 'package.json'))
 };
 exports.config = {
+    auto: undefined,
     cwd: process.cwd(),
     pkg: exports.packages.apppkg,
     env: 'development',
@@ -19,9 +20,20 @@ exports.config = {
             name: 'ejs',
             renderer: cons.ejs
         },
-        // 'view engine': 'ejs',
         views: '/'
     },
-    auto: undefined
+    // Set to false to disable.
+    routes: {
+        controller: 'DefaultController',
+        securityFilter: 'DefaultFilter.isAuthenticated',
+        // When defined rest routes created.
+        rest: {
+            find: 'get /api/{model}',
+            findOne: 'get /api/{model}/:id',
+            create: 'post /api/{model}',
+            update: 'put /api/{model}/:id',
+            destroy: 'del /api/{model}/:id'
+        }
+    }
 };
 //# sourceMappingURL=defaults.js.map

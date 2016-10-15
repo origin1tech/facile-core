@@ -8,7 +8,7 @@ export function init(facile: Facile): any {
 
 		function handleServices(): IInit {
 
-			facile.logger.debug('Initializing Services');
+			facile.log.debug('Initializing Services');
 
 			// Initialize the services.
 			//initMap(facile._services, facile);

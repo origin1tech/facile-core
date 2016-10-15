@@ -9,7 +9,7 @@ export function init(facile: Facile): any {
 
 		function handleFilters() {
 
-			facile.logger.debug('Initializing Filters');
+			facile.log.debug('Initializing Filters');
 
 			// Initialize the filters.
 			// initMap(facile._filters, facile);

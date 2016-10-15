@@ -1,4 +1,5 @@
 import { IFilter, IFacile } from '../interfaces';
+import { LoggerInstance } from 'winston';
 /**
  * Base Filter Class
  *
@@ -17,4 +18,13 @@ export declare class Filter implements IFilter {
      * @memberOf Filter
      */
     constructor(facile: IFacile);
+    /**
+     * log
+     *
+     * @desc exposes Facile.log to class.
+     * @readonly
+     * @method {LoggerInstance} log
+     * @memberOf Service
+     */
+    readonly log: LoggerInstance;
 }

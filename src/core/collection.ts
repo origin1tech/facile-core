@@ -1,3 +1,4 @@
+import { clone } from 'lodash';
 
 interface ICollectionMap<T> {
 	[name: string]: T;
@@ -71,8 +72,8 @@ export class Collection<T>  {
 			Type.apply(this, args);
 		}
 		F.prototype = Type.prototype;
-		return new F();
-
+		let Comp = new F();
+		return Comp;
 	}
 
 	/**
@@ -154,9 +155,18 @@ export class Collection<T>  {
 	 * @memberOf Collection
 	 */
 	init(name: string, ...args: any[]): T {
-		let component = this._activate(this._get(name), args);
-		this._components[name] = component;
-		return component;
+		this._components[name] = this._activate(this._get(name), args);
+		return this._components[name];
+	}
+
+	initAll(...args: any[]) {
+		let keys = Object.keys(this._components);
+		keys.forEach((key) => {
+			let _args = clone(args);
+			_args.unshift(key);
+			this.init.apply(this, _args);
+		});
+		return this;
 	}
 
 	/**

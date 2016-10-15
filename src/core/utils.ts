@@ -160,7 +160,7 @@ export function validateRoute(route: IRoute): IRoute {
 	if (Array.isArray(route.method)) {
 		let methods = [];
 		route.method.forEach((m, k) => {
-			methods.push(m.toUpperCase());
+			methods.push(m.toLowerCase());
 		});
 		route.method = methods;
 	}
@@ -168,11 +168,14 @@ export function validateRoute(route: IRoute): IRoute {
 	// Otherwise normalize single method.
 	else {
 		let method: string = route.method as string;
-		route.method = [route.method.toUpperCase()];
+		route.method = [route.method.toLowerCase()];
 	}
 
 	// Ensure default router.
 	route.router = route.router || 'default';
+
+	// Ensure filters array.
+	route.filters = route.filters || [];
 
 	// Mehod, Handler and Url path are required.
 	if (!route.method || !route.handler || !route.url)

@@ -18,6 +18,12 @@ export interface IBoomError extends BoomError {
 }
 export interface IBoomOutput extends Output {
 }
+/**
+ * IUtils
+ *
+ * @export
+ * @interface IUtils
+ */
 export interface IUtils {
     extend(...args: any[]): any;
     extendMap(key: any, val: any, obj?: any): void;
@@ -29,6 +35,12 @@ export interface IUtils {
     noop(): void;
     truncate(str: string, length: number, omission: string): string;
 }
+/**
+ * IInit
+ *
+ * @export
+ * @interface IInit
+ */
 export interface IInit {
     run(): void;
     server(): IInit;
@@ -39,30 +51,159 @@ export interface IInit {
     routes(): IInit;
     done(): IFacile;
 }
+/**
+ * IListenersMap
+ *
+ * @export
+ * @interface IListenersMap
+ */
 export interface IListenersMap {
     [name: string]: {
         before: boolean;
         after: boolean;
     };
 }
+/**
+ * ICore
+ *
+ * @export
+ * @class ICore
+ * @interface
+ * @extends {EventEmitter}
+ */
 export interface ICore extends EventEmitter {
+    /**
+     * Boom
+     *
+     * @member {IBoom} ICore#Boom
+     * @memberOf ICore
+     */
     Boom: IBoom;
+    /**
+     * express
+     *
+     * @member {*} express
+     * @memberOf ICore
+     */
     express: any;
+    /**
+     * app
+     *
+     * @member {Express} app
+     * @memberOf ICore
+     */
     app: Express;
+    /**
+     * server
+     *
+     * @member {Server} server
+     * @memberOf ICore
+     */
     server: Server;
-    logger: LoggerInstance;
+    /**
+     * log
+     *
+     * @member {LoggerInstance} log
+     * @memberOf ICore
+     */
+    log: LoggerInstance;
+    /**
+     * _pkg
+     *
+     * @member {*} _pkg
+     * @memberOf ICore
+     */
     _pkg: any;
+    /**
+     * _apppkg
+     *
+     * @member {*} _apppkg
+     * @memberOf ICore
+     */
+    _apppkg: any;
+    /**
+     * _config
+     *
+     * @member {IConfig} _config
+     * @memberOf ICore
+     */
     _config: IConfig;
+    /**
+     * _configs
+     *
+     * @member {IConfigs} _configs
+     * @memberOf ICore
+     */
     _configs: IConfigs;
+    /**
+     * _routers
+     *
+     * @member {IRouters} _routers
+     * @memberOf ICore
+     */
     _routers: IRouters;
-    _routes: Array<IRoute>;
-    _middlewares: any;
+    /**
+     * _middlewares
+     *
+     * @member {IMiddlewaresMap} _middlewares
+     * @memberOf ICore
+     */
+    _middlewares: IMiddlewares;
+    /**
+     * _services
+     *
+     * @member {*} _services
+     * @memberOf ICore
+     */
     _services: any;
+    /**
+     * _filters
+     *
+     * @member {*} _filters
+     * @memberOf ICore
+     */
     _filters: any;
+    /**
+     * _models
+     *
+     * @member {*} _models
+     * @memberOf ICore
+     */
     _models: any;
+    /**
+     * _controllers
+     *
+     * @member {*} _controllers
+     * @memberOf ICore
+     */
     _controllers: any;
+    /**
+     * _policies
+     *
+     * @member {*} _policies
+     * @memberOf ICore
+     */
     _policies: any;
+    /**
+     * _routes
+     *
+     * @member {Array<IRoute>} _routes
+     * @memberOf ICore
+     */
+    _routes: Array<IRoute>;
+    /**
+     * _nextSocketId
+     *
+     * @member {number} _nextSocketId
+     * @memberOf ICore
+     */
     _nextSocketId: number;
+    /**
+     * _sockets
+     *
+     * @member {ISockets} _sockets
+     * @memberOf ICore
+     */
     _sockets: ISockets;
     before(name: string, event: ICallback): ICore;
     after(name: string, event: ICallback): ICore;
@@ -72,6 +213,14 @@ export interface ICore extends EventEmitter {
     execAfter(name: string, fn?: ICallbackResult): void;
     execEvents(name: string, type: string, fn?: ICallbackResult): void;
 }
+/**
+ * IFacile
+ *
+ * @export
+ * @class IFacile
+ * @interface IFacile
+ * @extends {ICore}
+ */
 export interface IFacile extends ICore {
     configure(config?: string | IConfig): IFacile;
     init(): IInit;
@@ -87,20 +236,14 @@ export interface IFacile extends ICore {
     registerRoute(routes: IRoutes): IFacile;
     registerRoute(routes: Array<IRoute>): IFacile;
     registerRoute(route: IRoute | IRoutes | IRoute[]): IFacile;
-    registerPolicy(name: IPolicies): IFacile;
-    registerPolicy(name: string, policy: boolean): IFacile;
-    registerPolicy(name: string, policy: string): IFacile;
-    registerPolicy(name: string, policy: string[]): IFacile;
-    registerPolicy(name: string, policy: IRequestHandler): IFacile;
-    registerPolicy(name: string, policy: Array<IRequestHandler>): IFacile;
-    registerPolicy(name: string, policy: IPolicies): IFacile;
+    registerPolicy(name: IPolicy): IFacile;
+    registerPolicy(name: string, policy: IPolicy): IFacile;
     registerPolicy(name: string, action: string, policy: boolean): IFacile;
     registerPolicy(name: string, action: string, policy: string): IFacile;
     registerPolicy(name: string, action: string, policy: string[]): IFacile;
     registerPolicy(name: string, action: string, policy: IRequestHandler): IFacile;
     registerPolicy(name: string, action: string, policy: Array<IRequestHandler>): IFacile;
-    registerPolicy(name: string, action: string, policy: IPolicies): IFacile;
-    registerPolicy(name: string | IPolicies, action?: string | boolean | string[] | IRequestHandler | Array<IRequestHandler> | IPolicies, policy?: string | boolean | string[] | IRequestHandler | Array<IRequestHandler> | IPolicies): IFacile;
+    registerPolicy(name: string | IPolicy, action?: string | boolean | string[] | IRequestHandler | Array<IRequestHandler> | IPolicy, policy?: string | boolean | string[] | IRequestHandler | Array<IRequestHandler>): IFacile;
     registerComponent(Component: IComponent): IFacile;
     registerComponent(components: IComponents): IFacile;
     registerComponent(name: string, Component: IComponent): IFacile;
@@ -111,7 +254,6 @@ export interface IFacile extends ICore {
     service<T>(name: string): T;
     model<T>(name: string): T;
     controller<T>(name: string): T;
-    extend(...args: any[]): any;
 }
 /**
  * SSL Certificate Interface.
@@ -167,24 +309,148 @@ export interface IDatabase {
     connection: any;
 }
 /**
+ * IRoutesTemplate
+ *
+ * @export
+ * @interface IRoutesTemplate
+ */
+export interface IRoutesTemplate {
+    find?: string;
+    findOne?: string;
+    create?: string;
+    update?: string;
+    destroy?: string;
+}
+/**
+ * IRoutesConfig
+ *
+ * @export
+ * @interface IRoutesConfig
+ */
+export interface IRoutesConfig {
+    controller?: string;
+    /**
+     * securityFilter
+     *
+     * @desc the default policy filter.
+     * @member {(string | IRequestHandler)} securityFilter
+     * @memberOf IConfig
+     */
+    securityFilter?: string | IRequestHandler;
+    rest?: IRoutesTemplate;
+    crud?: IRoutesTemplate;
+}
+/**
  * Server Configuration.
  *
  * @export
  * @interface IConfig
  */
 export interface IConfig {
-    cwd?: string;
-    pkg?: any;
-    host?: string;
-    port?: number;
-    certificate?: ICertificate | true;
-    maxConnections?: number;
-    env?: string;
-    logger?: LoggerInstance;
-    logLevel?: 'error' | 'warn' | 'info' | 'debug';
-    views?: IViewConfig;
-    database?: IDatabase;
+    /**
+     * auto
+     *
+     * @desc enables auto init/configure.
+     * @member {boolean} auto
+     * @memberOf IConfig
+     */
     auto?: boolean;
+    /**
+     * cwd
+     *
+     * @desc the current working directory.
+     * @member {string} cwd
+     * @memberOf IConfig
+     */
+    cwd?: string;
+    /**
+     * pkg
+     *
+     * @desc the app's package.json.
+     * @member {*} pkg
+     * @memberOf IConfig
+     */
+    pkg?: any;
+    /**
+     * host
+     *
+     * @desc the server's host address.
+     * @member {string} host
+     * @memberOf IConfig
+     */
+    host?: string;
+    /**
+     * port
+     *
+     * @desc the server's port.
+     * @member {number}
+     * @memberOf IConfig
+     */
+    port?: number;
+    /**
+     * certificate
+     *
+     * @desc the ssl certificate.
+     * @member {(ICertificate | boolean)} certificate
+     * @memberOf IConfig
+     */
+    certificate?: ICertificate | true;
+    /**
+     * maxConnections
+     *
+     * @desc the maximum simultaneous socket connections.
+     * @member {number} maxConnections
+     * @memberOf IConfig
+     */
+    maxConnections?: number;
+    /**
+     * env
+     *
+     * @desc the current working environment.
+     * @member {string} env
+     * @memberOf IConfig
+     */
+    env?: string;
+    /**
+     * logger
+     *
+     * @desc the default app's logger.
+     * @member {LoggerInstance} logger
+     * @memberOf IConfig
+     */
+    logger?: LoggerInstance;
+    /**
+     * logLevel
+     *
+     * @desc the log level to set the logger to.
+     * @member {('error' | 'warn' | 'info' | 'debug')} logLevel
+     * @memberOf IConfig
+     */
+    logLevel?: 'error' | 'warn' | 'info' | 'debug';
+    /**
+     * views
+     *
+     * @desc the server views configuration.
+     * @member {IViewConfig} views
+     * @memberOf IConfig
+     */
+    views?: IViewConfig;
+    /**
+     * database
+     *
+     * @desc the database configuration.
+     * @member {IDatabase} database
+     * @memberOf IConfig
+     */
+    database?: IDatabase;
+    /**
+     * routes
+     *
+     * @desc the config for generating routes.
+     * @member {IRoutesConfig} routes
+     * @memberOf IConfig
+     */
+    routes?: IRoutesConfig;
 }
 /**
  * Map of Configs.
@@ -223,6 +489,12 @@ export interface IMiddleware {
     fn: IRequestHandler | IErrorRequestHandler;
     order?: number;
 }
+/**
+ * IMiddlewares
+ *
+ * @export
+ * @interface IMiddlewares
+ */
 export interface IMiddlewares {
     [name: string]: IMiddleware;
 }
@@ -288,7 +560,7 @@ export interface IRouters {
 export interface IRoute {
     method?: string | Array<string>;
     url?: string | Array<string>;
-    handler?: IRequestHandler;
+    handler?: IRequestHandler | string;
     filters?: IRequestHandler | Array<IRequestHandler>;
     view?: string;
     redirect?: string;
@@ -304,9 +576,21 @@ export interface IRoute {
 export interface IRoutes {
     [url: string]: IRequestHandler | Array<IRequestHandler> | string | IRoute;
 }
+/**
+ * IPolicy
+ *
+ * @export
+ * @interface IPolicy
+ */
 export interface IPolicy {
     [name: string]: boolean | string | string[] | IRequestHandler | Array<IRequestHandler> | IPolicies;
 }
+/**
+ * IPolicies
+ *
+ * @export
+ * @interface IPolicies
+ */
 export interface IPolicies {
     [name: string]: IPolicy;
 }

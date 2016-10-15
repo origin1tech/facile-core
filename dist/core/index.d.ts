@@ -1,6 +1,6 @@
 import * as express from 'express';
 import { Core } from './core';
-import { IFacile, IConfig, IRoute, IConfigs, IRequestHandler, IRoutes, IInit, IMiddlewares, IComponents, IComponent, IErrorRequestHandler, IPolicies } from '../interfaces';
+import { IFacile, IConfig, IRoute, IConfigs, IRequestHandler, IRoutes, IInit, IMiddlewares, IComponents, IComponent, IErrorRequestHandler, IPolicy } from '../interfaces';
 /**
  * Facile Core
  *
@@ -38,6 +38,7 @@ export declare class Facile extends Core implements IFacile {
      * init:routes
      * init:done
      * core:start
+     * core:listen
      *
      * @private
      * @method _enableListeners
@@ -97,21 +98,21 @@ export declare class Facile extends Core implements IFacile {
      *
      * @method registerConfig
      * @param {string} name
-     * @param {...any[]} extend
+     * @param {...any[]} extendWith
      *
      * @memberOf Facile
      */
-    registerConfig(name: string, ...extend: any[]): Facile;
+    registerConfig(name: string, ...extendWith: any[]): Facile;
     /**
      * registerConfig
      *
      * @method registerConfig
      * @param {IConfigs} configs
-     * @param {...any[]} extend
+     * @param {...any[]} extendWith
      *
      * @memberOf Facile
      */
-    registerConfig(configs: IConfigs, ...extend: any[]): Facile;
+    registerConfig(configs: IConfigs, ...extendWith: any[]): Facile;
     /**
      * registerMiddleware
      *
@@ -175,62 +176,7 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    registerPolicy(name: IPolicies): Facile;
-    /**
-     * registerPolicy
-     *
-     * @method registerPolicy
-     * @param {string} name
-     * @param {boolean} filter
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
-    registerPolicy(name: string, policy: boolean): Facile;
-    /**
-     * registerPolicy
-     *
-     * @method registerPolicy
-     * @param {string} name
-     * @param {string} filter
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
-    registerPolicy(name: string, policy: string): Facile;
-    /**
-     * registerPolicy
-     *
-     * @method registerPolicy
-     * @param {string} name
-     * @param {string[]} filter
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
-    registerPolicy(name: string, policy: string[]): Facile;
-    /**
-     * registerPolicy
-     *
-     * @method registerPolicy
-     * @param {string} name
-     * @param {IRequestHandler} filter
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
-    registerPolicy(name: string, policy: IRequestHandler): Facile;
-    /**
-     * registerPolicy
-     *
-     * @method registerPolicy
-     * @param {string} name
-     * @param {Array<IRequestHandler>} filter
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
-    registerPolicy(name: string, policy: Array<IRequestHandler>): Facile;
+    registerPolicy(name: IPolicy): Facile;
     /**
      * registerPolicy
      *
@@ -241,7 +187,7 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    registerPolicy(name: string, policy: IPolicies): Facile;
+    registerPolicy(name: string, policy: IPolicy): Facile;
     /**
      * registerPolicy
      *
@@ -303,18 +249,6 @@ export declare class Facile extends Core implements IFacile {
      * @memberOf Facile
      */
     registerPolicy(name: string, action: string, policy: Array<IRequestHandler>): Facile;
-    /**
-     * registerPolicy
-     *
-     * @method registerPolicy
-     * @param {string} name
-     * @param {string} action
-     * @param {IPolicies} policy
-     * @returns {Facile}
-     *
-     * @memberOf Facile
-     */
-    registerPolicy(name: string, action: string, policy: IPolicies): Facile;
     /**
      * registerComponent
      *
@@ -413,14 +347,4 @@ export declare class Facile extends Core implements IFacile {
      * @memberOf Facile
      */
     controller<T>(name: string): T;
-    /**
-     * Convenience wrapper for lodash extend.
-     *
-     * @method extend
-     * @param {...any[]} args
-     * @returns {*}
-     *
-     * @memberOf Facile
-     */
-    extend(...args: any[]): any;
 }

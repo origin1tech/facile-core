@@ -1,23 +1,188 @@
-import { IFacile, IInit, IRoute } from '../interfaces';
+import { IFacile, IInit, IRoute, IRequest, IResponse, INextFunction, IController, IFilter, IRequestHandler } from '../interfaces';
 import { Facile } from './';
-import { each } from 'lodash';
+import { Collection } from './collection';
+import { each, isString, isBoolean, isFunction, get, flattenDeep, bind } from 'lodash';
 import { Router } from 'express';
 
 export function init(facile: Facile): any {
+
+	// Get Controllers Collection.
+	let ctrlCol: Collection<IController> = facile._controllers;
+
+	// Get Filters Collection.
+	let filterCol: Collection<IController> = facile._filters;
+
+	// Get all policies.
+	let policies = facile._policies;
+
+	// Get the global policy.
+	let globalPol = policies['*'];
+
+	// Get the global security filter.
+	let securityFilter = facile._config.routes && facile._config.routes.securityFilter;
+
+	// Map of cached global controller policies.
+	let ctrlPols: any = {};
+
+	// Global Policy should always be defined.
+	if (globalPol === undefined) {
+		facile.log.error('Security risk detected, please define a global policy.');
+		process.exit();
+	}
+
+	// Exit if no Glboal Security Filter.
+	// This filter is used anytime a policy
+	// value is set to "false".
+	if (!securityFilter) {
+		facile.log.error('Security risk detected, please define a global security filter in "config.routes.securityFilter".');
+		process.exit();
+	}
+
+	// Lookup a filter method from string.
+	function lookupFilter(filter: string, collection: any): IRequestHandler {
+
+		let arr = filter.split('.');
+		let name = arr[0];
+		let action = arr[1];
+		let klass = collection.get(name);
+
+		return function (req, res, next) {
+			klass[action](req, res, next);
+		};
+
+	}
+
+	// Normalize all filters looking
+	// up or setting to global security filter.
+	function normalizeFilters(filters: any, ctrl?: boolean): IRequestHandler[] {
+
+		let lookupType = ctrl ? 'controller' : 'filter';
+		let _normalized = [];
+
+		// Ensure filters are an array.
+		if (!Array.isArray(filters))
+			filters = [filters];
+
+		// Just return if empty array.
+		if (!filters.length)
+			return [];
+
+		// Iterate the array and normalize to
+		// request handlers.
+		filters.forEach((f, i) => {
+
+			// If function just push to normalized array.
+			if (isFunction(f)) {
+				return _normalized.push(f);
+			}
+
+			// If boolean and true use global security filter.
+			else if (isBoolean(f) && !ctrl) {
+
+				// Only normalize if true.
+				// if false skip.
+				if (f === false && securityFilter)
+					_normalized.push(securityFilter);
+
+			}
+
+			// If string use dot notaion and lookup.
+			else if (isString(f)) {
+
+				// May be in filters or controllers.
+				let collection = ctrl ? ctrlCol : filterCol;
+				let filter = lookupFilter(f, collection);
+
+				if (filter) {
+					_normalized.push(filter);
+				}
+				else {
+					facile.log.warn('Failed to load ' + lookupFilter + ' "' + f + '", ' + lookupFilter + ' could not be resolved.');
+				}
+
+			}
+
+			// Warn of invalid filter type.
+			else {
+
+				let validTypes = ctrl ? 'string or function' : 'string, boolean or function';
+
+				facile.log.warn('Failed to normalize ' + lookupType + ' expected ' + validTypes + ' but got "' + typeof f + '".');
+
+				// If not development exit to
+				// ensure production app is not
+				// served with broken filters.
+				if (facile._config.env !== 'development')
+					process.exit();
+			}
+
+		});
+
+		return _normalized;
+
+	}
+
+	// Lookup policies by ctrl
+	// name and action name.
+	function lookupPolicies(handler: string) {
+
+		let ctrlName: string = handler.split('.').shift();
+		let rawFilters = get(policies, handler);
+		let ctrlGlobalPol = get(policies, ctrlName + '.*');
+		let ctrlGlobalPols;
+		let actionFilters;
+		let result = [];
+
+		if (ctrlPols[ctrlName] && ctrlPols[ctrlName]['*'])
+			ctrlGlobalPols = ctrlPols[ctrlName]['*'];
+		else if (ctrlGlobalPol)
+			ctrlGlobalPols = normalizeFilters(ctrlGlobalPol);
+
+		if (ctrlGlobalPols && ctrlGlobalPols.length)
+			ctrlPols[ctrlName]['*'] = ctrlGlobalPols;
+
+		ctrlGlobalPols = ctrlGlobalPols || [];
+
+		result = normalizeFilters(rawFilters);
+
+		if (!result.length)
+			result = ctrlGlobalPols;
+
+		return result;
+
+	}
+
+	// Looks up filters and controller
+	// normalizing as Express handers.
+	function addRoute(route: IRoute) {
+
+		let router: Router = facile.router(route.router);
+		let methods = route.method as string[];
+		let _route = router.route(route.url);
+		let _policies: IRequestHandler[] = lookupPolicies(route.handler as string);
+		let _filters: IRequestHandler[] = normalizeFilters(route.filters);
+		let _handler: IRequestHandler[] = normalizeFilters(route.handler, true);
+		let _handlers: IRequestHandler[] = _policies.concat(_filters).concat(_handler);
+
+		// Iterate adding handlers
+		// for each method.
+		methods.forEach((m) => {
+			if (!_handlers || !_handlers.length)
+				return facile.log.warn('Failed to initialize route "' + route.url + '" invalid or missing handler.');
+			_route[m](_handlers);
+		});
+
+	}
 
 	return (fn?: Function): IInit => {
 
 		function handleRoutes() {
 
-			facile.logger.debug('Initializing Routes');
+			facile.log.debug('Initializing Routes');
 
 			// Iterate and add routes.
 			each(facile._routes, (route: IRoute) => {
-
-				let router: Router = facile.router(route.router);
-				let methods = route.method as string[];
-
-
+				addRoute(route);
 			});
 
 			if (facile._config.auto)

@@ -20,6 +20,21 @@ var Service = (function () {
         });
         return this;
     }
+    Object.defineProperty(Service.prototype, "log", {
+        /**
+         * log
+         *
+         * @desc exposes Facile.log to class.
+         * @readonly
+         * @method {LoggerInstance} log
+         * @memberOf Service
+         */
+        get: function () {
+            return this.facile.log;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Service.type = 'Service';
     return Service;
 }());

@@ -38,3 +38,10 @@ jspm_packages
 
 # Ignore Dev Folder
 dev
+
+# Ignore VScode
+.vscode
+
+#Ignore Test Server
+dist/server.*
+src/server.ts

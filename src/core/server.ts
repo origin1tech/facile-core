@@ -48,7 +48,7 @@ export function init(facile: Facile): any {
 			// Configure Middleware
 			////////////////////////////////
 
-			facile.logger.debug('Initializing Server Middleware.');
+			facile.log.debug('Initializing Server Middleware.');
 			let middlewares = sortBy(facile._middlewares, 'order');
 			each(middlewares, (v: IMiddleware) => {
 				facile.app.use(v.fn);
@@ -58,7 +58,7 @@ export function init(facile: Facile): any {
 			// Server Protocol & Cert
 			////////////////////////////////
 
-			facile.logger.debug('Initializing Server protocol.');
+			facile.log.debug('Initializing Server protocol.');
 			if (facile._config.certificate)
 				facile.server = createServerHttps(facile._config.certificate, facile.app);
 
@@ -73,7 +73,7 @@ export function init(facile: Facile): any {
 			// Listen for Connections
 			////////////////////////////////
 
-			facile.logger.debug('Initializing Server connection listener.');
+			facile.log.debug('Initializing Server connection listener.');
 			facile.server.on('connection', (socket: Socket) => {
 
 				// Save the connection.
@@ -83,7 +83,7 @@ export function init(facile: Facile): any {
 				// Listen for socket close.
 				socket.on('close', () => {
 
-					facile.logger.debug('Socket ' + socketId + ' was closed.');
+					facile.log.debug('Socket ' + socketId + ' was closed.');
 					delete facile._sockets[socketId];
 
 				});

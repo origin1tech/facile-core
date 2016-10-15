@@ -17,7 +17,7 @@ declare module 'facile' {
 declare module 'facile/core' {
     import * as express from 'express';
     import { Core } from 'facile/core/core';
-    import { IFacile, IConfig, IRoute, IConfigs, IRequestHandler, IRoutes, IInit, IMiddlewares, IComponents, IComponent, IErrorRequestHandler, IPolicies } from 'facile/interfaces';
+    import { IFacile, IConfig, IRoute, IConfigs, IRequestHandler, IRoutes, IInit, IMiddlewares, IComponents, IComponent, IErrorRequestHandler, IPolicy } from 'facile/interfaces';
     /**
         * Facile Core
         *
@@ -83,21 +83,21 @@ declare module 'facile/core' {
                 *
                 * @method registerConfig
                 * @param {string} name
-                * @param {...any[]} extend
+                * @param {...any[]} extendWith
                 *
                 * @memberOf Facile
                 */
-            registerConfig(name: string, ...extend: any[]): Facile;
+            registerConfig(name: string, ...extendWith: any[]): Facile;
             /**
                 * registerConfig
                 *
                 * @method registerConfig
                 * @param {IConfigs} configs
-                * @param {...any[]} extend
+                * @param {...any[]} extendWith
                 *
                 * @memberOf Facile
                 */
-            registerConfig(configs: IConfigs, ...extend: any[]): Facile;
+            registerConfig(configs: IConfigs, ...extendWith: any[]): Facile;
             /**
                 * registerMiddleware
                 *
@@ -161,62 +161,7 @@ declare module 'facile/core' {
                 *
                 * @memberOf Facile
                 */
-            registerPolicy(name: IPolicies): Facile;
-            /**
-                * registerPolicy
-                *
-                * @method registerPolicy
-                * @param {string} name
-                * @param {boolean} filter
-                * @returns {Facile}
-                *
-                * @memberOf Facile
-                */
-            registerPolicy(name: string, policy: boolean): Facile;
-            /**
-                * registerPolicy
-                *
-                * @method registerPolicy
-                * @param {string} name
-                * @param {string} filter
-                * @returns {Facile}
-                *
-                * @memberOf Facile
-                */
-            registerPolicy(name: string, policy: string): Facile;
-            /**
-                * registerPolicy
-                *
-                * @method registerPolicy
-                * @param {string} name
-                * @param {string[]} filter
-                * @returns {Facile}
-                *
-                * @memberOf Facile
-                */
-            registerPolicy(name: string, policy: string[]): Facile;
-            /**
-                * registerPolicy
-                *
-                * @method registerPolicy
-                * @param {string} name
-                * @param {IRequestHandler} filter
-                * @returns {Facile}
-                *
-                * @memberOf Facile
-                */
-            registerPolicy(name: string, policy: IRequestHandler): Facile;
-            /**
-                * registerPolicy
-                *
-                * @method registerPolicy
-                * @param {string} name
-                * @param {Array<IRequestHandler>} filter
-                * @returns {Facile}
-                *
-                * @memberOf Facile
-                */
-            registerPolicy(name: string, policy: Array<IRequestHandler>): Facile;
+            registerPolicy(name: IPolicy): Facile;
             /**
                 * registerPolicy
                 *
@@ -227,7 +172,7 @@ declare module 'facile/core' {
                 *
                 * @memberOf Facile
                 */
-            registerPolicy(name: string, policy: IPolicies): Facile;
+            registerPolicy(name: string, policy: IPolicy): Facile;
             /**
                 * registerPolicy
                 *
@@ -289,18 +234,6 @@ declare module 'facile/core' {
                 * @memberOf Facile
                 */
             registerPolicy(name: string, action: string, policy: Array<IRequestHandler>): Facile;
-            /**
-                * registerPolicy
-                *
-                * @method registerPolicy
-                * @param {string} name
-                * @param {string} action
-                * @param {IPolicies} policy
-                * @returns {Facile}
-                *
-                * @memberOf Facile
-                */
-            registerPolicy(name: string, action: string, policy: IPolicies): Facile;
             /**
                 * registerComponent
                 *
@@ -399,16 +332,6 @@ declare module 'facile/core' {
                 * @memberOf Facile
                 */
             controller<T>(name: string): T;
-            /**
-                * Convenience wrapper for lodash extend.
-                *
-                * @method extend
-                * @param {...any[]} args
-                * @returns {*}
-                *
-                * @memberOf Facile
-                */
-            extend(...args: any[]): any;
     }
 }
 
@@ -432,6 +355,12 @@ declare module 'facile/interfaces' {
     }
     export interface IBoomOutput extends Output {
     }
+    /**
+        * IUtils
+        *
+        * @export
+        * @interface IUtils
+        */
     export interface IUtils {
             extend(...args: any[]): any;
             extendMap(key: any, val: any, obj?: any): void;
@@ -443,6 +372,12 @@ declare module 'facile/interfaces' {
             noop(): void;
             truncate(str: string, length: number, omission: string): string;
     }
+    /**
+        * IInit
+        *
+        * @export
+        * @interface IInit
+        */
     export interface IInit {
             run(): void;
             server(): IInit;
@@ -453,30 +388,159 @@ declare module 'facile/interfaces' {
             routes(): IInit;
             done(): IFacile;
     }
+    /**
+        * IListenersMap
+        *
+        * @export
+        * @interface IListenersMap
+        */
     export interface IListenersMap {
             [name: string]: {
                     before: boolean;
                     after: boolean;
             };
     }
+    /**
+        * ICore
+        *
+        * @export
+        * @class ICore
+        * @interface
+        * @extends {EventEmitter}
+        */
     export interface ICore extends EventEmitter {
+            /**
+                * Boom
+                *
+                * @member {IBoom} ICore#Boom
+                * @memberOf ICore
+                */
             Boom: IBoom;
+            /**
+                * express
+                *
+                * @member {*} express
+                * @memberOf ICore
+                */
             express: any;
+            /**
+                * app
+                *
+                * @member {Express} app
+                * @memberOf ICore
+                */
             app: Express;
+            /**
+                * server
+                *
+                * @member {Server} server
+                * @memberOf ICore
+                */
             server: Server;
-            logger: LoggerInstance;
+            /**
+                * log
+                *
+                * @member {LoggerInstance} log
+                * @memberOf ICore
+                */
+            log: LoggerInstance;
+            /**
+                * _pkg
+                *
+                * @member {*} _pkg
+                * @memberOf ICore
+                */
             _pkg: any;
+            /**
+                * _apppkg
+                *
+                * @member {*} _apppkg
+                * @memberOf ICore
+                */
+            _apppkg: any;
+            /**
+                * _config
+                *
+                * @member {IConfig} _config
+                * @memberOf ICore
+                */
             _config: IConfig;
+            /**
+                * _configs
+                *
+                * @member {IConfigs} _configs
+                * @memberOf ICore
+                */
             _configs: IConfigs;
+            /**
+                * _routers
+                *
+                * @member {IRouters} _routers
+                * @memberOf ICore
+                */
             _routers: IRouters;
-            _routes: Array<IRoute>;
-            _middlewares: any;
+            /**
+                * _middlewares
+                *
+                * @member {IMiddlewaresMap} _middlewares
+                * @memberOf ICore
+                */
+            _middlewares: IMiddlewares;
+            /**
+                * _services
+                *
+                * @member {*} _services
+                * @memberOf ICore
+                */
             _services: any;
+            /**
+                * _filters
+                *
+                * @member {*} _filters
+                * @memberOf ICore
+                */
             _filters: any;
+            /**
+                * _models
+                *
+                * @member {*} _models
+                * @memberOf ICore
+                */
             _models: any;
+            /**
+                * _controllers
+                *
+                * @member {*} _controllers
+                * @memberOf ICore
+                */
             _controllers: any;
+            /**
+                * _policies
+                *
+                * @member {*} _policies
+                * @memberOf ICore
+                */
             _policies: any;
+            /**
+                * _routes
+                *
+                * @member {Array<IRoute>} _routes
+                * @memberOf ICore
+                */
+            _routes: Array<IRoute>;
+            /**
+                * _nextSocketId
+                *
+                * @member {number} _nextSocketId
+                * @memberOf ICore
+                */
             _nextSocketId: number;
+            /**
+                * _sockets
+                *
+                * @member {ISockets} _sockets
+                * @memberOf ICore
+                */
             _sockets: ISockets;
             before(name: string, event: ICallback): ICore;
             after(name: string, event: ICallback): ICore;
@@ -486,6 +550,14 @@ declare module 'facile/interfaces' {
             execAfter(name: string, fn?: ICallbackResult): void;
             execEvents(name: string, type: string, fn?: ICallbackResult): void;
     }
+    /**
+        * IFacile
+        *
+        * @export
+        * @class IFacile
+        * @interface IFacile
+        * @extends {ICore}
+        */
     export interface IFacile extends ICore {
             configure(config?: string | IConfig): IFacile;
             init(): IInit;
@@ -501,20 +573,14 @@ declare module 'facile/interfaces' {
             registerRoute(routes: IRoutes): IFacile;
             registerRoute(routes: Array<IRoute>): IFacile;
             registerRoute(route: IRoute | IRoutes | IRoute[]): IFacile;
-            registerPolicy(name: IPolicies): IFacile;
-            registerPolicy(name: string, policy: boolean): IFacile;
-            registerPolicy(name: string, policy: string): IFacile;
-            registerPolicy(name: string, policy: string[]): IFacile;
-            registerPolicy(name: string, policy: IRequestHandler): IFacile;
-            registerPolicy(name: string, policy: Array<IRequestHandler>): IFacile;
-            registerPolicy(name: string, policy: IPolicies): IFacile;
+            registerPolicy(name: IPolicy): IFacile;
+            registerPolicy(name: string, policy: IPolicy): IFacile;
             registerPolicy(name: string, action: string, policy: boolean): IFacile;
             registerPolicy(name: string, action: string, policy: string): IFacile;
             registerPolicy(name: string, action: string, policy: string[]): IFacile;
             registerPolicy(name: string, action: string, policy: IRequestHandler): IFacile;
             registerPolicy(name: string, action: string, policy: Array<IRequestHandler>): IFacile;
-            registerPolicy(name: string, action: string, policy: IPolicies): IFacile;
-            registerPolicy(name: string | IPolicies, action?: string | boolean | string[] | IRequestHandler | Array<IRequestHandler> | IPolicies, policy?: string | boolean | string[] | IRequestHandler | Array<IRequestHandler> | IPolicies): IFacile;
+            registerPolicy(name: string | IPolicy, action?: string | boolean | string[] | IRequestHandler | Array<IRequestHandler> | IPolicy, policy?: string | boolean | string[] | IRequestHandler | Array<IRequestHandler>): IFacile;
             registerComponent(Component: IComponent): IFacile;
             registerComponent(components: IComponents): IFacile;
             registerComponent(name: string, Component: IComponent): IFacile;
@@ -525,7 +591,6 @@ declare module 'facile/interfaces' {
             service<T>(name: string): T;
             model<T>(name: string): T;
             controller<T>(name: string): T;
-            extend(...args: any[]): any;
     }
     /**
         * SSL Certificate Interface.
@@ -581,24 +646,148 @@ declare module 'facile/interfaces' {
             connection: any;
     }
     /**
+        * IRoutesTemplate
+        *
+        * @export
+        * @interface IRoutesTemplate
+        */
+    export interface IRoutesTemplate {
+            find?: string;
+            findOne?: string;
+            create?: string;
+            update?: string;
+            destroy?: string;
+    }
+    /**
+        * IRoutesConfig
+        *
+        * @export
+        * @interface IRoutesConfig
+        */
+    export interface IRoutesConfig {
+            controller?: string;
+            /**
+                * securityFilter
+                *
+                * @desc the default policy filter.
+                * @member {(string | IRequestHandler)} securityFilter
+                * @memberOf IConfig
+                */
+            securityFilter?: string | IRequestHandler;
+            rest?: IRoutesTemplate;
+            crud?: IRoutesTemplate;
+    }
+    /**
         * Server Configuration.
         *
         * @export
         * @interface IConfig
         */
     export interface IConfig {
-            cwd?: string;
-            pkg?: any;
-            host?: string;
-            port?: number;
-            certificate?: ICertificate | true;
-            maxConnections?: number;
-            env?: string;
-            logger?: LoggerInstance;
-            logLevel?: 'error' | 'warn' | 'info' | 'debug';
-            views?: IViewConfig;
-            database?: IDatabase;
+            /**
+                * auto
+                *
+                * @desc enables auto init/configure.
+                * @member {boolean} auto
+                * @memberOf IConfig
+                */
             auto?: boolean;
+            /**
+                * cwd
+                *
+                * @desc the current working directory.
+                * @member {string} cwd
+                * @memberOf IConfig
+                */
+            cwd?: string;
+            /**
+                * pkg
+                *
+                * @desc the app's package.json.
+                * @member {*} pkg
+                * @memberOf IConfig
+                */
+            pkg?: any;
+            /**
+                * host
+                *
+                * @desc the server's host address.
+                * @member {string} host
+                * @memberOf IConfig
+                */
+            host?: string;
+            /**
+                * port
+                *
+                * @desc the server's port.
+                * @member {number}
+                * @memberOf IConfig
+                */
+            port?: number;
+            /**
+                * certificate
+                *
+                * @desc the ssl certificate.
+                * @member {(ICertificate | boolean)} certificate
+                * @memberOf IConfig
+                */
+            certificate?: ICertificate | true;
+            /**
+                * maxConnections
+                *
+                * @desc the maximum simultaneous socket connections.
+                * @member {number} maxConnections
+                * @memberOf IConfig
+                */
+            maxConnections?: number;
+            /**
+                * env
+                *
+                * @desc the current working environment.
+                * @member {string} env
+                * @memberOf IConfig
+                */
+            env?: string;
+            /**
+                * logger
+                *
+                * @desc the default app's logger.
+                * @member {LoggerInstance} logger
+                * @memberOf IConfig
+                */
+            logger?: LoggerInstance;
+            /**
+                * logLevel
+                *
+                * @desc the log level to set the logger to.
+                * @member {('error' | 'warn' | 'info' | 'debug')} logLevel
+                * @memberOf IConfig
+                */
+            logLevel?: 'error' | 'warn' | 'info' | 'debug';
+            /**
+                * views
+                *
+                * @desc the server views configuration.
+                * @member {IViewConfig} views
+                * @memberOf IConfig
+                */
+            views?: IViewConfig;
+            /**
+                * database
+                *
+                * @desc the database configuration.
+                * @member {IDatabase} database
+                * @memberOf IConfig
+                */
+            database?: IDatabase;
+            /**
+                * routes
+                *
+                * @desc the config for generating routes.
+                * @member {IRoutesConfig} routes
+                * @memberOf IConfig
+                */
+            routes?: IRoutesConfig;
     }
     /**
         * Map of Configs.
@@ -637,6 +826,12 @@ declare module 'facile/interfaces' {
             fn: IRequestHandler | IErrorRequestHandler;
             order?: number;
     }
+    /**
+        * IMiddlewares
+        *
+        * @export
+        * @interface IMiddlewares
+        */
     export interface IMiddlewares {
             [name: string]: IMiddleware;
     }
@@ -702,7 +897,7 @@ declare module 'facile/interfaces' {
     export interface IRoute {
             method?: string | Array<string>;
             url?: string | Array<string>;
-            handler?: IRequestHandler;
+            handler?: IRequestHandler | string;
             filters?: IRequestHandler | Array<IRequestHandler>;
             view?: string;
             redirect?: string;
@@ -718,9 +913,21 @@ declare module 'facile/interfaces' {
     export interface IRoutes {
             [url: string]: IRequestHandler | Array<IRequestHandler> | string | IRoute;
     }
+    /**
+        * IPolicy
+        *
+        * @export
+        * @interface IPolicy
+        */
     export interface IPolicy {
             [name: string]: boolean | string | string[] | IRequestHandler | Array<IRequestHandler> | IPolicies;
     }
+    /**
+        * IPolicies
+        *
+        * @export
+        * @interface IPolicies
+        */
     export interface IPolicies {
             [name: string]: IPolicy;
     }
@@ -810,152 +1017,133 @@ declare module 'facile/core/core' {
             /**
                 * Boom
                 *
-                * @member Boom
-                * @type {IBoom}
+                * @member {IBoom} Boom
                 * @memberOf Core
                 */
             Boom: IBoom;
             /**
                 * express
                 *
-                * @member express
-                * @type {*}
+                * @member {*} express
                 * @memberOf Core
                 */
             express: any;
             /**
                 * app
                 *
-                * @member app
-                * @type {Express}
+                * @member {Express} app
                 * @memberOf Core
                 */
             app: Express;
             /**
                 * server
                 *
-                * @member server
-                * @type {Server}
+                * @member {Server} server
                 * @memberOf Core
                 */
             server: Server;
             /**
-                * logger
+                * log
                 *
-                * @member logger
-                * @type {LoggerInstance}
+                * @member {LoggerInstance} log
                 * @memberOf Core
                 */
-            logger: LoggerInstance;
+            log: LoggerInstance;
             /**
                 * _pkg
                 *
-                * @member _pkg
-                * @type {*}
+                * @member {*} _pkg
                 * @memberOf Core
                 */
             _pkg: any;
             /**
                 * _apppkg
                 *
-                * @member _apppkg
-                * @type {*}
+                * @member {*} _apppkg
                 * @memberOf Core
                 */
             _apppkg: any;
             /**
                 * _config
                 *
-                * @member _config
-                * @type {IConfig}
+                * @member {IConfig} _config
                 * @memberOf Core
                 */
             _config: IConfig;
             /**
                 * _configs
                 *
-                * @member _configs
-                * @type {IConfigs}
+                * @member {IConfigs} _configs
                 * @memberOf Core
                 */
             _configs: IConfigs;
             /**
                 * _routers
                 *
-                * @member _routers
-                * @type {IRouters}
+                * @member {IRouters} _routers
                 * @memberOf Core
                 */
             _routers: IRouters;
             /**
                 * _middlewares
                 *
-                * @member _middlewares
-                * @type {IMiddlewaresMap}
+                * @member {IMiddlewaresMap} _middlewares
                 * @memberOf Core
                 */
             _middlewares: IMiddlewares;
             /**
                 * _services
                 *
-                * @member _services
-                * @type {*}
+                * @member {*} _services
                 * @memberOf Core
                 */
             _services: any;
             /**
                 * _filters
                 *
-                * @member _filters
-                * @type {*}
+                * @member {*} _filters
                 * @memberOf Core
                 */
             _filters: any;
             /**
                 * _models
                 *
-                * @member _models
-                * @type {*}
+                * @member {*} _models
                 * @memberOf Core
                 */
             _models: any;
             /**
                 * _controllers
                 *
-                * @member _controllers
-                * @type {*}
+                * @member {*} _controllers
                 * @memberOf Core
                 */
             _controllers: any;
             /**
                 * _policies
                 *
-                * @member _policies
-                * @type {*}
+                * @member {*} _policies
                 * @memberOf Core
                 */
             _policies: any;
             /**
                 * _routes
                 *
-                * @member _routes
-                * @type {Array<IRoute>}
+                * @member {Array<IRoute>} _routes
                 * @memberOf Core
                 */
             _routes: Array<IRoute>;
             /**
                 * _nextSocketId
                 *
-                * @member _nextSocketId
-                * @type {number}
+                * @member {number} _nextSocketId
                 * @memberOf Core
                 */
             _nextSocketId: number;
             /**
                 * _sockets
                 *
-                * @member _sockets
-                * @type {ISockets}
+                * @member {ISockets} _sockets
                 * @memberOf Core
                 */
             _sockets: ISockets;
@@ -964,7 +1152,7 @@ declare module 'facile/core/core' {
                 *
                 * @member _listeners
                 * @protected
-                * @type {IListenersMap}
+                * @member {IListenersMap}
                 * @memberOf Core
                 */
             protected _listeners: IListenersMap;
@@ -973,7 +1161,7 @@ declare module 'facile/core/core' {
                 *
                 * @member _beforeEvents
                 * @protected
-                * @type {*}
+                * @member {*}
                 * @memberOf Core
                 */
             protected _beforeEvents: any;
@@ -982,7 +1170,7 @@ declare module 'facile/core/core' {
                 *
                 * @member _afterEvents
                 * @protected
-                * @type {*}
+                * @member {*}
                 * @memberOf Core
                 */
             protected _afterEvents: any;
@@ -991,7 +1179,7 @@ declare module 'facile/core/core' {
                 *
                 * @member _configured
                 * @protected
-                * @type {boolean}
+                * @member {boolean}
                 * @memberOf Core
                 */
             protected _configured: boolean;
@@ -1000,7 +1188,7 @@ declare module 'facile/core/core' {
                 *
                 * @member _initialized
                 * @protected
-                * @type {boolean}
+                * @member {boolean}
                 * @memberOf Core
                 */
             protected _initialized: boolean;
@@ -1009,7 +1197,7 @@ declare module 'facile/core/core' {
                 *
                 * @member _started
                 * @protected
-                * @type {boolean}
+                * @member {boolean}
                 * @memberOf Core
                 */
             protected _started: boolean;
@@ -1018,7 +1206,7 @@ declare module 'facile/core/core' {
                 *
                 * @member _autoInit
                 * @protected
-                * @type {boolean}
+                * @member {boolean}
                 * @memberOf Core
                 */
             protected _autoInit: boolean;
@@ -1130,6 +1318,7 @@ declare module 'facile/core/core' {
 
 declare module 'facile/types/service' {
     import { IService, IFacile } from 'facile/interfaces';
+    import { LoggerInstance } from 'winston';
     /**
         * Base Service Class
         *
@@ -1147,11 +1336,21 @@ declare module 'facile/types/service' {
                 * @memberOf Service
                 */
             constructor(facile: IFacile);
+            /**
+                * log
+                *
+                * @desc exposes Facile.log to class.
+                * @readonly
+                * @method {LoggerInstance} log
+                * @memberOf Service
+                */
+            readonly log: LoggerInstance;
     }
 }
 
 declare module 'facile/types/filter' {
     import { IFilter, IFacile } from 'facile/interfaces';
+    import { LoggerInstance } from 'winston';
     /**
         * Base Filter Class
         *
@@ -1170,11 +1369,21 @@ declare module 'facile/types/filter' {
                 * @memberOf Filter
                 */
             constructor(facile: IFacile);
+            /**
+                * log
+                *
+                * @desc exposes Facile.log to class.
+                * @readonly
+                * @method {LoggerInstance} log
+                * @memberOf Service
+                */
+            readonly log: LoggerInstance;
     }
 }
 
 declare module 'facile/types/model' {
     import { IModel, IFacile } from 'facile/interfaces';
+    import { LoggerInstance } from 'winston';
     /**
         * Base Model Class
         *
@@ -1192,11 +1401,21 @@ declare module 'facile/types/model' {
                 * @memberOf Model
                 */
             constructor(facile: IFacile);
+            /**
+                * log
+                *
+                * @desc exposes Facile.log to class.
+                * @readonly
+                * @method {LoggerInstance} log
+                * @memberOf Service
+                */
+            readonly log: LoggerInstance;
     }
 }
 
 declare module 'facile/types/controller' {
     import { IController, IFacile } from 'facile/interfaces';
+    import { LoggerInstance } from 'winston';
     /**
         * Base Controller Class
         *
@@ -1214,6 +1433,15 @@ declare module 'facile/types/controller' {
                 * @memberOf Controller
                 */
             constructor(facile: IFacile);
+            /**
+                * log
+                *
+                * @desc exposes Facile.log to class.
+                * @readonly
+                * @method {LoggerInstance} log
+                * @memberOf Service
+                */
+            readonly log: LoggerInstance;
     }
 }
 

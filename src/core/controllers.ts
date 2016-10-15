@@ -1,6 +1,7 @@
-import { IInit } from '../interfaces';
+import { IInit, IController } from '../interfaces';
 import {  } from './utils';
 import { Facile } from './';
+import { Collection } from './collection';
 import { each } from 'lodash';
 
 
@@ -10,12 +11,13 @@ export function init(facile: Facile): any {
 
 		function handleControllers() {
 
-			facile.logger.debug('Initializing Controllers');
+			facile.log.debug('Initializing Controllers');
+
+			let collection: Collection<IController> = facile._controllers;
 
 			// Initialize the controllers.
-			// each(facile._controllers, (Ctrl, key) => {
-			// 	facile._controllers[key] = new Ctrl(facile);
-			// });
+			// passing in instance.
+			collection.initAll(facile);
 
 			if (facile._config.auto)
 				facile.execAfter('init:controllers', () => {

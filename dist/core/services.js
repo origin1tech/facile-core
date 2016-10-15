@@ -2,7 +2,7 @@
 function init(facile) {
     return function (fn) {
         function handleServices() {
-            facile.logger.debug('Initializing Services');
+            facile.log.debug('Initializing Services');
             // Initialize the services.
             //initMap(facile._services, facile);
             if (facile._config.auto)

@@ -1,5 +1,6 @@
 
 import { IService, IFacile } from '../interfaces';
+import { LoggerInstance } from 'winston';
 
 /**
  * Base Service Class
@@ -10,7 +11,6 @@ import { IService, IFacile } from '../interfaces';
 export class Service implements IService {
 
 	static type = 'Service';
-
 	protected facile: IFacile;
 
 	/**
@@ -26,6 +26,18 @@ export class Service implements IService {
 			value: facile
 		});
 		return this;
+	}
+
+	/**
+	 * log
+	 *
+	 * @desc exposes Facile.log to class.
+	 * @readonly
+	 * @method {LoggerInstance} log
+	 * @memberOf Service
+	 */
+	get log(): LoggerInstance {
+		return this.facile.log;
 	}
 
 }
