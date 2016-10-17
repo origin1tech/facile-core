@@ -155,8 +155,10 @@ export function init(facile: Facile): any {
 			ctrlPols[ctrlName]['*'] = ctrlGlobalPols;
 		}
 
+		// Ensure Global Policy is array.
 		ctrlGlobalPols = ctrlGlobalPols || [];
 
+		// Get the normalized filters.
 		result = normalizeFilters(rawFilters);
 
 		// Set pols to controller global
