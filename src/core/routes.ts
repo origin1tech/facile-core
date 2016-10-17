@@ -51,18 +51,8 @@ export function init(facile: Facile): any {
 	// Lookup a filter method from string.
 	function lookupFilter(filter: string, collection: any): IRequestHandler {
 
-		let arr = filter.split('.');
-		let name = arr[0];
-		let action = arr[1];
-		let klass = collection.get(name);
-
-		if (!klass)
-			return undefined;
-
-		return function (req, res, next) {
-			klass[action](req, res, next);
-		};
-
+		return get(collection._components, filter) as IRequestHandler
+		
 	}
 
 	// Normalize all filters looking

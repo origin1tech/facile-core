@@ -68,12 +68,8 @@ export class Collection<T>  {
 	 * @memberOf Collection
 	 */
 	private _activate(Type: ICollectionType<T>, args?: any[]): T {
-		function F(): void {
-			Type.apply(this, args);
-		}
-		F.prototype = Type.prototype;
-		let Comp = new F();
-		return Comp;
+		let Comp = Type.bind.apply(Type, args);
+		return new Comp();
 	}
 
 	/**

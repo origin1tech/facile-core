@@ -35,15 +35,7 @@ function init(facile) {
     //globalPolNormalized = normalizeFilters(globalPol);
     // Lookup a filter method from string.
     function lookupFilter(filter, collection) {
-        var arr = filter.split('.');
-        var name = arr[0];
-        var action = arr[1];
-        var klass = collection.get(name);
-        if (!klass)
-            return undefined;
-        return function (req, res, next) {
-            klass[action](req, res, next);
-        };
+        return lodash_1.get(collection._components, filter);
     }
     // Normalize all filters looking
     // up or setting to global security filter.

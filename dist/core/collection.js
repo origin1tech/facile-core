@@ -56,12 +56,8 @@ var Collection = (function () {
      * @memberOf Collection
      */
     Collection.prototype._activate = function (Type, args) {
-        function F() {
-            Type.apply(this, args);
-        }
-        F.prototype = Type.prototype;
-        var Comp = new F();
-        return Comp;
+        var Comp = Type.bind.apply(Type, args);
+        return new Comp();
     };
     /**
      * name

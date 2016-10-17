@@ -831,31 +831,29 @@ export class Facile extends Core implements IFacile {
 		function isValidParent(key, val) {
 
 			if (key !== '*' && !isPlainObject(val)) {
-				self.log.warn('Invalid parent policy key "' + key + '" ignored, parent policy values must be objects execpt global policy key.');
+				self.log.warn('Invalid policy key "' + key + '" ignored, parent policy values must be objects execpt global policy key.');
 				return false;
 			}
 
 			else if (key === '*' && (!isString(val) && !Array.isArray(val) && !isBoolean(val))) {
 				self.log.warn('Invalid global policy key ignored, only boolean, strings, arrays of string or arrays of functions are supported.');
 				return false;
+			} 
+
+			else if (isPlainObject(val)) {
+				let keys = Object.keys(val);
+				if (!keys.length) {
+					self.log.warn('Invalid policy key "' + key + '" ignored, policies must contain a global or action policies.');
+					return false;
+				}
 			}
 
 			return true;
 
 		}
 
-		// Adding policy with action plicy.
-		if (arguments.length === 3) {
-
-			let _name = name as string;
-			let _action;
-			this._policies[_name] = this._policies[_name] || {};
-			this._policies[_name][_action] = policy;
-
-		}
-
 		// Adding map of policies.
-		else if (isPlainObject(name)) {
+		if (isPlainObject(name)) {
 
 			Object.keys(name).forEach((key) => {
 
@@ -874,12 +872,22 @@ export class Facile extends Core implements IFacile {
 		}
 
 		// Adding single policy.
-		else {
+		else if (isPlainObject(action)) {
 
 			let _name = name as string;
 			this._policies[_name] = this._policies[_name] || {};
 			if (isValidParent(name, action))
 				extend(this._policies[_name], action);
+		}
+
+		// Adding policy with action plicy.
+		else if (policy !== undefined) {
+		
+			let _name = name as string;
+			let _action;
+			this._policies[_name] = this._policies[_name] || {};
+			this._policies[_name][_action] = policy;
+
 		}
 
 		return this;
