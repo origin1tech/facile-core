@@ -9,10 +9,10 @@ function init(facile) {
     var policies = facile._policies;
     // Get the global policy.
     var globalPol = policies['*'];
-    var globalPolNormalized;
+    //let globalPolNormalized;
     // Get the global security filter.
     var securityFilter = facile._config.routes && facile._config.routes.securityFilter;
-    var securityFilterNormalized;
+    //let securityFilterNormalized;
     // Map of cached global controller policies.
     var ctrlPols = {};
     // Global Policy should always be defined.
@@ -20,27 +20,22 @@ function init(facile) {
         facile.log.error('Security risk detected, please define a global policy.');
         process.exit();
     }
+    // Resolve Secrity filter if string.
+    //securityFilterNormalized = securityFilter;
+    // if (isString(securityFilter))
+    // 	securityFilterNormalized = lookupFilter(securityFilter, filterCol);
     // Exit if no Glboal Security Filter.
     // This filter is used anytime a policy
     // value is set to "false".
-    if (!securityFilter) {
-        facile.log.error('Security risk detected, please define a global security filter in "config.routes.securityFilter".');
-        process.exit();
-    }
-    // Resolve Secrity filter if string.
-    if (lodash_1.isString(securityFilter))
-        securityFilterNormalized = lookupFilter(securityFilter, filterCol);
+    // if (!isFunction(securityFilterNormalized)) {
+    // 	facile.log.error('Security risk detected, security filter undefined or invalid type.');
+    // 	process.exit();
+    // }
     // Normalize Global Policy.
-    globalPolNormalized = normalizeFilters(globalPol);
+    //globalPolNormalized = normalizeFilters(globalPol);
     // Lookup a filter method from string.
     function lookupFilter(filter, collection) {
-        var arr = filter.split('.');
-        var name = arr[0];
-        var action = arr[1];
-        var klass = collection.get(name);
-        return function (req, res, next) {
-            klass[action](req, res, next);
-        };
+        return lodash_1.get(collection._components, filter);
     }
     // Normalize all filters looking
     // up or setting to global security filter.
@@ -66,7 +61,7 @@ function init(facile) {
                 // Only normalize if true.
                 // if false skip.
                 if (f === false)
-                    _normalized.push(securityFilterNormalized);
+                    _normalized.push(lookupFilter(securityFilter, filterCol));
             }
             else if (lodash_1.isString(f)) {
                 // May be in filters or controllers.
@@ -94,12 +89,14 @@ function init(facile) {
     // Lookup policies by ctrl
     // name and action name.
     function lookupPolicies(handler) {
+        var globalPolNormalized;
         var ctrlName = handler.split('.').shift();
         var rawFilters = lodash_1.get(policies, handler);
         var ctrlGlobalPol = lodash_1.get(policies, ctrlName + '.*');
         var ctrlGlobalPols;
         var actionFilters;
         var result;
+        globalPolNormalized = normalizeFilters(false);
         if (ctrlPols[ctrlName] && ctrlPols[ctrlName]['*'])
             ctrlGlobalPols = ctrlPols[ctrlName]['*'];
         else if (ctrlGlobalPol)

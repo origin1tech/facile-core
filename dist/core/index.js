@@ -489,23 +489,24 @@ var Facile = (function (_super) {
         var self = this;
         function isValidParent(key, val) {
             if (key !== '*' && !lodash_1.isPlainObject(val)) {
-                self.log.warn('Invalid parent policy key "' + key + '" ignored, parent policy values must be objects execpt global policy key.');
+                self.log.warn('Invalid policy key "' + key + '" ignored, parent policy values must be objects execpt global policy key.');
                 return false;
             }
             else if (key === '*' && (!lodash_1.isString(val) && !Array.isArray(val) && !lodash_1.isBoolean(val))) {
                 self.log.warn('Invalid global policy key ignored, only boolean, strings, arrays of string or arrays of functions are supported.');
                 return false;
             }
+            else if (lodash_1.isPlainObject(val)) {
+                var keys = Object.keys(val);
+                if (!keys.length) {
+                    self.log.warn('Invalid policy key "' + key + '" ignored, policies must contain a global or action policies.');
+                    return false;
+                }
+            }
             return true;
         }
-        // Adding policy with action plicy.
-        if (arguments.length === 3) {
-            var _name = name;
-            var _action = void 0;
-            this._policies[_name] = this._policies[_name] || {};
-            this._policies[_name][_action] = policy;
-        }
-        else if (lodash_1.isPlainObject(name)) {
+        // Adding map of policies.
+        if (lodash_1.isPlainObject(name)) {
             Object.keys(name).forEach(function (key) {
                 var val = name[key];
                 _this._policies[key] = _this._policies[key] || {};
@@ -517,11 +518,17 @@ var Facile = (function (_super) {
                 }
             });
         }
-        else {
+        else if (lodash_1.isPlainObject(action)) {
             var _name = name;
             this._policies[_name] = this._policies[_name] || {};
             if (isValidParent(name, action))
                 lodash_1.extend(this._policies[_name], action);
+        }
+        else if (policy !== undefined) {
+            var _name = name;
+            var _action = void 0;
+            this._policies[_name] = this._policies[_name] || {};
+            this._policies[_name][_action] = policy;
         }
         return this;
     };

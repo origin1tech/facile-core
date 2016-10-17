@@ -18,7 +18,7 @@ export function init(facile: Facile): any {
 			// Initialize the controllers.
 			// passing in instance.
 			collection.initAll(facile);
-
+			
 			if (facile._config.auto)
 				facile.execAfter('init:controllers', () => {
 					facile.emit('init:routes');
