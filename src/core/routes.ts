@@ -1,7 +1,7 @@
 import { IFacile, IInit, IRoute, IRequest, IResponse, INextFunction, IController, IFilter, IRequestHandler } from '../interfaces';
 import { Facile } from './';
 import { Collection } from './collection';
-import { each, isString, isBoolean, isFunction, get, flattenDeep, bind } from 'lodash';
+import { each, isString, isBoolean, isFunction, get, flattenDeep, bind, functions } from 'lodash';
 import { Router } from 'express';
 
 export function init(facile: Facile): any {
@@ -17,11 +17,11 @@ export function init(facile: Facile): any {
 
 	// Get the global policy.
 	let globalPol = policies['*'];
-	let globalPolNormalized;
+	//let globalPolNormalized;
 
 	// Get the global security filter.
 	let securityFilter = facile._config.routes && facile._config.routes.securityFilter;
-	let securityFilterNormalized;
+	//let securityFilterNormalized;
 
 	// Map of cached global controller policies.
 	let ctrlPols: any = {};
@@ -32,20 +32,21 @@ export function init(facile: Facile): any {
 		process.exit();
 	}
 
+	// Resolve Secrity filter if string.
+	//securityFilterNormalized = securityFilter;
+	// if (isString(securityFilter))
+	// 	securityFilterNormalized = lookupFilter(securityFilter, filterCol);
+
 	// Exit if no Glboal Security Filter.
 	// This filter is used anytime a policy
 	// value is set to "false".
-	if (!securityFilter) {
-		facile.log.error('Security risk detected, please define a global security filter in "config.routes.securityFilter".');
-		process.exit();
-	}
-
-	// Resolve Secrity filter if string.
-	if (isString(securityFilter))
-		securityFilterNormalized = lookupFilter(securityFilter, filterCol);
+	// if (!isFunction(securityFilterNormalized)) {
+	// 	facile.log.error('Security risk detected, security filter undefined or invalid type.');
+	// 	process.exit();
+	// }
 
 	// Normalize Global Policy.
-	globalPolNormalized = normalizeFilters(globalPol);
+	//globalPolNormalized = normalizeFilters(globalPol);
 
 	// Lookup a filter method from string.
 	function lookupFilter(filter: string, collection: any): IRequestHandler {
@@ -54,6 +55,9 @@ export function init(facile: Facile): any {
 		let name = arr[0];
 		let action = arr[1];
 		let klass = collection.get(name);
+
+		if (!klass)
+			return undefined;
 
 		return function (req, res, next) {
 			klass[action](req, res, next);
@@ -94,7 +98,7 @@ export function init(facile: Facile): any {
 				// Only normalize if true.
 				// if false skip.
 				if (f === false)
-					_normalized.push(securityFilterNormalized);
+					_normalized.push(lookupFilter(securityFilter as string, filterCol));
 
 			}
 
@@ -138,12 +142,15 @@ export function init(facile: Facile): any {
 	// name and action name.
 	function lookupPolicies(handler: string) {
 
+		let globalPolNormalized;
 		let ctrlName: string = handler.split('.').shift();
 		let rawFilters = get(policies, handler);
 		let ctrlGlobalPol = get(policies, ctrlName + '.*');
 		let ctrlGlobalPols;
 		let actionFilters;
 		let result;
+
+		globalPolNormalized = normalizeFilters(false);
 
 		if (ctrlPols[ctrlName] && ctrlPols[ctrlName]['*'])
 			ctrlGlobalPols = ctrlPols[ctrlName]['*'];

@@ -4,7 +4,10 @@ function init(facile) {
         function handleServices() {
             facile.log.debug('Initializing Services');
             // Initialize the services.
-            //initMap(facile._services, facile);
+            var collection = facile._services;
+            // Initialize the controllers.
+            // passing in instance.
+            collection.initAll(facile);
             if (facile._config.auto)
                 facile.execAfter('init:services', function () {
                     facile.emit('init:filters');

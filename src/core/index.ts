@@ -1,6 +1,5 @@
 
 // External Dependencies.
-import * as vscode from 'vscode';
 import { resolve, join } from 'path';
 import * as express from 'express';
 import * as Boom from 'boom';

@@ -1,6 +1,7 @@
-import { IInit } from '../interfaces';
+import { IInit, IFilter } from '../interfaces';
 import {  } from './utils';
 import { Facile } from './';
+import { Collection } from './collection';
 
 
 export function init(facile: Facile): any {
@@ -12,7 +13,12 @@ export function init(facile: Facile): any {
 			facile.log.debug('Initializing Filters');
 
 			// Initialize the filters.
-			// initMap(facile._filters, facile);
+			
+			let collection: Collection<IFilter> = facile._filters;
+
+			// Initialize the controllers.
+			// passing in instance.
+			collection.initAll(facile);	
 
 			if (facile._config.auto)
 				facile.execAfter('init:filters', () => {
