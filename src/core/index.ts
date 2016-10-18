@@ -838,7 +838,7 @@ export class Facile extends Core implements IFacile {
 			else if (key === '*' && (!isString(val) && !Array.isArray(val) && !isBoolean(val))) {
 				self.log.warn('Invalid global policy key ignored, only boolean, strings, arrays of string or arrays of functions are supported.');
 				return false;
-			} 
+			}
 
 			else if (isPlainObject(val)) {
 				let keys = Object.keys(val);
@@ -882,7 +882,7 @@ export class Facile extends Core implements IFacile {
 
 		// Adding policy with action plicy.
 		else if (policy !== undefined) {
-		
+
 			let _name = name as string;
 			let _action;
 			this._policies[_name] = this._policies[_name] || {};
@@ -1045,8 +1045,8 @@ export class Facile extends Core implements IFacile {
 	 * @memberOf Facile
 	 */
 	service<T>(name: string): T {
-		let component: T = this._services[name];
-		return component;
+		let collection: Collection<IService> = this._services;
+		return collection.get<T>(name);
 	}
 
 	/**
@@ -1060,8 +1060,8 @@ export class Facile extends Core implements IFacile {
 	 * @memberOf Facile
 	 */
 	filter<T>(name: string): T {
-		let component: T = this._filters[name];
-		return component;
+		let collection: Collection<IFilter> = this._filters;
+		return collection.get<T>(name);
 	}
 
 	/**
@@ -1075,8 +1075,8 @@ export class Facile extends Core implements IFacile {
 	 * @memberOf Facile
 	 */
 	model<T>(name: string): T {
-		let component: T = this._models[name];
-		return component;
+		let collection: Collection<IModel> = this._models;
+		return collection.get<T>(name);
 	}
 
 	/**
@@ -1090,8 +1090,8 @@ export class Facile extends Core implements IFacile {
 	 * @memberOf Facile
 	 */
 	controller<T>(name: string): T {
-		let component: T = this._controllers[name];
-		return component;
+		let collection: Collection<IController> = this._controllers;
+		return collection.get<T>(name);
 	}
 
 }

@@ -17,11 +17,9 @@ export function init(facile: Facile): any {
 
 	// Get the global policy.
 	let globalPol = policies['*'];
-	//let globalPolNormalized;
 
 	// Get the global security filter.
 	let securityFilter = facile._config.routes && facile._config.routes.securityFilter;
-	//let securityFilterNormalized;
 
 	// Map of cached global controller policies.
 	let ctrlPols: any = {};
@@ -32,27 +30,17 @@ export function init(facile: Facile): any {
 		process.exit();
 	}
 
-	// Resolve Secrity filter if string.
-	//securityFilterNormalized = securityFilter;
-	// if (isString(securityFilter))
-	// 	securityFilterNormalized = lookupFilter(securityFilter, filterCol);
-
-	// Exit if no Glboal Security Filter.
-	// This filter is used anytime a policy
-	// value is set to "false".
-	// if (!isFunction(securityFilterNormalized)) {
-	// 	facile.log.error('Security risk detected, security filter undefined or invalid type.');
-	// 	process.exit();
-	// }
-
-	// Normalize Global Policy.
-	//globalPolNormalized = normalizeFilters(globalPol);
-
 	// Lookup a filter method from string.
 	function lookupFilter(filter: string, collection: any): IRequestHandler {
 
-		return get(collection._components, filter) as IRequestHandler
-		
+		let action = get(collection._components, filter) as IRequestHandler;
+		let klassName = filter.split('.').shift();
+		let klass = collection.get(klassName);
+
+		// Bind to class so we don't lose context.
+		return action.bind(klass);
+
+
 	}
 
 	// Normalize all filters looking
@@ -140,7 +128,7 @@ export function init(facile: Facile): any {
 		let actionFilters;
 		let result;
 
-		globalPolNormalized = normalizeFilters(false);
+		globalPolNormalized = normalizeFilters(globalPol);
 
 		if (ctrlPols[ctrlName] && ctrlPols[ctrlName]['*'])
 			ctrlGlobalPols = ctrlPols[ctrlName]['*'];

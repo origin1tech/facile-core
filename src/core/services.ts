@@ -18,7 +18,6 @@ export function init(facile: Facile): any {
 			// passing in instance.
 			collection.initAll(facile);
 
-
 			if (facile._config.auto)
 				facile.execAfter('init:services', () => {
 					facile.emit('init:filters');

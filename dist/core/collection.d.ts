@@ -114,6 +114,15 @@ export declare class Collection<T> {
      * @memberOf Collection
      */
     init(name: string, ...args: any[]): T;
+    /**
+     * initAll
+     *
+     * @method initAll
+     * @param {...any[]} args
+     * @returns
+     *
+     * @memberOf Collection
+     */
     initAll(...args: any[]): this;
     /**
      * remove

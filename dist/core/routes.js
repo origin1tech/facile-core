@@ -9,10 +9,8 @@ function init(facile) {
     var policies = facile._policies;
     // Get the global policy.
     var globalPol = policies['*'];
-    //let globalPolNormalized;
     // Get the global security filter.
     var securityFilter = facile._config.routes && facile._config.routes.securityFilter;
-    //let securityFilterNormalized;
     // Map of cached global controller policies.
     var ctrlPols = {};
     // Global Policy should always be defined.
@@ -20,22 +18,13 @@ function init(facile) {
         facile.log.error('Security risk detected, please define a global policy.');
         process.exit();
     }
-    // Resolve Secrity filter if string.
-    //securityFilterNormalized = securityFilter;
-    // if (isString(securityFilter))
-    // 	securityFilterNormalized = lookupFilter(securityFilter, filterCol);
-    // Exit if no Glboal Security Filter.
-    // This filter is used anytime a policy
-    // value is set to "false".
-    // if (!isFunction(securityFilterNormalized)) {
-    // 	facile.log.error('Security risk detected, security filter undefined or invalid type.');
-    // 	process.exit();
-    // }
-    // Normalize Global Policy.
-    //globalPolNormalized = normalizeFilters(globalPol);
     // Lookup a filter method from string.
     function lookupFilter(filter, collection) {
-        return lodash_1.get(collection._components, filter);
+        var action = lodash_1.get(collection._components, filter);
+        var klassName = filter.split('.').shift();
+        var klass = collection.get(klassName);
+        // Bind to class so we don't lose context.
+        return action.bind(klass);
     }
     // Normalize all filters looking
     // up or setting to global security filter.
@@ -96,7 +85,7 @@ function init(facile) {
         var ctrlGlobalPols;
         var actionFilters;
         var result;
-        globalPolNormalized = normalizeFilters(false);
+        globalPolNormalized = normalizeFilters(globalPol);
         if (ctrlPols[ctrlName] && ctrlPols[ctrlName]['*'])
             ctrlGlobalPols = ctrlPols[ctrlName]['*'];
         else if (ctrlGlobalPol)

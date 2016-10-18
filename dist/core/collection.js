@@ -130,6 +130,15 @@ var Collection = (function () {
         this._components[name] = this._activate(this._get(name), args);
         return this._components[name];
     };
+    /**
+     * initAll
+     *
+     * @method initAll
+     * @param {...any[]} args
+     * @returns
+     *
+     * @memberOf Collection
+     */
     Collection.prototype.initAll = function () {
         var _this = this;
         var args = [];

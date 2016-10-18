@@ -155,6 +155,15 @@ export class Collection<T>  {
 		return this._components[name];
 	}
 
+	/**
+	 * initAll
+	 *
+	 * @method initAll
+	 * @param {...any[]} args
+	 * @returns
+	 *
+	 * @memberOf Collection
+	 */
 	initAll(...args: any[]) {
 		let keys = Object.keys(this._components);
 		keys.forEach((key) => {

@@ -626,8 +626,8 @@ var Facile = (function (_super) {
      * @memberOf Facile
      */
     Facile.prototype.service = function (name) {
-        var component = this._services[name];
-        return component;
+        var collection = this._services;
+        return collection.get(name);
     };
     /**
      * Gets a Filter
@@ -640,8 +640,8 @@ var Facile = (function (_super) {
      * @memberOf Facile
      */
     Facile.prototype.filter = function (name) {
-        var component = this._filters[name];
-        return component;
+        var collection = this._filters;
+        return collection.get(name);
     };
     /**
      * Gets a Model
@@ -654,8 +654,8 @@ var Facile = (function (_super) {
      * @memberOf Facile
      */
     Facile.prototype.model = function (name) {
-        var component = this._models[name];
-        return component;
+        var collection = this._models;
+        return collection.get(name);
     };
     /**
      * Gets a Controller.
@@ -668,8 +668,8 @@ var Facile = (function (_super) {
      * @memberOf Facile
      */
     Facile.prototype.controller = function (name) {
-        var component = this._controllers[name];
-        return component;
+        var collection = this._controllers;
+        return collection.get(name);
     };
     return Facile;
 }(core_1.Core));
