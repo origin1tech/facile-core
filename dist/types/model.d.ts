@@ -26,4 +26,12 @@ export declare class Model implements IModel {
      * @memberOf Service
      */
     readonly log: LoggerInstance;
+    /**
+     * init
+     *
+     * @desc initializes the model.
+     * @method init
+     * @memberOf Model
+     */
+    init(): void;
 }

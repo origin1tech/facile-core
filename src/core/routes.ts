@@ -1,7 +1,7 @@
-import { IFacile, IInit, IRoute, IRequest, IResponse, INextFunction, IController, IFilter, IRequestHandler } from '../interfaces';
+import { IFacile, IInit, IRoute, IRequest, IResponse, INextFunction, IController, IFilter, IRequestHandler, ICallback, ICallbackResult } from '../interfaces';
 import { Facile } from './';
 import { Collection } from './collection';
-import { each, isString, isBoolean, isFunction, get, flattenDeep, bind, functions } from 'lodash';
+import { each, isString, isBoolean, isFunction, get, flattenDeep, bind, functions, sortBy, orderBy } from 'lodash';
 import { Router } from 'express';
 
 export function init(facile: Facile): any {
@@ -39,7 +39,6 @@ export function init(facile: Facile): any {
 
 		// Bind to class so we don't lose context.
 		return action.bind(klass);
-
 
 	}
 
@@ -187,8 +186,16 @@ export function init(facile: Facile): any {
 
 			facile.log.debug('Initializing Routes');
 
+			let routes = facile._routes;
+			let sortConfig = facile._config.routes.sort;
+
+			// if route sorting is enabled
+			// sort the routes.
+			if (sortConfig !== false)
+				routes = orderBy(routes, 'url', 'desc');
+
 			// Iterate and add routes.
-			each(facile._routes, (route: IRoute) => {
+			each(routes, (route: IRoute) => {
 				addRoute(route);
 			});
 

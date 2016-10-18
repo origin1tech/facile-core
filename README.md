@@ -4,18 +4,79 @@ A Bare Bones Express Framework.
 
 ## Why Facile
 
-Frameworks are great and they're needed when working with node based
-server implementations. However many frameworks try to do too much
-including those we've built in the past. Particularly in the workflow
-build process. Simply put there are too many variables to account for.
+Facile pronounced "fasal" is a bare metal unopinionated Framework
+that organizes your api but makes little to no opinions on how
+to go about it.
 
-Hence Facile, pronounced "fasəl", ignores complexity and gets out of
-the way of the developer.
+## Typescript First
 
-Facile exposes methods that allow you to configure and start your api
-server and leaves the rest up to you.
+We love Typescript and consider it a must for the large robust applications
+of today. This is particularly true when working with multiple developers
+or on teams. It makes refactoring a breeze and speeds up development of
+team members due by making the api clear and understandable.
+
+## Facile Without Typescript
+
+Can I use Facile without Typescript? Absolutely! Facile is provided as an
+external module and can be used with or without Typescript. In fact it
+is may be more efficient when prototyping to not use Typescript.
 
 ## Kits
 
 For those that would like a litle better starting point to get your feet
-wet with what's possible checkout one of the Facile kits!
+wet, checkout one of the Facile kits!
+
+## Basic Usage
+
+```js
+
+// Please see "kits" for more detailed examples.
+
+import { facile, IConfig, IPolicies,
+					IRoutes, Service, Filter,
+					Controller } from './';
+
+let config: IConfig = {
+	host: '127.0.0.1',
+	port: 3000
+}
+
+let policy: IPolicies = {
+	'*': true,
+	DefaultController: {
+		index: 'DefaultFilter.isAuthenticated'
+	}
+};
+
+let routes: IRoutes = {
+	'/': 'DefaultController.index'
+};
+
+class DefaultService extends Service {
+	capitalize(str: string) {
+		return str.charAt(0).toUpperCase() + str.slice(1);
+	}
+}
+
+class DefaultFilter extends Filter {
+	isAuthenticated(req, res, next) {
+		next();
+	}
+}
+
+class DefaultController extends Controller {
+	index(req, res, next) {
+		this.log.debug('Test controller works!');
+		res.send('test');
+	}
+}
+
+facile
+	.registerPolicy(policy)
+	.registerComponent(DefaultService)
+	.registerComponent(DefaultFilter)
+	.registerComponent(DefaultController)
+	.registerRoute(routes)
+	.start(config);
+
+```

@@ -56,8 +56,9 @@ var Collection = (function () {
      * @memberOf Collection
      */
     Collection.prototype._activate = function (Type, args) {
-        var Comp = Type.bind.apply(Type, args);
-        return new Comp();
+        var comp = Object.create(Type.prototype);
+        Type.apply(comp, args);
+        return comp;
     };
     /**
      * name
@@ -127,7 +128,9 @@ var Collection = (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        this._components[name] = this._activate(this._get(name), args);
+        var comp = this._components[name] = this._activate(this._get(name), args);
+        if (comp.init)
+            comp.init();
         return this._components[name];
     };
     /**

@@ -67,9 +67,10 @@ export class Collection<T>  {
 	 *
 	 * @memberOf Collection
 	 */
-	private _activate(Type: ICollectionType<T>, args?: any[]): T {
-		let Comp = Type.bind.apply(Type, args);
-		return new Comp();
+	private _activate(Type: ICollectionType<T>, args?: any[]): any {
+		let comp: any = Object.create(Type.prototype);
+		Type.apply(comp, args);
+		return comp;
 	}
 
 	/**
@@ -151,7 +152,9 @@ export class Collection<T>  {
 	 * @memberOf Collection
 	 */
 	init(name: string, ...args: any[]): T {
-		this._components[name] = this._activate(this._get(name), args);
+		let comp = this._components[name] = this._activate(this._get(name), args);
+		if (comp.init)
+			comp.init();
 		return this._components[name];
 	}
 

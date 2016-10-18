@@ -674,6 +674,7 @@ declare module 'facile/interfaces' {
                 * @memberOf IConfig
                 */
             securityFilter?: string | IRequestHandler;
+            sort?: boolean;
             rest?: IRoutesTemplate;
             crud?: IRoutesTemplate;
     }
@@ -1410,6 +1411,14 @@ declare module 'facile/types/model' {
                 * @memberOf Service
                 */
             readonly log: LoggerInstance;
+            /**
+                * init
+                *
+                * @desc initializes the model.
+                * @method init
+                * @memberOf Model
+                */
+            init(): void;
     }
 }
 

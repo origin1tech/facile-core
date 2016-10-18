@@ -39,4 +39,15 @@ export class Model implements IModel {
 		return this.facile.log;
 	}
 
+	/**
+	 * init
+	 *
+	 * @desc initializes the model.
+	 * @method init
+	 * @memberOf Model
+	 */
+	init() {
+		throw new Error('Not Implmented: Model init method must be overridden.');
+	}
+
 }

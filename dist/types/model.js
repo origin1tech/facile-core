@@ -35,6 +35,16 @@ var Model = (function () {
         enumerable: true,
         configurable: true
     });
+    /**
+     * init
+     *
+     * @desc initializes the model.
+     * @method init
+     * @memberOf Model
+     */
+    Model.prototype.init = function () {
+        throw new Error('Not Implmented: Model init method must be overridden.');
+    };
     Model.type = 'Model';
     return Model;
 }());

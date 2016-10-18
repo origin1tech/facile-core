@@ -360,6 +360,7 @@ export interface IRoutesTemplate {
 	destroy?: string;
 }
 
+
 /**
  * IRoutesConfig
  *
@@ -377,6 +378,7 @@ export interface IRoutesConfig {
 	 * @memberOf IConfig
 	 */
 	securityFilter?: string | IRequestHandler;
+	sort?: boolean;
 	rest?: IRoutesTemplate;
 	crud?: IRoutesTemplate;
 }

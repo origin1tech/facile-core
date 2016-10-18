@@ -3,8 +3,9 @@ function init(facile) {
     return function (fn) {
         function handleModels() {
             facile.log.debug('Initializing Models');
-            // Initialize the services.
-            // initMap(facile._models, facile);
+            var collection = facile._models;
+            // Initialize the Models.
+            collection.initAll(facile);
             if (facile._config.auto)
                 facile.execAfter('init:models', function () {
                     facile.emit('init:controllers');

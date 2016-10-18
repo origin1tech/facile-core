@@ -1,6 +1,7 @@
-import { IInit } from '../interfaces';
+import { IInit, IModel } from '../interfaces';
 import {  } from './utils';
 import { Facile } from './';
+import { Collection } from './collection';
 
 export function init(facile: Facile): any {
 
@@ -10,8 +11,10 @@ export function init(facile: Facile): any {
 
 			facile.log.debug('Initializing Models');
 
-			// Initialize the services.
-			// initMap(facile._models, facile);
+			let collection: Collection<IModel> = facile._models;
+
+			// Initialize the Models.
+			collection.initAll(facile);
 
 			if (facile._config.auto)
 				facile.execAfter('init:models', () => {

@@ -128,8 +128,14 @@ function init(facile) {
     return function (fn) {
         function handleRoutes() {
             facile.log.debug('Initializing Routes');
+            var routes = facile._routes;
+            var sortConfig = facile._config.routes.sort;
+            // if route sorting is enabled
+            // sort the routes.
+            if (sortConfig !== false)
+                routes = lodash_1.orderBy(routes, 'url', 'desc');
             // Iterate and add routes.
-            lodash_1.each(facile._routes, function (route) {
+            lodash_1.each(routes, function (route) {
                 addRoute(route);
             });
             if (facile._config.auto)
