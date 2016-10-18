@@ -60,6 +60,17 @@ var Facile = (function (_super) {
         // Add default logger to map 
         // and set as "log" instance.
         this.log = defaultLogger;
+        // Expose common Boom events to framework.
+        this._errors = {
+            wrap: Boom.wrap,
+            create: Boom.create,
+            badRequest: Boom.badRequest,
+            unauthorized: Boom.unauthorized,
+            forbidden: Boom.forbidden,
+            notFound: Boom.notFound,
+            notImplemented: Boom.notImplemented,
+            badGateway: Boom.badGateway
+        };
         // Create Express app.
         this.express = express;
         this.app = express();
@@ -162,23 +173,19 @@ var Facile = (function (_super) {
             lodash_1.each(this.log.transports, function (t) {
                 t.level = _this._config.logLevel;
             });
-        this.log.debug('Defining Boom error handlers.');
-        // Expose common Boom events to framework.
-        this.Boom = {
-            wrap: Boom.wrap,
-            create: Boom.create,
-            badRequest: Boom.badRequest,
-            unauthorized: Boom.unauthorized,
-            forbidden: Boom.forbidden,
-            notFound: Boom.notFound,
-            notImplemented: Boom.notImplemented,
-            badGateway: Boom.badGateway
-        };
         this.log.debug('Defining node environment.');
         // Ensure environment.
         this._config.env = this._config.env || 'development';
         // Set Node environment.
         process.env.NODE_ENV = this._config.env;
+        this.log.debug('Normalizing configuration options.');
+        // Check if generated routes option is set to true.
+        if (this._config.routes) {
+            if (this._config.routes.rest === true)
+                this._config.routes.rest = defaults.config.routes.rest;
+            if (this._config.routes.crud === true)
+                this._config.routes.crud = defaults.config.routes.crud;
+        }
         // Ensure config auto has value.
         this._config.auto = this._config.auto !== false ? true : false;
         this._configured = true;
@@ -264,11 +271,16 @@ var Facile = (function (_super) {
      */
     Facile.prototype.start = function (config, fn) {
         var _this = this;
+        var self = this;
         // Allow callback as first argument.
         if (lodash_1.isFunction(config)) {
             fn = config;
             config = undefined;
         }
+        // Store start callback as
+        // may need to init first.
+        if (fn)
+            this._startCallack = fn;
         /////////////////////////////
         // Wait/Start Facile
         /////////////////////////////
@@ -276,12 +288,12 @@ var Facile = (function (_super) {
             var _this = this;
             // On listening Handle Callback.
             this.server.on('listening', function () {
-                var address = _this.server.address(), addy = address.address, port = address.port;
-                if (_this._config.auto)
-                    _this.execAfter('core:listen');
+                var address = self.server.address(), addy = address.address, port = address.port;
+                if (self._config.auto)
+                    self.execAfter('core:listen');
                 // Call if callack function provided.
-                if (fn)
-                    fn(_this);
+                if (self._startCallack)
+                    self._startCallack(_this);
                 console.log(chalk_1.cyan('\nServer listening at: http://' + addy + ':' + port));
             });
             if (this._config.auto) {
@@ -670,6 +682,39 @@ var Facile = (function (_super) {
     Facile.prototype.controller = function (name) {
         var collection = this._controllers;
         return collection.get(name);
+    };
+    /**
+     * listRoutes
+     *
+     * @desc compiles a list of all routes.
+     * @method listRoutes
+     * @param {string} [router='default']
+     *
+     * @memberOf Facile
+     */
+    Facile.prototype.listRoutes = function (router) {
+        if (router === void 0) { router = 'default'; }
+        var _router = this._routers[router];
+        var map = {
+            get: [],
+            post: [],
+            put: [],
+            delete: [],
+            all: [],
+            head: [],
+            options: [],
+            patch: []
+        };
+        lodash_1.each(_router.stack, function (r) {
+            if (r.route) {
+                Object.keys(r.route.methods).forEach(function (m) {
+                    map[m] = map[m] || [];
+                    map[m].push(r.route.path);
+                });
+                return map;
+            }
+        });
+        return map;
     };
     return Facile;
 }(core_1.Core));

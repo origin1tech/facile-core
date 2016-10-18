@@ -9,7 +9,7 @@ import { wrap, create, badRequest, unauthorized, forbidden, notFound, notImpleme
 import { Server, Socket } from 'net';
 import { readFileSync } from 'fs';
 import { extend, isPlainObject, each, isFunction, assign,
-				isString, maxBy, has, isBoolean, bind, values, merge } from 'lodash';
+				isString, maxBy, has, isBoolean, bind, values, merge, sortBy } from 'lodash';
 import { red, cyan } from 'chalk';
 
 // Internal Dependencies.
@@ -17,7 +17,7 @@ import * as utils from './utils';
 import { Core } from './core';
 import * as defaults from './defaults';
 import { IFacile, ICertificate, IConfig, IRouters, IRoute,
-				IBoom, ICallbackResult, IFilter,
+				IErrors, ICallbackResult, IFilter,
 				IMiddleware, ISockets, IModel, IController,
 				IUtils, IConfigs, IRequestHandler, IRoutes, IService,
 				IViewConfig, IInit, ICallback, IMiddlewares, IComponents,
@@ -88,6 +88,18 @@ export class Facile extends Core implements IFacile {
 		// Add default logger to map 
 		// and set as "log" instance.
 		this.log = defaultLogger;
+
+		// Expose common Boom events to framework.
+		this._errors = {
+			wrap: Boom.wrap,
+			create: Boom.create,
+			badRequest: Boom.badRequest,
+			unauthorized: Boom.unauthorized,
+			forbidden: Boom.forbidden,
+			notFound: Boom.notFound,
+			notImplemented: Boom.notImplemented,
+			badGateway: Boom.badGateway
+		};
 
 		// Create Express app.
 		this.express = express;
@@ -222,20 +234,6 @@ export class Facile extends Core implements IFacile {
 				t.level = this._config.logLevel;
 			});
 
-		this.log.debug('Defining Boom error handlers.');
-
-		// Expose common Boom events to framework.
-		this.Boom = {
-			wrap: Boom.wrap,
-			create: Boom.create,
-			badRequest: Boom.badRequest,
-			unauthorized: Boom.unauthorized,
-			forbidden: Boom.forbidden,
-			notFound: Boom.notFound,
-			notImplemented: Boom.notImplemented,
-			badGateway: Boom.badGateway
-		};
-
 		this.log.debug('Defining node environment.');
 
 		// Ensure environment.
@@ -243,6 +241,16 @@ export class Facile extends Core implements IFacile {
 
 		// Set Node environment.
 		process.env.NODE_ENV = this._config.env;
+
+		this.log.debug('Normalizing configuration options.');
+
+		// Check if generated routes option is set to true.
+		if (this._config.routes) {
+			if (this._config.routes.rest === true)
+				this._config.routes.rest = defaults.config.routes.rest;
+			if (this._config.routes.crud === true)
+				this._config.routes.crud = defaults.config.routes.crud;
+		}
 
 		// Ensure config auto has value.
 		this._config.auto = this._config.auto !== false ? true : false;
@@ -356,11 +364,18 @@ export class Facile extends Core implements IFacile {
 	 */
 	start(config?: string | IConfig | Function, fn?: Function): Facile {
 
+		let self = this;
+
 		// Allow callback as first argument.
 		if (isFunction(config)) {
 			fn = config;
 			config = undefined;
 		}
+
+		// Store start callback as
+		// may need to init first.
+		if (fn)
+			this._startCallack = fn;
 
 		/////////////////////////////
 		// Wait/Start Facile
@@ -371,16 +386,16 @@ export class Facile extends Core implements IFacile {
 			// On listening Handle Callback.
 			this.server.on('listening', () => {
 
-				let address = this.server.address(),
+				let address = self.server.address(),
 						addy = address.address,
 						port = address.port;
 
-				if (this._config.auto)
-					this.execAfter('core:listen');
+				if (self._config.auto)
+					self.execAfter('core:listen');
 
 				// Call if callack function provided.
-				if (fn)
-					fn(this);
+				if (self._startCallack)
+					self._startCallack(this);
 
 				console.log(cyan('\nServer listening at: http://' + addy + ':' + port));
 
@@ -1092,6 +1107,43 @@ export class Facile extends Core implements IFacile {
 	controller<T>(name: string): T {
 		let collection: Collection<IController> = this._controllers;
 		return collection.get<T>(name);
+	}
+
+	/**
+	 * listRoutes
+	 *
+	 * @desc compiles a list of all routes.
+	 * @method listRoutes
+	 * @param {string} [router='default']
+	 *
+	 * @memberOf Facile
+	 */
+	listRoutes(router: string = 'default'): any {
+
+		let _router = this._routers[router];
+		let map = {
+			get: [],
+			post: [],
+			put: [],
+			delete: [],
+			all: [],
+			head: [],
+			options: [],
+			patch: []
+		};
+
+		each(_router.stack, (r) => {
+			if (r.route) {
+				Object.keys(r.route.methods).forEach((m) => {
+					map[m] = map[m] || [];
+					map[m].push(r.route.path);
+				});
+				return map;
+			}
+		});
+
+		return map;
+
 	}
 
 }

@@ -25,11 +25,26 @@ var Controller = (function () {
          *
          * @desc exposes Facile.log to class.
          * @readonly
-         * @method {LoggerInstance} log
+         * @member {LoggerInstance} log
          * @memberOf Service
          */
         get: function () {
             return this.facile.log;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Controller.prototype, "errors", {
+        /**
+         * errros
+         *
+         * @desc exposes Facile.errors to class.
+         * @readonly
+         * @member {IErrors}
+         * @memberOf Controller
+         */
+        get: function () {
+            return this.facile._errors;
         },
         enumerable: true,
         configurable: true

@@ -316,7 +316,6 @@
         <article>
             <pre class="sunlight-highlight-javascript ">
 // External Dependencies.
-import * as vscode from 'vscode';
 import { resolve, join } from 'path';
 import * as express from 'express';
 import * as Boom from 'boom';
@@ -326,7 +325,7 @@ import { wrap, create, badRequest, unauthorized, forbidden, notFound, notImpleme
 import { Server, Socket } from 'net';
 import { readFileSync } from 'fs';
 import { extend, isPlainObject, each, isFunction, assign,
-				isString, maxBy, has, isBoolean, bind, values, merge } from 'lodash';
+				isString, maxBy, has, isBoolean, bind, values, merge, sortBy } from 'lodash';
 import { red, cyan } from 'chalk';
 
 // Internal Dependencies.
@@ -334,7 +333,7 @@ import * as utils from './utils';
 import { Core } from './core';
 import * as defaults from './defaults';
 import { IFacile, ICertificate, IConfig, IRouters, IRoute,
-				IBoom, ICallbackResult, IFilter,
+				IErrors, ICallbackResult, IFilter,
 				IMiddleware, ISockets, IModel, IController,
 				IUtils, IConfigs, IRequestHandler, IRoutes, IService,
 				IViewConfig, IInit, ICallback, IMiddlewares, IComponents,
@@ -405,6 +404,18 @@ export class Facile extends Core implements IFacile {
 		// Add default logger to map 
 		// and set as "log" instance.
 		this.log = defaultLogger;
+
+		// Expose common Boom events to framework.
+		this._errors = {
+			wrap: Boom.wrap,
+			create: Boom.create,
+			badRequest: Boom.badRequest,
+			unauthorized: Boom.unauthorized,
+			forbidden: Boom.forbidden,
+			notFound: Boom.notFound,
+			notImplemented: Boom.notImplemented,
+			badGateway: Boom.badGateway
+		};
 
 		// Create Express app.
 		this.express = express;
@@ -539,20 +550,6 @@ export class Facile extends Core implements IFacile {
 				t.level = this._config.logLevel;
 			});
 
-		this.log.debug('Defining Boom error handlers.');
-
-		// Expose common Boom events to framework.
-		this.Boom = {
-			wrap: Boom.wrap,
-			create: Boom.create,
-			badRequest: Boom.badRequest,
-			unauthorized: Boom.unauthorized,
-			forbidden: Boom.forbidden,
-			notFound: Boom.notFound,
-			notImplemented: Boom.notImplemented,
-			badGateway: Boom.badGateway
-		};
-
 		this.log.debug('Defining node environment.');
 
 		// Ensure environment.
@@ -560,6 +557,16 @@ export class Facile extends Core implements IFacile {
 
 		// Set Node environment.
 		process.env.NODE_ENV = this._config.env;
+
+		this.log.debug('Normalizing configuration options.');
+
+		// Check if generated routes option is set to true.
+		if (this._config.routes) {
+			if (this._config.routes.rest === true)
+				this._config.routes.rest = defaults.config.routes.rest;
+			if (this._config.routes.crud === true)
+				this._config.routes.crud = defaults.config.routes.crud;
+		}
 
 		// Ensure config auto has value.
 		this._config.auto = this._config.auto !== false ? true : false;
@@ -673,11 +680,18 @@ export class Facile extends Core implements IFacile {
 	 */
 	start(config?: string | IConfig | Function, fn?: Function): Facile {
 
+		let self = this;
+
 		// Allow callback as first argument.
 		if (isFunction(config)) {
 			fn = config;
 			config = undefined;
 		}
+
+		// Store start callback as
+		// may need to init first.
+		if (fn)
+			this._startCallack = fn;
 
 		/////////////////////////////
 		// Wait/Start Facile
@@ -688,16 +702,16 @@ export class Facile extends Core implements IFacile {
 			// On listening Handle Callback.
 			this.server.on('listening', () => {
 
-				let address = this.server.address(),
+				let address = self.server.address(),
 						addy = address.address,
 						port = address.port;
 
-				if (this._config.auto)
-					this.execAfter('core:listen');
+				if (self._config.auto)
+					self.execAfter('core:listen');
 
 				// Call if callack function provided.
-				if (fn)
-					fn(this);
+				if (self._startCallack)
+					self._startCallack(this);
 
 				console.log(cyan('\nServer listening at: http://' + addy + ':' + port));
 
@@ -1148,7 +1162,7 @@ export class Facile extends Core implements IFacile {
 		function isValidParent(key, val) {
 
 			if (key !== '*' &amp;&amp; !isPlainObject(val)) {
-				self.log.warn('Invalid parent policy key "' + key + '" ignored, parent policy values must be objects execpt global policy key.');
+				self.log.warn('Invalid policy key "' + key + '" ignored, parent policy values must be objects execpt global policy key.');
 				return false;
 			}
 
@@ -1157,22 +1171,20 @@ export class Facile extends Core implements IFacile {
 				return false;
 			}
 
+			else if (isPlainObject(val)) {
+				let keys = Object.keys(val);
+				if (!keys.length) {
+					self.log.warn('Invalid policy key "' + key + '" ignored, policies must contain a global or action policies.');
+					return false;
+				}
+			}
+
 			return true;
 
 		}
 
-		// Adding policy with action plicy.
-		if (arguments.length === 3) {
-
-			let _name = name as string;
-			let _action;
-			this._policies[_name] = this._policies[_name] || {};
-			this._policies[_name][_action] = policy;
-
-		}
-
 		// Adding map of policies.
-		else if (isPlainObject(name)) {
+		if (isPlainObject(name)) {
 
 			Object.keys(name).forEach((key) => {
 
@@ -1191,12 +1203,22 @@ export class Facile extends Core implements IFacile {
 		}
 
 		// Adding single policy.
-		else {
+		else if (isPlainObject(action)) {
 
 			let _name = name as string;
 			this._policies[_name] = this._policies[_name] || {};
 			if (isValidParent(name, action))
 				extend(this._policies[_name], action);
+		}
+
+		// Adding policy with action plicy.
+		else if (policy !== undefined) {
+
+			let _name = name as string;
+			let _action;
+			this._policies[_name] = this._policies[_name] || {};
+			this._policies[_name][_action] = policy;
+
 		}
 
 		return this;
@@ -1354,8 +1376,8 @@ export class Facile extends Core implements IFacile {
 	 * @memberOf Facile
 	 */
 	service&lt;T>(name: string): T {
-		let component: T = this._services[name];
-		return component;
+		let collection: Collection&lt;IService> = this._services;
+		return collection.get&lt;T>(name);
 	}
 
 	/**
@@ -1369,8 +1391,8 @@ export class Facile extends Core implements IFacile {
 	 * @memberOf Facile
 	 */
 	filter&lt;T>(name: string): T {
-		let component: T = this._filters[name];
-		return component;
+		let collection: Collection&lt;IFilter> = this._filters;
+		return collection.get&lt;T>(name);
 	}
 
 	/**
@@ -1384,8 +1406,8 @@ export class Facile extends Core implements IFacile {
 	 * @memberOf Facile
 	 */
 	model&lt;T>(name: string): T {
-		let component: T = this._models[name];
-		return component;
+		let collection: Collection&lt;IModel> = this._models;
+		return collection.get&lt;T>(name);
 	}
 
 	/**
@@ -1399,8 +1421,45 @@ export class Facile extends Core implements IFacile {
 	 * @memberOf Facile
 	 */
 	controller&lt;T>(name: string): T {
-		let component: T = this._controllers[name];
-		return component;
+		let collection: Collection&lt;IController> = this._controllers;
+		return collection.get&lt;T>(name);
+	}
+
+	/**
+	 * listRoutes
+	 *
+	 * @desc compiles a list of all routes.
+	 * @method listRoutes
+	 * @param {string} [router='default']
+	 *
+	 * @memberOf Facile
+	 */
+	listRoutes(router: string = 'default'): any {
+
+		let _router = this._routers[router];
+		let map = {
+			get: [],
+			post: [],
+			put: [],
+			delete: [],
+			all: [],
+			head: [],
+			options: [],
+			patch: []
+		};
+
+		each(_router.stack, (r) => {
+			if (r.route) {
+				Object.keys(r.route.methods).forEach((m) => {
+					map[m] = map[m] || [];
+					map[m].push(r.route.path);
+				});
+				return map;
+			}
+		});
+
+		return map;
+
 	}
 
 }
@@ -1428,7 +1487,7 @@ export class Facile extends Core implements IFacile {
 									
 						<span class="jsdoc-message">
 						Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a>
-						on Sat Oct 15 2016 13:07:53 GMT-0700 (PDT) using the <a href="https://github.com/xperiments/TSDoc">TSDoc template</a>.
+						on Tue Oct 18 2016 13:55:07 GMT-0700 (PDT) using the <a href="https://github.com/xperiments/TSDoc">TSDoc template</a>.
 						</span>
 				</footer>
 			</div>

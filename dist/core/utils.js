@@ -113,6 +113,19 @@ function parseRoute(url, handler) {
     else {
         route.handler = handler;
     }
+    // Check if handler is view or redirect.
+    if (lodash_1.isString(route.handler)) {
+        var isViewRedirect = /^(view|redirect)/.test(route.handler);
+        // If view redirect we need to
+        // set the handler.
+        if (isViewRedirect) {
+            var split = route.handler.split(' ');
+            var key = split[0];
+            var url_1 = split[1];
+            route[key] = url_1;
+            route.handler = key;
+        }
+    }
     return route;
 }
 exports.parseRoute = parseRoute;
@@ -133,13 +146,16 @@ function validateRoute(route) {
     if (Array.isArray(route.method)) {
         var methods_1 = [];
         route.method.forEach(function (m, k) {
-            methods_1.push(m.toLowerCase());
+            m = m.toLowerCase();
+            m = m === 'del' ? 'delete' : m;
+            methods_1.push(m);
         });
         route.method = methods_1;
     }
     else {
         var method = route.method;
-        route.method = [route.method.toLowerCase()];
+        method = method === 'del' ? 'delete' : method;
+        route.method = [method.toLowerCase()];
     }
     // Ensure default router.
     route.router = route.router || 'default';

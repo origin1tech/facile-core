@@ -9,8 +9,10 @@ function init(facile) {
     var policies = facile._policies;
     // Get the global policy.
     var globalPol = policies['*'];
+    // Routes configuration.
+    var routesConfig = facile._config.routes;
     // Get the global security filter.
-    var securityFilter = facile._config.routes && facile._config.routes.securityFilter;
+    var securityFilter = routesConfig.handlers && routesConfig.handlers.security;
     // Map of cached global controller policies.
     var ctrlPols = {};
     // Global Policy should always be defined.
@@ -18,17 +20,24 @@ function init(facile) {
         facile.log.error('Security risk detected, please define a global policy.');
         process.exit();
     }
-    // Lookup a filter method from string.
-    function lookupFilter(filter, collection) {
-        var action = lodash_1.get(collection._components, filter);
-        var klassName = filter.split('.').shift();
+    // Lookup a action method from string.
+    function lookupAction(action, collection, route) {
+        facile.log.debug('Looking up route action "' + action + '".');
+        var klassName = action.split('.').shift();
         var klass = collection.get(klassName);
+        var klassAction = lodash_1.get(collection._components, action);
+        if (!klassAction)
+            return undefined;
+        // Check if action is view or redirect.
+        if (route && (route.view || route.redirect)) {
+            return klassAction.bind(klass, route.view || route.redirect)();
+        }
         // Bind to class so we don't lose context.
-        return action.bind(klass);
+        return klassAction.bind(klass);
     }
     // Normalize all filters looking
     // up or setting to global security filter.
-    function normalizeFilters(filters, ctrl) {
+    function normalizeFilters(filters, ctrl, route) {
         var lookupType = ctrl ? 'controller' : 'filter';
         var _normalized = [];
         // Ensure filters are an array.
@@ -49,18 +58,28 @@ function init(facile) {
             else if (lodash_1.isBoolean(f) && !ctrl) {
                 // Only normalize if true.
                 // if false skip.
-                if (f === false)
-                    _normalized.push(lookupFilter(securityFilter, filterCol));
+                if (f === false) {
+                    if (lodash_1.isFunction(securityFilter)) {
+                        _normalized.push(securityFilter);
+                    }
+                    else {
+                        var action = lookupAction(securityFilter, filterCol);
+                        if (action)
+                            _normalized.push(action);
+                        else
+                            facile.log.warn('Failed to load ' + lookupType + ' the filter/action "' + securityFilter + '" could not be resolved.');
+                    }
+                }
             }
             else if (lodash_1.isString(f)) {
                 // May be in filters or controllers.
                 var collection = ctrl ? ctrlCol : filterCol;
-                var filter = lookupFilter(f, collection);
-                if (filter) {
-                    _normalized.push(filter);
+                var action = lookupAction(f, collection, route);
+                if (action) {
+                    _normalized.push(action);
                 }
                 else {
-                    facile.log.warn('Failed to load ' + lookupFilter + ' "' + f + '", ' + lookupFilter + ' could not be resolved.');
+                    facile.log.warn('Failed to load ' + lookupType + ' the filter/action "' + f + '" could not be resolved.');
                 }
             }
             else {
@@ -78,6 +97,7 @@ function init(facile) {
     // Lookup policies by ctrl
     // name and action name.
     function lookupPolicies(handler) {
+        facile.log.debug('Looking up security policy/filters for route hanlder "' + handler + '".');
         var globalPolNormalized;
         var ctrlName = handler.split('.').shift();
         var rawFilters = lodash_1.get(policies, handler);
@@ -107,21 +127,30 @@ function init(facile) {
         result = globalPolNormalized.concat(result || []);
         return result;
     }
+    // Checks if route handler is view or redirect
+    // then normalizes and returns.
+    function normalizeViewRedirect(route) {
+        if (route.handler === 'view' || route.handler === 'redirect')
+            route.handler = routesConfig.handlers[route.handler];
+        return route;
+    }
     // Looks up filters and controller
     // normalizing as Express handers.
     function addRoute(route) {
         var router = facile.router(route.router);
         var methods = route.method;
-        var _route = router.route(route.url);
+        // Normalize view and redirects.
+        route = normalizeViewRedirect(route);
         var _policies = lookupPolicies(route.handler);
         var _filters = normalizeFilters(route.filters);
-        var _handler = normalizeFilters(route.handler, true);
+        var _handler = normalizeFilters(route.handler, true, route);
         var _handlers = _policies.concat(_filters).concat(_handler);
         // Iterate adding handlers
         // for each method.
+        if (!_handler.length || !_handlers.length)
+            return facile.log.warn('Failed to initialize route "' + route.url + '" invalid or missing handler.');
+        var _route = router.route(route.url);
         methods.forEach(function (m) {
-            if (!_handlers || !_handlers.length)
-                return facile.log.warn('Failed to initialize route "' + route.url + '" invalid or missing handler.');
             _route[m](_handlers);
         });
     }

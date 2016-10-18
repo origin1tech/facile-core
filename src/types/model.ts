@@ -1,4 +1,4 @@
-import { IModel, IFacile } from '../interfaces';
+import { IModel, IFacile, IErrors } from '../interfaces';
 import { LoggerInstance } from 'winston';
 
 /**
@@ -32,11 +32,23 @@ export class Model implements IModel {
 	 *
 	 * @desc exposes Facile.log to class.
 	 * @readonly
-	 * @method {LoggerInstance} log
+	 * @member {LoggerInstance} log
 	 * @memberOf Service
 	 */
 	get log(): LoggerInstance {
 		return this.facile.log;
+	}
+
+	/**
+	 * errros
+	 *
+	 * @desc exposes Facile.errors to class.
+	 * @readonly
+	 * @member {IErrors}
+	 * @memberOf Controller
+	 */
+	get errors(): IErrors {
+		return this.facile._errors;
 	}
 
 	/**

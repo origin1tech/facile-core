@@ -70,15 +70,6 @@ export interface IListenersMap {
  */
 export interface ICore extends EventEmitter {
 
-
-	/**
-	 * Boom
-	 *
-	 * @member {IBoom} ICore#Boom
-	 * @memberOf ICore
-	 */
-	Boom: IBoom;
-
 	/**
 	 * express
 	 *
@@ -110,6 +101,14 @@ export interface ICore extends EventEmitter {
 	 * @memberOf ICore
 	 */
 	log: LoggerInstance;
+
+	/**
+	 * _errors
+	 *
+	 * @member {IErrors} _errors
+	 * @memberOf ICore
+	 */
+	_errors: IErrors;
 
 	/**
 	 * _pkg
@@ -285,6 +284,8 @@ export interface IFacile extends ICore {
 	model<T>(name: string): T;
 	controller<T>(name: string): T;
 
+	listRoutes(router: string): string[];
+
 }
 
 /**
@@ -346,13 +347,7 @@ export interface IDatabase {
 	connection: any;	// The connected instance.
 }
 
-/**
- * IRoutesTemplate
- *
- * @export
- * @interface IRoutesTemplate
- */
-export interface IRoutesTemplate {
+export interface IRoutesTemplateActions {
 	find?: string;
 	findOne?: string;
 	create?: string;
@@ -360,6 +355,23 @@ export interface IRoutesTemplate {
 	destroy?: string;
 }
 
+/**
+ * IRoutesTemplate
+ *
+ * @export
+ * @interface IRoutesTemplate
+ */
+export interface IRoutesTemplate {
+	controller: string;
+	actions: IRoutesTemplateActions;
+}
+
+export interface IRoutesHandlers {
+	index: string | IRequestHandler;
+	view: string | IRequestHandler;
+	redirect: string | IRequestHandler;
+	security: string | IRequestHandler;
+}
 
 /**
  * IRoutesConfig
@@ -368,19 +380,11 @@ export interface IRoutesTemplate {
  * @interface IRoutesConfig
  */
 export interface IRoutesConfig {
-	controller?: string;
-
-	/**
-	 * securityFilter
-	 *
-	 * @desc the default policy filter.
-	 * @member {(string | IRequestHandler)} securityFilter
-	 * @memberOf IConfig
-	 */
+	handlers?: IRoutesHandlers;
 	securityFilter?: string | IRequestHandler;
+	rest?: IRoutesTemplate | boolean;
+	crud?: IRoutesTemplate | boolean;
 	sort?: boolean;
-	rest?: IRoutesTemplate;
-	crud?: IRoutesTemplate;
 }
 
 /**
@@ -598,7 +602,7 @@ export interface IBoomEvent {
  * @export
  * @interface IBoom
  */
-export interface IBoom {
+export interface IErrors {
 	wrap: IBoomWrap;
 	create: IBoomCreate;
 	badRequest: IBoomEvent;

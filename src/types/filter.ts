@@ -1,5 +1,5 @@
 
-import { IFilter, IFacile } from '../interfaces';
+import { IFilter, IFacile, IErrors } from '../interfaces';
 import { LoggerInstance } from 'winston';
 
 /**
@@ -29,16 +29,28 @@ export class Filter implements IFilter {
 		return this;
 	}
 
-	/**
+		/**
 	 * log
 	 *
 	 * @desc exposes Facile.log to class.
 	 * @readonly
-	 * @method {LoggerInstance} log
+	 * @member {LoggerInstance} log
 	 * @memberOf Service
 	 */
 	get log(): LoggerInstance {
 		return this.facile.log;
+	}
+
+	/**
+	 * errros
+	 *
+	 * @desc exposes Facile.errors to class.
+	 * @readonly
+	 * @member {IErrors}
+	 * @memberOf Controller
+	 */
+	get errors(): IErrors {
+		return this.facile._errors;
 	}
 
 }

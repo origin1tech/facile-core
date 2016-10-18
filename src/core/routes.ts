@@ -18,8 +18,11 @@ export function init(facile: Facile): any {
 	// Get the global policy.
 	let globalPol = policies['*'];
 
+	// Routes configuration.
+	let routesConfig = facile._config.routes;
+
 	// Get the global security filter.
-	let securityFilter = facile._config.routes && facile._config.routes.securityFilter;
+	let securityFilter = routesConfig.handlers && routesConfig.handlers.security;
 
 	// Map of cached global controller policies.
 	let ctrlPols: any = {};
@@ -30,21 +33,31 @@ export function init(facile: Facile): any {
 		process.exit();
 	}
 
-	// Lookup a filter method from string.
-	function lookupFilter(filter: string, collection: any): IRequestHandler {
+	// Lookup a action method from string.
+	function lookupAction(action: string, collection: any, route?: IRoute): IRequestHandler {
 
-		let action = get(collection._components, filter) as IRequestHandler;
-		let klassName = filter.split('.').shift();
+		facile.log.debug('Looking up route action "' + action + '".');
+
+		let klassName = action.split('.').shift();
 		let klass = collection.get(klassName);
+		let klassAction = get(collection._components, action) as IRequestHandler;
+
+		if (!klassAction)
+			return undefined;
+
+		// Check if action is view or redirect.
+		if (route && (route.view || route.redirect)) {
+			return klassAction.bind(klass, route.view || route.redirect)();
+		}
 
 		// Bind to class so we don't lose context.
-		return action.bind(klass);
+		return klassAction.bind(klass);
 
 	}
 
 	// Normalize all filters looking
 	// up or setting to global security filter.
-	function normalizeFilters(filters: any, ctrl?: boolean): IRequestHandler[] {
+	function normalizeFilters(filters: any, ctrl?: boolean, route?: IRoute): IRequestHandler[] {
 
 		let lookupType = ctrl ? 'controller' : 'filter';
 		let _normalized = [];
@@ -74,8 +87,18 @@ export function init(facile: Facile): any {
 
 				// Only normalize if true.
 				// if false skip.
-				if (f === false)
-					_normalized.push(lookupFilter(securityFilter as string, filterCol));
+				if (f === false) {
+					if (isFunction(securityFilter)) {
+						_normalized.push(securityFilter);
+					}
+					else {
+						let action = lookupAction(securityFilter as string, filterCol);
+						if (action)
+							_normalized.push(action);
+						else
+							facile.log.warn('Failed to load ' + lookupType + ' the filter/action "' + securityFilter + '" could not be resolved.');
+					}
+				}
 
 			}
 
@@ -84,13 +107,14 @@ export function init(facile: Facile): any {
 
 				// May be in filters or controllers.
 				let collection = ctrl ? ctrlCol : filterCol;
-				let filter = lookupFilter(f, collection);
 
-				if (filter) {
-					_normalized.push(filter);
+				let action = lookupAction(f, collection, route);
+
+				if (action) {
+					_normalized.push(action);
 				}
 				else {
-					facile.log.warn('Failed to load ' + lookupFilter + ' "' + f + '", ' + lookupFilter + ' could not be resolved.');
+					facile.log.warn('Failed to load ' + lookupType + ' the filter/action "' + f + '" could not be resolved.');
 				}
 
 			}
@@ -117,7 +141,9 @@ export function init(facile: Facile): any {
 
 	// Lookup policies by ctrl
 	// name and action name.
-	function lookupPolicies(handler: string) {
+	function lookupPolicies(handler: string): IRequestHandler[] {
+
+		facile.log.debug('Looking up security policy/filters for route hanlder "' + handler + '".');
 
 		let globalPolNormalized;
 		let ctrlName: string = handler.split('.').shift();
@@ -158,23 +184,37 @@ export function init(facile: Facile): any {
 
 	}
 
+	// Checks if route handler is view or redirect
+	// then normalizes and returns.
+	function normalizeViewRedirect(route: IRoute): IRoute {
+		if (route.handler === 'view' || route.handler === 'redirect')
+			route.handler = routesConfig.handlers[route.handler];
+		return route;
+	}
+
 	// Looks up filters and controller
 	// normalizing as Express handers.
 	function addRoute(route: IRoute) {
 
 		let router: Router = facile.router(route.router);
 		let methods = route.method as string[];
-		let _route = router.route(route.url);
+
+		// Normalize view and redirects.
+		route = normalizeViewRedirect(route);
+
 		let _policies: IRequestHandler[] = lookupPolicies(route.handler as string);
 		let _filters: IRequestHandler[] = normalizeFilters(route.filters);
-		let _handler: IRequestHandler[] = normalizeFilters(route.handler, true);
+		let _handler: IRequestHandler[] = normalizeFilters(route.handler, true, route);
 		let _handlers: IRequestHandler[] = _policies.concat(_filters).concat(_handler);
 
 		// Iterate adding handlers
 		// for each method.
+		if (!_handler.length || !_handlers.length)
+			return facile.log.warn('Failed to initialize route "' + route.url + '" invalid or missing handler.');
+
+		let _route = router.route(route.url);
+
 		methods.forEach((m) => {
-			if (!_handlers || !_handlers.length)
-				return facile.log.warn('Failed to initialize route "' + route.url + '" invalid or missing handler.');
 			_route[m](_handlers);
 		});
 

@@ -3,7 +3,7 @@ import { LoggerInstance } from 'winston';
 import { Express } from 'express';
 import { Server } from 'net';
 import { EventEmitter } from 'events';
-import { ICore, ICallbackResult, ICallback, IConfig, IConfigs, IListenersMap, IBoom, IRouters, ISockets, IRoute, IMiddlewares } from '../interfaces';
+import { ICore, ICallbackResult, ICallback, IConfig, IConfigs, IListenersMap, IErrors, IRouters, ISockets, IRoute, IMiddlewares } from '../interfaces';
 /**
  * Facile Core
  *
@@ -19,7 +19,7 @@ export declare class Core extends EventEmitter implements ICore {
      * @member {IBoom} Boom
      * @memberOf Core
      */
-    Boom: IBoom;
+    _errors: IErrors;
     /**
      * express
      *
@@ -209,6 +209,15 @@ export declare class Core extends EventEmitter implements ICore {
      * @memberOf Core
      */
     protected _autoInit: boolean;
+    /**
+     * _startCallback
+     *
+     * @member _startCallback
+     * @protected
+     * @member {Function}
+     * @memberOf Core
+     */
+    protected _startCallack: Function;
     /**
      * Creates an instance of Core.
      *

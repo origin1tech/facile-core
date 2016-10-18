@@ -1,4 +1,4 @@
-import { IController, IFacile } from '../interfaces';
+import { IController, IFacile, IErrors } from '../interfaces';
 import { LoggerInstance } from 'winston';
 /**
  * Base Controller Class
@@ -22,8 +22,17 @@ export declare class Controller implements IController {
      *
      * @desc exposes Facile.log to class.
      * @readonly
-     * @method {LoggerInstance} log
+     * @member {LoggerInstance} log
      * @memberOf Service
      */
     readonly log: LoggerInstance;
+    /**
+     * errros
+     *
+     * @desc exposes Facile.errors to class.
+     * @readonly
+     * @member {IErrors}
+     * @memberOf Controller
+     */
+    readonly errors: IErrors;
 }

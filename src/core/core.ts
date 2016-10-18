@@ -7,7 +7,7 @@ import { EventEmitter } from 'events';
 import { series as asyncSeries } from 'async';
 import { truncate } from './utils';
 import { IFacile, ICore, ICallbackResult, ICallback,
-				IConfig, IConfigs, IListenersMap, IBoom, IInit,
+				IConfig, IConfigs, IListenersMap, IErrors, IInit,
 				IRouters, ISockets, IRoute, IMiddlewares } from '../interfaces';
 import { Collection } from './collection';
 
@@ -27,7 +27,7 @@ export class Core extends EventEmitter implements ICore {
 	 * @member {IBoom} Boom
 	 * @memberOf Core
 	 */
-	Boom: IBoom;
+	_errors: IErrors;
 
 	/**
 	 * express
@@ -242,6 +242,16 @@ export class Core extends EventEmitter implements ICore {
 	 * @memberOf Core
 	 */
 	protected _autoInit: boolean = false;
+
+	/**
+	 * _startCallback
+	 *
+	 * @member _startCallback
+	 * @protected
+	 * @member {Function}
+	 * @memberOf Core
+	 */
+	protected _startCallack: Function;
 
 	/**
 	 * Creates an instance of Core.

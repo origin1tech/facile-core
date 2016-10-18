@@ -22,18 +22,34 @@ exports.config = {
         },
         views: '/'
     },
-    // Set to false to disable.
     routes: {
-        controller: 'DefaultController',
-        securityFilter: 'DefaultFilter.isAuthenticated',
-        // When defined rest routes created.
+        handlers: {
+            index: 'DefaultController.index',
+            view: 'DefaultController.view',
+            redirect: 'DefaultController.redirect',
+            security: 'DefaultFilter.isAuthenticated'
+        },
         rest: {
-            find: 'get /api/{model}',
-            findOne: 'get /api/{model}/:id',
-            create: 'post /api/{model}',
-            update: 'put /api/{model}/:id',
-            destroy: 'del /api/{model}/:id'
-        }
+            controller: 'DefaultController',
+            actions: {
+                find: 'get /api/{model}',
+                findOne: 'get /api/{model}/:id',
+                create: 'post /api/{model}',
+                update: 'put /api/{model}/:id',
+                destroy: 'del /api/{model}/:id'
+            }
+        },
+        crud: {
+            controller: 'DefaultController',
+            actions: {
+                find: 'get /api/{model}/show',
+                findOne: 'get /api/{model}/show/:id',
+                create: 'post /api/{model}/create',
+                update: 'post /api/{model}/update/:id',
+                destroy: 'post /api/{model}/destroy/:id'
+            }
+        },
+        sort: undefined
     }
 };
 //# sourceMappingURL=defaults.js.map

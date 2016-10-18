@@ -1,7 +1,7 @@
 
 import { extend as _extend, isPlainObject, max, keys,
 				each, isString, isFunction, padEnd, truncate as _truncate } from 'lodash';
-import { IFacile, IRoute, IRequestHandler } from '../interfaces';
+import { IFacile, IRoute, IRequestHandler, IRoutesConfig } from '../interfaces';
 
 /**
  * Add object to mapped collection.
@@ -134,7 +134,24 @@ export function parseRoute(url: string,
 		route.filters = handler;
 	}
 	else {
-		route.handler = handler as IRequestHandler;
+		route.handler = handler as any;
+	}
+
+	// Check if handler is view or redirect.
+	if (isString(route.handler)) {
+
+		let isViewRedirect = /^(view|redirect)/.test(route.handler);
+
+		// If view redirect we need to
+		// set the handler.
+		if (isViewRedirect) {
+			let split = route.handler.split(' ');
+			let key = split[0];
+			let url = split[1];
+			route[key] = url;
+			route.handler = key;
+		}
+
 	}
 
 	return route;
@@ -160,7 +177,9 @@ export function validateRoute(route: IRoute): IRoute {
 	if (Array.isArray(route.method)) {
 		let methods = [];
 		route.method.forEach((m, k) => {
-			methods.push(m.toLowerCase());
+			m = m.toLowerCase();
+			m = m === 'del' ? 'delete' : m;
+			methods.push(m);
 		});
 		route.method = methods;
 	}
@@ -168,7 +187,8 @@ export function validateRoute(route: IRoute): IRoute {
 	// Otherwise normalize single method.
 	else {
 		let method: string = route.method as string;
-		route.method = [route.method.toLowerCase()];
+		method = method === 'del' ? 'delete' : method;
+		route.method = [method.toLowerCase()];
 	}
 
 	// Ensure default router.

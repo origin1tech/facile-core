@@ -332,6 +332,16 @@ declare module 'facile/core' {
                 * @memberOf Facile
                 */
             controller<T>(name: string): T;
+            /**
+                * listRoutes
+                *
+                * @desc compiles a list of all routes.
+                * @method listRoutes
+                * @param {string} [router='default']
+                *
+                * @memberOf Facile
+                */
+            listRoutes(router?: string): any;
     }
 }
 
@@ -410,13 +420,6 @@ declare module 'facile/interfaces' {
         */
     export interface ICore extends EventEmitter {
             /**
-                * Boom
-                *
-                * @member {IBoom} ICore#Boom
-                * @memberOf ICore
-                */
-            Boom: IBoom;
-            /**
                 * express
                 *
                 * @member {*} express
@@ -444,6 +447,13 @@ declare module 'facile/interfaces' {
                 * @memberOf ICore
                 */
             log: LoggerInstance;
+            /**
+                * _errors
+                *
+                * @member {IErrors} _errors
+                * @memberOf ICore
+                */
+            _errors: IErrors;
             /**
                 * _pkg
                 *
@@ -591,6 +601,7 @@ declare module 'facile/interfaces' {
             service<T>(name: string): T;
             model<T>(name: string): T;
             controller<T>(name: string): T;
+            listRoutes(router: string): string[];
     }
     /**
         * SSL Certificate Interface.
@@ -645,6 +656,13 @@ declare module 'facile/interfaces' {
             'module': any;
             connection: any;
     }
+    export interface IRoutesTemplateActions {
+            find?: string;
+            findOne?: string;
+            create?: string;
+            update?: string;
+            destroy?: string;
+    }
     /**
         * IRoutesTemplate
         *
@@ -652,11 +670,14 @@ declare module 'facile/interfaces' {
         * @interface IRoutesTemplate
         */
     export interface IRoutesTemplate {
-            find?: string;
-            findOne?: string;
-            create?: string;
-            update?: string;
-            destroy?: string;
+            controller: string;
+            actions: IRoutesTemplateActions;
+    }
+    export interface IRoutesHandlers {
+            index: string | IRequestHandler;
+            view: string | IRequestHandler;
+            redirect: string | IRequestHandler;
+            security: string | IRequestHandler;
     }
     /**
         * IRoutesConfig
@@ -665,18 +686,11 @@ declare module 'facile/interfaces' {
         * @interface IRoutesConfig
         */
     export interface IRoutesConfig {
-            controller?: string;
-            /**
-                * securityFilter
-                *
-                * @desc the default policy filter.
-                * @member {(string | IRequestHandler)} securityFilter
-                * @memberOf IConfig
-                */
+            handlers?: IRoutesHandlers;
             securityFilter?: string | IRequestHandler;
+            rest?: IRoutesTemplate | boolean;
+            crud?: IRoutesTemplate | boolean;
             sort?: boolean;
-            rest?: IRoutesTemplate;
-            crud?: IRoutesTemplate;
     }
     /**
         * Server Configuration.
@@ -870,7 +884,7 @@ declare module 'facile/interfaces' {
         * @export
         * @interface IBoom
         */
-    export interface IBoom {
+    export interface IErrors {
             wrap: IBoomWrap;
             create: IBoomCreate;
             badRequest: IBoomEvent;
@@ -1005,7 +1019,7 @@ declare module 'facile/core/core' {
     import { Express } from 'express';
     import { Server } from 'net';
     import { EventEmitter } from 'events';
-    import { ICore, ICallbackResult, ICallback, IConfig, IConfigs, IListenersMap, IBoom, IRouters, ISockets, IRoute, IMiddlewares } from 'facile/interfaces';
+    import { ICore, ICallbackResult, ICallback, IConfig, IConfigs, IListenersMap, IErrors, IRouters, ISockets, IRoute, IMiddlewares } from 'facile/interfaces';
     /**
         * Facile Core
         *
@@ -1021,7 +1035,7 @@ declare module 'facile/core/core' {
                 * @member {IBoom} Boom
                 * @memberOf Core
                 */
-            Boom: IBoom;
+            _errors: IErrors;
             /**
                 * express
                 *
@@ -1212,6 +1226,15 @@ declare module 'facile/core/core' {
                 */
             protected _autoInit: boolean;
             /**
+                * _startCallback
+                *
+                * @member _startCallback
+                * @protected
+                * @member {Function}
+                * @memberOf Core
+                */
+            protected _startCallack: Function;
+            /**
                 * Creates an instance of Core.
                 *
                 * @constructor
@@ -1318,7 +1341,7 @@ declare module 'facile/core/core' {
 }
 
 declare module 'facile/types/service' {
-    import { IService, IFacile } from 'facile/interfaces';
+    import { IService, IFacile, IErrors } from 'facile/interfaces';
     import { LoggerInstance } from 'winston';
     /**
         * Base Service Class
@@ -1342,15 +1365,24 @@ declare module 'facile/types/service' {
                 *
                 * @desc exposes Facile.log to class.
                 * @readonly
-                * @method {LoggerInstance} log
+                * @member {LoggerInstance} log
                 * @memberOf Service
                 */
             readonly log: LoggerInstance;
+            /**
+                * errros
+                *
+                * @desc exposes Facile.errors to class.
+                * @readonly
+                * @member {IErrors}
+                * @memberOf Controller
+                */
+            readonly errors: IErrors;
     }
 }
 
 declare module 'facile/types/filter' {
-    import { IFilter, IFacile } from 'facile/interfaces';
+    import { IFilter, IFacile, IErrors } from 'facile/interfaces';
     import { LoggerInstance } from 'winston';
     /**
         * Base Filter Class
@@ -1371,19 +1403,28 @@ declare module 'facile/types/filter' {
                 */
             constructor(facile: IFacile);
             /**
-                * log
-                *
-                * @desc exposes Facile.log to class.
-                * @readonly
-                * @method {LoggerInstance} log
-                * @memberOf Service
-                */
+        * log
+        *
+        * @desc exposes Facile.log to class.
+        * @readonly
+        * @member {LoggerInstance} log
+        * @memberOf Service
+        */
             readonly log: LoggerInstance;
+            /**
+                * errros
+                *
+                * @desc exposes Facile.errors to class.
+                * @readonly
+                * @member {IErrors}
+                * @memberOf Controller
+                */
+            readonly errors: IErrors;
     }
 }
 
 declare module 'facile/types/model' {
-    import { IModel, IFacile } from 'facile/interfaces';
+    import { IModel, IFacile, IErrors } from 'facile/interfaces';
     import { LoggerInstance } from 'winston';
     /**
         * Base Model Class
@@ -1407,10 +1448,19 @@ declare module 'facile/types/model' {
                 *
                 * @desc exposes Facile.log to class.
                 * @readonly
-                * @method {LoggerInstance} log
+                * @member {LoggerInstance} log
                 * @memberOf Service
                 */
             readonly log: LoggerInstance;
+            /**
+                * errros
+                *
+                * @desc exposes Facile.errors to class.
+                * @readonly
+                * @member {IErrors}
+                * @memberOf Controller
+                */
+            readonly errors: IErrors;
             /**
                 * init
                 *
@@ -1423,7 +1473,7 @@ declare module 'facile/types/model' {
 }
 
 declare module 'facile/types/controller' {
-    import { IController, IFacile } from 'facile/interfaces';
+    import { IController, IFacile, IErrors } from 'facile/interfaces';
     import { LoggerInstance } from 'winston';
     /**
         * Base Controller Class
@@ -1447,10 +1497,19 @@ declare module 'facile/types/controller' {
                 *
                 * @desc exposes Facile.log to class.
                 * @readonly
-                * @method {LoggerInstance} log
+                * @member {LoggerInstance} log
                 * @memberOf Service
                 */
             readonly log: LoggerInstance;
+            /**
+                * errros
+                *
+                * @desc exposes Facile.errors to class.
+                * @readonly
+                * @member {IErrors}
+                * @memberOf Controller
+                */
+            readonly errors: IErrors;
     }
 }
 

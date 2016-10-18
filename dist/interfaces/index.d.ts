@@ -73,13 +73,6 @@ export interface IListenersMap {
  */
 export interface ICore extends EventEmitter {
     /**
-     * Boom
-     *
-     * @member {IBoom} ICore#Boom
-     * @memberOf ICore
-     */
-    Boom: IBoom;
-    /**
      * express
      *
      * @member {*} express
@@ -107,6 +100,13 @@ export interface ICore extends EventEmitter {
      * @memberOf ICore
      */
     log: LoggerInstance;
+    /**
+     * _errors
+     *
+     * @member {IErrors} _errors
+     * @memberOf ICore
+     */
+    _errors: IErrors;
     /**
      * _pkg
      *
@@ -254,6 +254,7 @@ export interface IFacile extends ICore {
     service<T>(name: string): T;
     model<T>(name: string): T;
     controller<T>(name: string): T;
+    listRoutes(router: string): string[];
 }
 /**
  * SSL Certificate Interface.
@@ -308,6 +309,13 @@ export interface IDatabase {
     'module': any;
     connection: any;
 }
+export interface IRoutesTemplateActions {
+    find?: string;
+    findOne?: string;
+    create?: string;
+    update?: string;
+    destroy?: string;
+}
 /**
  * IRoutesTemplate
  *
@@ -315,11 +323,14 @@ export interface IDatabase {
  * @interface IRoutesTemplate
  */
 export interface IRoutesTemplate {
-    find?: string;
-    findOne?: string;
-    create?: string;
-    update?: string;
-    destroy?: string;
+    controller: string;
+    actions: IRoutesTemplateActions;
+}
+export interface IRoutesHandlers {
+    index: string | IRequestHandler;
+    view: string | IRequestHandler;
+    redirect: string | IRequestHandler;
+    security: string | IRequestHandler;
 }
 /**
  * IRoutesConfig
@@ -328,18 +339,11 @@ export interface IRoutesTemplate {
  * @interface IRoutesConfig
  */
 export interface IRoutesConfig {
-    controller?: string;
-    /**
-     * securityFilter
-     *
-     * @desc the default policy filter.
-     * @member {(string | IRequestHandler)} securityFilter
-     * @memberOf IConfig
-     */
+    handlers?: IRoutesHandlers;
     securityFilter?: string | IRequestHandler;
+    rest?: IRoutesTemplate | boolean;
+    crud?: IRoutesTemplate | boolean;
     sort?: boolean;
-    rest?: IRoutesTemplate;
-    crud?: IRoutesTemplate;
 }
 /**
  * Server Configuration.
@@ -533,7 +537,7 @@ export interface IBoomEvent {
  * @export
  * @interface IBoom
  */
-export interface IBoom {
+export interface IErrors {
     wrap: IBoomWrap;
     create: IBoomCreate;
     badRequest: IBoomEvent;

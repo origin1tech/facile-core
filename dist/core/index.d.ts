@@ -347,4 +347,14 @@ export declare class Facile extends Core implements IFacile {
      * @memberOf Facile
      */
     controller<T>(name: string): T;
+    /**
+     * listRoutes
+     *
+     * @desc compiles a list of all routes.
+     * @method listRoutes
+     * @param {string} [router='default']
+     *
+     * @memberOf Facile
+     */
+    listRoutes(router?: string): any;
 }

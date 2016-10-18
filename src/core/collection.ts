@@ -163,7 +163,7 @@ export class Collection<T>  {
 	 *
 	 * @method initAll
 	 * @param {...any[]} args
-	 * @returns
+	 * @returns void
 	 *
 	 * @memberOf Collection
 	 */

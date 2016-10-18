@@ -1,6 +1,6 @@
 {
   "name": "facile",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Bare bones Express Framework using Typescript",
   "main": "./dist/index.js",
   "typings": "./dist/index.d.ts",
