@@ -35,11 +35,19 @@ wet, checkout one of the Facile kits!
 import { facile, IConfig, IPolicies,
 					IRoutes, Service, Filter,
 					Controller } from './';
+import * as expressSession from 'express-session';
 
 let config: IConfig = {
 	host: '127.0.0.1',
 	port: 3000
 }
+
+let session = expressSession({
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: true }
+});
 
 let policy: IPolicies = {
 	'*': true,
@@ -71,7 +79,17 @@ class DefaultController extends Controller {
 	}
 }
 
+// NOTE: You can also register objects
+// of like components. You can also specify
+// custom names for any component.
+//
+// .registerComponent('MyController', SomeController)
+// .registerComponent({
+// 		MyController: SomeController
+// })
+
 facile
+	.registerMiddleware('session', session)
 	.registerPolicy(policy)
 	.registerComponent(DefaultService)
 	.registerComponent(DefaultFilter)
