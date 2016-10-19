@@ -627,20 +627,6 @@ declare module 'facile/interfaces' {
             (done: ICallbackResult): void;
     }
     /**
-        * Name and renderer for views.
-        * @todo create custon interface
-        * for renderer. consolidate should
-        * but does not export the interface
-        * in typings.
-        *
-        * @export
-        * @interface IViewEngine
-        */
-    export interface IViewEngine {
-            name: string;
-            renderer: string | Function;
-    }
-    /**
         * Express View Settings
         *
         * @export
@@ -648,8 +634,8 @@ declare module 'facile/interfaces' {
         */
     export interface IViewConfig {
             layout?: string;
-            engine?: IViewEngine;
-            'view engine'?: string;
+            engine?: string | Function;
+            extension?: string;
             views?: string | string[] | boolean;
     }
     export interface IDatabase {

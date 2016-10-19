@@ -19,10 +19,8 @@ export let config: IConfig = {
 	maxConnections: 128,
 	views: {
 		layout: 'index',
-		engine: {
-			name: 'ejs',
-			renderer: cons.ejs
-		},
+		engine: 'ejs',
+		// extension: 'ejs' // defaults to engine.
 		views: '/'
 	},
 	routes: {

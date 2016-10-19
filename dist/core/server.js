@@ -13,18 +13,25 @@ function init(facile) {
             // or valid engine object.
             if (facile._config.views) {
                 var viewConfig = facile._config.views;
-                var eng = viewConfig.engine;
+                var renderer = viewConfig.engine;
+                var ext = viewConfig.extension;
+                if (!ext && lodash_1.isString(renderer))
+                    ext = renderer;
+                // Normalize the extension.
+                ext = ext || 'ejs';
+                ext = ext.replace(/^\./, '');
                 // Convert engine to valid
                 // consolidate rendering engine.
-                if (lodash_1.isString(eng.renderer))
-                    eng.renderer = cons[eng.renderer];
+                if (lodash_1.isString(renderer))
+                    renderer = cons[renderer];
+                if (!lodash_1.isFunction(renderer)) {
+                    facile.log.error('Failed to resolve view rendering engine...exiting.');
+                    process.exit();
+                }
                 // Set the engine.
-                facile._config.views.engine = eng;
-                facile.app.engine(eng.name, eng.renderer);
+                facile.app.engine(ext, renderer);
                 // Set view engine.
-                var viewEng = viewConfig['view engine'];
-                viewEng = viewConfig['view engine'] = viewEng || eng.name;
-                facile.app.set('view engine', viewEng);
+                facile.app.set('view engine', ext);
                 // Set views path.
                 if (viewConfig.views)
                     facile.app.set('views', viewConfig.views);

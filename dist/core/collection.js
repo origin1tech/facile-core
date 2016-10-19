@@ -138,7 +138,7 @@ var Collection = (function () {
      *
      * @method initAll
      * @param {...any[]} args
-     * @returns
+     * @returns void
      *
      * @memberOf Collection
      */

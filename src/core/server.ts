@@ -1,7 +1,7 @@
-import { IFacile, IInit, IViewEngine, IMiddleware } from '../interfaces';
+import { IFacile, IInit, IMiddleware } from '../interfaces';
 import { createServer } from 'http';
 import { createServer as createServerHttps } from 'https';
-import { each, sortBy, isString } from 'lodash';
+import { each, sortBy, isString, isFunction } from 'lodash';
 import { red, cyan } from 'chalk';
 import { Server, Socket } from 'net';
 import * as cons from 'consolidate';
@@ -22,21 +22,31 @@ export function init(facile: Facile): any {
 			if (facile._config.views) {
 
 				let viewConfig = facile._config.views;
-				let eng = viewConfig.engine;
+				let renderer = viewConfig.engine;
+				let ext = viewConfig.extension;
+
+				if (!ext && isString(renderer))
+					ext = renderer;
+
+				// Normalize the extension.
+				ext = ext || 'ejs';
+				ext = ext.replace(/^\./, '');
 
 				// Convert engine to valid
 				// consolidate rendering engine.
-				if (isString(eng.renderer))
-					eng.renderer = cons[eng.renderer];
+				if (isString(renderer))
+					renderer = cons[renderer];
+
+				if (!isFunction(renderer)) {
+					facile.log.error('Failed to resolve view rendering engine...exiting.');
+					process.exit();
+				}
 
 				// Set the engine.
-				facile._config.views.engine = eng;
-				facile.app.engine(eng.name, eng.renderer as Function);
+				facile.app.engine(ext as string, renderer as Function);
 
 				// Set view engine.
-				let viewEng = viewConfig['view engine'];
-				viewEng = viewConfig['view engine'] = viewEng || eng.name;
-				facile.app.set('view engine', viewEng);
+				facile.app.set('view engine', ext);
 
 				// Set views path.
 				if (viewConfig.views)

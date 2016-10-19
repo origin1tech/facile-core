@@ -1,5 +1,4 @@
 "use strict";
-var cons = require('consolidate');
 var path_1 = require('path');
 exports.packages = {
     pkg: require('../../package.json'),
@@ -16,10 +15,8 @@ exports.config = {
     maxConnections: 128,
     views: {
         layout: 'index',
-        engine: {
-            name: 'ejs',
-            renderer: cons.ejs
-        },
+        engine: 'ejs',
+        // extension: 'ejs' // defaults to engine.
         views: '/'
     },
     routes: {
