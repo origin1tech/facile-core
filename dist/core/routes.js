@@ -28,9 +28,13 @@ function init(facile) {
         var klassAction = lodash_1.get(collection._components, action);
         if (!klassAction)
             return undefined;
-        // Check if action is view or redirect.
-        if (route && (route.view || route.redirect)) {
-            return klassAction.bind(klass, route.view || route.redirect)();
+        if (route) {
+            // Check if action is view or redirect.
+            if (route.view || route.redirect)
+                return klassAction.bind(klass, route.view || route.redirect)();
+            // Check if generated route using model.
+            if (route.model)
+                return klassAction.bind(klass, route.model)();
         }
         // Bind to class so we don't lose context.
         return klassAction.bind(klass);

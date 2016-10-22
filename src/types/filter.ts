@@ -1,6 +1,7 @@
 
-import { IFilter, IFacile, IErrors } from '../interfaces';
+import { IFilter, IFacile, IErrors, IService, IModel } from '../interfaces';
 import { LoggerInstance } from 'winston';
+import { Collection } from '../core/collection';
 
 /**
  * Base Filter Class
@@ -12,7 +13,6 @@ import { LoggerInstance } from 'winston';
 export class Filter implements IFilter {
 
 	static type = 'Filter';
-	protected facile: IFacile;
 
 	/**
 	 * Creates an instance of Filter.
@@ -21,15 +21,9 @@ export class Filter implements IFilter {
 	 * @contructor
 	 * @memberOf Filter
 	 */
-	constructor(facile: IFacile) {
-		Object.defineProperty(this, 'facile', {
-			enumerable: false,
-			value: facile
-		});
-		return this;
-	}
+	constructor(protected facile: IFacile) {}
 
-		/**
+	/**
 	 * log
 	 *
 	 * @desc exposes Facile.log to class.
@@ -51,6 +45,36 @@ export class Filter implements IFilter {
 	 */
 	get errors(): IErrors {
 		return this.facile._errors;
+	}
+
+	/**
+	 * service
+	 *
+	 * @method service
+	 * @template T
+	 * @param {string} name
+	 * @returns {T}
+	 *
+	 * @memberOf Service
+	 */
+	service<T>(name: string): T {
+		let collection: Collection<IService> = this.facile._services;
+		return collection.get<T>(name);
+	}
+
+	/**
+	 * model
+	 *
+	 * @method model
+	 * @template T
+	 * @param {string} name
+	 * @returns {T}
+	 *
+	 * @memberOf Service
+	 */
+	model<T>(name: string): T {
+		let collection: Collection<IModel> = this.facile._models;
+		return collection.get<T>(name);
 	}
 
 }

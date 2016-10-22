@@ -484,15 +484,19 @@ var Facile = (function (_super) {
                 validate(r);
             });
         }
-        else if (lodash_1.isPlainObject(route)) {
-            var routes_2 = route;
-            lodash_1.each(routes_2, function (v, k) {
-                var rte = utils.parseRoute(k, v);
-                validate(rte);
-            });
-        }
         else {
-            validate(route);
+            // single route.
+            var _route = route;
+            if (_route.url) {
+                validate(_route);
+            }
+            else {
+                var routes_2 = route;
+                lodash_1.each(routes_2, function (v, k) {
+                    var rte = utils.parseRoute(k, v);
+                    validate(rte);
+                });
+            }
         }
         return this;
     };

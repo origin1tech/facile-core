@@ -16,7 +16,7 @@ exports.config = {
     views: {
         layout: 'index',
         engine: 'ejs',
-        // extension: 'ejs' // defaults to engine.
+        // extension: 'html' // defaults to engine.
         views: '/'
     },
     routes: {
@@ -39,11 +39,11 @@ exports.config = {
         crud: {
             controller: 'DefaultController',
             actions: {
-                find: 'get /api/{model}/show',
-                findOne: 'get /api/{model}/show/:id',
-                create: 'post /api/{model}/create',
-                update: 'post /api/{model}/update/:id',
-                destroy: 'post /api/{model}/destroy/:id'
+                find: 'get /{model}/show',
+                findOne: 'get /{model}/show/:id',
+                create: 'post /{model}/create',
+                update: 'post /{model}/update/:id',
+                destroy: 'post /{model}/destroy/:id'
             }
         },
         sort: undefined

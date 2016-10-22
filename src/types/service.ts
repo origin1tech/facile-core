@@ -1,6 +1,7 @@
 
-import { IService, IFacile, IErrors } from '../interfaces';
+import { IService, IFacile, IErrors, IModel } from '../interfaces';
 import { LoggerInstance } from 'winston';
+import { Collection } from '../core/collection';
 
 /**
  * Base Service Class
@@ -11,7 +12,6 @@ import { LoggerInstance } from 'winston';
 export class Service implements IService {
 
 	static type = 'Service';
-	protected facile: IFacile;
 
 	/**
 	 * Creates an instance of Service.
@@ -20,13 +20,7 @@ export class Service implements IService {
 	 * @constructor
 	 * @memberOf Service
 	 */
-	constructor(facile: IFacile) {
-		Object.defineProperty(this, 'facile', {
-			enumerable: false,
-			value: facile
-		});
-		return this;
-	}
+	constructor(protected facile: IFacile) {}
 
 	/**
 	 * log
@@ -50,6 +44,36 @@ export class Service implements IService {
 	 */
 	get errors(): IErrors {
 		return this.facile._errors;
+	}
+
+	/**
+	 * service
+	 *
+	 * @method service
+	 * @template T
+	 * @param {string} name
+	 * @returns {T}
+	 *
+	 * @memberOf Service
+	 */
+	service<T>(name: string): T {
+		let collection: Collection<IService> = this.facile._services;
+		return collection.get<T>(name);
+	}
+
+	/**
+	 * model
+	 *
+	 * @method model
+	 * @template T
+	 * @param {string} name
+	 * @returns {T}
+	 *
+	 * @memberOf Service
+	 */
+	model<T>(name: string): T {
+		let collection: Collection<IModel> = this.facile._models;
+		return collection.get<T>(name);
 	}
 
 }

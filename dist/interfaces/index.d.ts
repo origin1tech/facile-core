@@ -235,6 +235,7 @@ export interface IFacile extends ICore {
     registerMiddleware(name: string | IMiddlewares, fn?: IRequestHandler | IErrorRequestHandler, order?: number): IFacile;
     registerRoute(routes: IRoutes): IFacile;
     registerRoute(routes: Array<IRoute>): IFacile;
+    registerRoute(route: IRoute): IFacile;
     registerRoute(route: IRoute | IRoutes | IRoute[]): IFacile;
     registerPolicy(name: IPolicy): IFacile;
     registerPolicy(name: string, policy: IPolicy): IFacile;
@@ -556,6 +557,7 @@ export interface IRoute {
     view?: string;
     redirect?: string;
     router?: string;
+    model?: any;
     valid?: boolean;
 }
 /**

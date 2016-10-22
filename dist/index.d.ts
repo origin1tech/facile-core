@@ -153,6 +153,16 @@ declare module 'facile/core' {
                 */
             registerRoute(routes: Array<IRoute>): Facile;
             /**
+                * registerRoute
+                *
+                * @method registerRoute
+                * @param {IRoute} route
+                * @returns {Facile}
+                *
+                * @memberOf Facile
+                */
+            registerRoute(route: IRoute): Facile;
+            /**
                 * registerPolicy
                 *
                 * @method registerPolicy
@@ -582,6 +592,7 @@ declare module 'facile/interfaces' {
             registerMiddleware(name: string | IMiddlewares, fn?: IRequestHandler | IErrorRequestHandler, order?: number): IFacile;
             registerRoute(routes: IRoutes): IFacile;
             registerRoute(routes: Array<IRoute>): IFacile;
+            registerRoute(route: IRoute): IFacile;
             registerRoute(route: IRoute | IRoutes | IRoute[]): IFacile;
             registerPolicy(name: IPolicy): IFacile;
             registerPolicy(name: string, policy: IPolicy): IFacile;
@@ -903,6 +914,7 @@ declare module 'facile/interfaces' {
             view?: string;
             redirect?: string;
             router?: string;
+            model?: any;
             valid?: boolean;
     }
     /**
@@ -1336,8 +1348,8 @@ declare module 'facile/types/service' {
         * @class Service
         */
     export class Service implements IService {
-            static type: string;
             protected facile: IFacile;
+            static type: string;
             /**
                 * Creates an instance of Service.
                 *
@@ -1364,6 +1376,28 @@ declare module 'facile/types/service' {
                 * @memberOf Controller
                 */
             readonly errors: IErrors;
+            /**
+                * service
+                *
+                * @method service
+                * @template T
+                * @param {string} name
+                * @returns {T}
+                *
+                * @memberOf Service
+                */
+            service<T>(name: string): T;
+            /**
+                * model
+                *
+                * @method model
+                * @template T
+                * @param {string} name
+                * @returns {T}
+                *
+                * @memberOf Service
+                */
+            model<T>(name: string): T;
     }
 }
 
@@ -1378,8 +1412,8 @@ declare module 'facile/types/filter' {
         * @implements {IFilter}
         */
     export class Filter implements IFilter {
-            static type: string;
             protected facile: IFacile;
+            static type: string;
             /**
                 * Creates an instance of Filter.
                 *
@@ -1389,13 +1423,13 @@ declare module 'facile/types/filter' {
                 */
             constructor(facile: IFacile);
             /**
-        * log
-        *
-        * @desc exposes Facile.log to class.
-        * @readonly
-        * @member {LoggerInstance} log
-        * @memberOf Service
-        */
+                * log
+                *
+                * @desc exposes Facile.log to class.
+                * @readonly
+                * @member {LoggerInstance} log
+                * @memberOf Service
+                */
             readonly log: LoggerInstance;
             /**
                 * errros
@@ -1406,6 +1440,28 @@ declare module 'facile/types/filter' {
                 * @memberOf Controller
                 */
             readonly errors: IErrors;
+            /**
+                * service
+                *
+                * @method service
+                * @template T
+                * @param {string} name
+                * @returns {T}
+                *
+                * @memberOf Service
+                */
+            service<T>(name: string): T;
+            /**
+                * model
+                *
+                * @method model
+                * @template T
+                * @param {string} name
+                * @returns {T}
+                *
+                * @memberOf Service
+                */
+            model<T>(name: string): T;
     }
 }
 
@@ -1419,8 +1475,8 @@ declare module 'facile/types/model' {
         * @class Model
         */
     export class Model implements IModel {
-            static type: string;
             protected facile: IFacile;
+            static type: string;
             /**
                 * Creates an instance of Model.
                 *
@@ -1455,6 +1511,28 @@ declare module 'facile/types/model' {
                 * @memberOf Model
                 */
             init(): void;
+            /**
+                * service
+                *
+                * @method service
+                * @template T
+                * @param {string} name
+                * @returns {T}
+                *
+                * @memberOf Service
+                */
+            service<T>(name: string): T;
+            /**
+                * model
+                *
+                * @method model
+                * @template T
+                * @param {string} name
+                * @returns {T}
+                *
+                * @memberOf Service
+                */
+            model<T>(name: string): T;
     }
 }
 
@@ -1468,8 +1546,8 @@ declare module 'facile/types/controller' {
         * @class Controller
         */
     export class Controller implements IController {
-            static type: string;
             protected facile: IFacile;
+            static type: string;
             /**
                 * Creates an instance of Controller.
                 *
@@ -1496,6 +1574,28 @@ declare module 'facile/types/controller' {
                 * @memberOf Controller
                 */
             readonly errors: IErrors;
+            /**
+                * service
+                *
+                * @method service
+                * @template T
+                * @param {string} name
+                * @returns {T}
+                *
+                * @memberOf Service
+                */
+            service<T>(name: string): T;
+            /**
+                * model
+                *
+                * @method model
+                * @template T
+                * @param {string} name
+                * @returns {T}
+                *
+                * @memberOf Service
+                */
+            model<T>(name: string): T;
     }
 }
 

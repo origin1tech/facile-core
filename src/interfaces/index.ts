@@ -258,6 +258,7 @@ export interface IFacile extends ICore {
 
 	registerRoute(routes: IRoutes): IFacile;
 	registerRoute(routes: Array<IRoute>): IFacile;
+	registerRoute(route: IRoute): IFacile;
 	registerRoute(route: IRoute | IRoutes | IRoute[]): IFacile;
 
 	registerPolicy(name: IPolicy): IFacile;
@@ -623,6 +624,7 @@ export interface IRoute {
 	view?: string;
 	redirect?: string;
 	router?: string;
+	model?: any;
 	valid?: boolean;
 }
 

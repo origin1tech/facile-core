@@ -1,5 +1,6 @@
 "use strict";
 var lodash_1 = require('lodash');
+var utils_1 = require('./utils');
 function init(facile) {
     var routes = facile._routes;
     // Helper to detect if url exists.
@@ -20,7 +21,6 @@ function init(facile) {
                 // could be passed as boolean during configure.
                 var restConfig_1 = routesConfig.rest;
                 var crudConfig_1 = routesConfig.crud;
-                var tmpRoutes_1 = {};
                 var restCtrl_1 = restConfig_1.controller;
                 var crudCtrl_1 = crudConfig_1.controller;
                 lodash_1.each(models, function (model, name) {
@@ -28,23 +28,28 @@ function init(facile) {
                     if (restConfig_1) {
                         lodash_1.each(restConfig_1.actions, function (url, action) {
                             url = url.replace(/{model}/gi, normalName);
-                            if (!routeExists(url))
-                                tmpRoutes_1[url] = restCtrl_1 + "." + action;
+                            if (!routeExists(url)) {
+                                var _route = utils_1.parseRoute(url, {
+                                    handler: restCtrl_1 + "." + action,
+                                    model: model
+                                });
+                                facile.registerRoute(_route);
+                            }
                         });
                     }
                     if (crudConfig_1) {
                         lodash_1.each(crudConfig_1.actions, function (url, action) {
                             url = url.replace(/{model}/gi, normalName);
-                            if (!routeExists(url))
-                                tmpRoutes_1[url] = crudCtrl_1 + "." + action;
+                            if (!routeExists(url)) {
+                                var _route = utils_1.parseRoute(url, {
+                                    handler: crudCtrl_1 + "." + action,
+                                    model: model
+                                });
+                                facile.registerRoute(_route);
+                            }
                         });
                     }
                 });
-                // If routes were generated
-                // register them.
-                var hasRoutes = Object.keys(tmpRoutes_1).length;
-                if (hasRoutes)
-                    facile.registerRoute(tmpRoutes_1);
             }
             if (facile._config.auto)
                 facile.execAfter('init:models', function () {

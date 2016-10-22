@@ -14,10 +14,7 @@ var Controller = (function () {
      * @memberOf Controller
      */
     function Controller(facile) {
-        Object.defineProperty(this, 'facile', {
-            enumerable: false,
-            value: facile
-        });
+        this.facile = facile;
     }
     Object.defineProperty(Controller.prototype, "log", {
         /**
@@ -49,6 +46,34 @@ var Controller = (function () {
         enumerable: true,
         configurable: true
     });
+    /**
+     * service
+     *
+     * @method service
+     * @template T
+     * @param {string} name
+     * @returns {T}
+     *
+     * @memberOf Service
+     */
+    Controller.prototype.service = function (name) {
+        var collection = this.facile._services;
+        return collection.get(name);
+    };
+    /**
+     * model
+     *
+     * @method model
+     * @template T
+     * @param {string} name
+     * @returns {T}
+     *
+     * @memberOf Service
+     */
+    Controller.prototype.model = function (name) {
+        var collection = this.facile._models;
+        return collection.get(name);
+    };
     Controller.type = 'Controller';
     return Controller;
 }());

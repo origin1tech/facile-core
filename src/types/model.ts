@@ -1,5 +1,6 @@
-import { IModel, IFacile, IErrors } from '../interfaces';
+import { IModel, IFacile, IErrors, IService } from '../interfaces';
 import { LoggerInstance } from 'winston';
+import { Collection } from '../core/collection';
 
 /**
  * Base Model Class
@@ -10,7 +11,6 @@ import { LoggerInstance } from 'winston';
 export class Model implements IModel {
 
 	static type = 'Model';
-	protected facile: IFacile;
 
 	/**
 	 * Creates an instance of Model.
@@ -19,13 +19,7 @@ export class Model implements IModel {
 	 * @constructor
 	 * @memberOf Model
 	 */
-	constructor(facile: IFacile) {
-		Object.defineProperty(this, 'facile', {
-			enumerable: false,
-			value: facile
-		});
-		return this;
-	}
+	constructor(protected facile: IFacile) {}
 
 	/**
 	 * log
@@ -60,6 +54,36 @@ export class Model implements IModel {
 	 */
 	init() {
 		throw new Error('Not Implmented: Model init method must be overridden.');
+	}
+
+	/**
+	 * service
+	 *
+	 * @method service
+	 * @template T
+	 * @param {string} name
+	 * @returns {T}
+	 *
+	 * @memberOf Service
+	 */
+	service<T>(name: string): T {
+		let collection: Collection<IService> = this.facile._services;
+		return collection.get<T>(name);
+	}
+
+	/**
+	 * model
+	 *
+	 * @method model
+	 * @template T
+	 * @param {string} name
+	 * @returns {T}
+	 *
+	 * @memberOf Service
+	 */
+	model<T>(name: string): T {
+		let collection: Collection<IModel> = this.facile._models;
+		return collection.get<T>(name);
 	}
 
 }

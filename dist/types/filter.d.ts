@@ -8,8 +8,8 @@ import { LoggerInstance } from 'winston';
  * @implements {IFilter}
  */
 export declare class Filter implements IFilter {
-    static type: string;
     protected facile: IFacile;
+    static type: string;
     /**
      * Creates an instance of Filter.
      *
@@ -19,13 +19,13 @@ export declare class Filter implements IFilter {
      */
     constructor(facile: IFacile);
     /**
- * log
- *
- * @desc exposes Facile.log to class.
- * @readonly
- * @member {LoggerInstance} log
- * @memberOf Service
- */
+     * log
+     *
+     * @desc exposes Facile.log to class.
+     * @readonly
+     * @member {LoggerInstance} log
+     * @memberOf Service
+     */
     readonly log: LoggerInstance;
     /**
      * errros
@@ -36,4 +36,26 @@ export declare class Filter implements IFilter {
      * @memberOf Controller
      */
     readonly errors: IErrors;
+    /**
+     * service
+     *
+     * @method service
+     * @template T
+     * @param {string} name
+     * @returns {T}
+     *
+     * @memberOf Service
+     */
+    service<T>(name: string): T;
+    /**
+     * model
+     *
+     * @method model
+     * @template T
+     * @param {string} name
+     * @returns {T}
+     *
+     * @memberOf Service
+     */
+    model<T>(name: string): T;
 }

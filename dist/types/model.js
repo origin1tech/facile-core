@@ -14,11 +14,7 @@ var Model = (function () {
      * @memberOf Model
      */
     function Model(facile) {
-        Object.defineProperty(this, 'facile', {
-            enumerable: false,
-            value: facile
-        });
-        return this;
+        this.facile = facile;
     }
     Object.defineProperty(Model.prototype, "log", {
         /**
@@ -59,6 +55,34 @@ var Model = (function () {
      */
     Model.prototype.init = function () {
         throw new Error('Not Implmented: Model init method must be overridden.');
+    };
+    /**
+     * service
+     *
+     * @method service
+     * @template T
+     * @param {string} name
+     * @returns {T}
+     *
+     * @memberOf Service
+     */
+    Model.prototype.service = function (name) {
+        var collection = this.facile._services;
+        return collection.get(name);
+    };
+    /**
+     * model
+     *
+     * @method model
+     * @template T
+     * @param {string} name
+     * @returns {T}
+     *
+     * @memberOf Service
+     */
+    Model.prototype.model = function (name) {
+        var collection = this.facile._models;
+        return collection.get(name);
     };
     Model.type = 'Model';
     return Model;

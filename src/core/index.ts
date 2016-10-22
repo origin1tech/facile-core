@@ -701,6 +701,17 @@ export class Facile extends Core implements IFacile {
 	 */
 	registerRoute(routes: Array<IRoute>): Facile;
 
+	/**
+	 * registerRoute
+	 *
+	 * @method registerRoute
+	 * @param {IRoute} route
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	registerRoute(route: IRoute): Facile;
+
 	registerRoute(route: IRoute | IRoutes | IRoute[]): Facile {
 
 		let self = this;
@@ -731,17 +742,27 @@ export class Facile extends Core implements IFacile {
 			});
 		}
 
-		// Handle Routes map.
-		else if (isPlainObject(route)) {
-			let routes = route as IRoutes;
-			each(routes, (v, k) => {
-				let rte = utils.parseRoute(k, v);
-				validate(rte);
-			});
-		}
-
 		else {
-			validate(route);
+
+			// single route.
+			let _route = route as IRoute;
+
+			if (_route.url) {
+				validate(_route);
+			}
+
+			// Object of routes.
+			else {
+
+				let routes = route as IRoutes;
+
+				each(routes, (v, k) => {
+					let rte = utils.parseRoute(k, v);
+					validate(rte);
+				});
+
+			}
+
 		}
 
 		return this;

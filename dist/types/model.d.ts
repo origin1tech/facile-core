@@ -7,8 +7,8 @@ import { LoggerInstance } from 'winston';
  * @class Model
  */
 export declare class Model implements IModel {
-    static type: string;
     protected facile: IFacile;
+    static type: string;
     /**
      * Creates an instance of Model.
      *
@@ -43,4 +43,26 @@ export declare class Model implements IModel {
      * @memberOf Model
      */
     init(): void;
+    /**
+     * service
+     *
+     * @method service
+     * @template T
+     * @param {string} name
+     * @returns {T}
+     *
+     * @memberOf Service
+     */
+    service<T>(name: string): T;
+    /**
+     * model
+     *
+     * @method model
+     * @template T
+     * @param {string} name
+     * @returns {T}
+     *
+     * @memberOf Service
+     */
+    model<T>(name: string): T;
 }

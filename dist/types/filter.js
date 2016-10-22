@@ -15,21 +15,17 @@ var Filter = (function () {
      * @memberOf Filter
      */
     function Filter(facile) {
-        Object.defineProperty(this, 'facile', {
-            enumerable: false,
-            value: facile
-        });
-        return this;
+        this.facile = facile;
     }
     Object.defineProperty(Filter.prototype, "log", {
         /**
-     * log
-     *
-     * @desc exposes Facile.log to class.
-     * @readonly
-     * @member {LoggerInstance} log
-     * @memberOf Service
-     */
+         * log
+         *
+         * @desc exposes Facile.log to class.
+         * @readonly
+         * @member {LoggerInstance} log
+         * @memberOf Service
+         */
         get: function () {
             return this.facile.log;
         },
@@ -51,6 +47,34 @@ var Filter = (function () {
         enumerable: true,
         configurable: true
     });
+    /**
+     * service
+     *
+     * @method service
+     * @template T
+     * @param {string} name
+     * @returns {T}
+     *
+     * @memberOf Service
+     */
+    Filter.prototype.service = function (name) {
+        var collection = this.facile._services;
+        return collection.get(name);
+    };
+    /**
+     * model
+     *
+     * @method model
+     * @template T
+     * @param {string} name
+     * @returns {T}
+     *
+     * @memberOf Service
+     */
+    Filter.prototype.model = function (name) {
+        var collection = this.facile._models;
+        return collection.get(name);
+    };
     Filter.type = 'Filter';
     return Filter;
 }());

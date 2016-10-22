@@ -168,6 +168,16 @@ export declare class Facile extends Core implements IFacile {
      */
     registerRoute(routes: Array<IRoute>): Facile;
     /**
+     * registerRoute
+     *
+     * @method registerRoute
+     * @param {IRoute} route
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    registerRoute(route: IRoute): Facile;
+    /**
      * registerPolicy
      *
      * @method registerPolicy

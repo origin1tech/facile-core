@@ -1,6 +1,7 @@
 import { IInit, IModel, IRoute, IRoutes, IRoutesTemplate } from '../interfaces';
 import { each, some, isString } from 'lodash';
 import { Facile } from './';
+import { parseRoute } from './utils';
 import { Collection } from './collection';
 
 export function init(facile: Facile): any {
@@ -33,7 +34,6 @@ export function init(facile: Facile): any {
 				// could be passed as boolean during configure.
 				let restConfig = routesConfig.rest as IRoutesTemplate;
 				let crudConfig = routesConfig.crud as IRoutesTemplate;
-				let tmpRoutes: IRoutes = {};
 				let restCtrl = restConfig.controller;
 				let crudCtrl = crudConfig.controller;
 
@@ -44,26 +44,30 @@ export function init(facile: Facile): any {
 					if (restConfig) {
 						each(restConfig.actions, (url, action) => {
 							url = url.replace(/{model}/gi, normalName);
-							if (!routeExists(url))
-								tmpRoutes[url] = `${restCtrl}.${action}`;
+							if (!routeExists(url)) {
+								let _route = parseRoute(url, {
+									handler: `${restCtrl}.${action}`,
+									model: model
+								});
+								facile.registerRoute(_route);
+							}
 						});
 					}
 
 					if (crudConfig) {
 						each(crudConfig.actions, (url, action) => {
 							url = url.replace(/{model}/gi, normalName);
-							if (!routeExists(url))
-								tmpRoutes[url] = `${crudCtrl}.${action}`;
+							if (!routeExists(url)) {
+								let _route = parseRoute(url, {
+									handler: `${crudCtrl}.${action}`,
+									model: model
+								});
+								facile.registerRoute(_route);
+							}
 						});
 					}
 
 				});
-
-				// If routes were generated
-				// register them.
-				let hasRoutes = Object.keys(tmpRoutes).length;
-				if (hasRoutes)
-					facile.registerRoute(tmpRoutes);
 
 			}
 
