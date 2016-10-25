@@ -4,8 +4,8 @@
     "declaration": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "outDir": "../dist",
-    "sourceRoot": "../src",
+    "rootDir": "../../src",
+    "outDir": "../../dist",
     "lib": ["es6"],
     "module": "commonjs",
     "moduleResolution": "node",
@@ -15,6 +15,5 @@
       "../node_modules/@types"
     ],
     "types": []
-  },
-  "exclude": []
+  }
 }
