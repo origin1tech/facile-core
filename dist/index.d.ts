@@ -785,14 +785,6 @@ declare module 'facile/interfaces' {
                 */
             views?: IViewConfig;
             /**
-                * database
-                *
-                * @desc the database configuration.
-                * @member {IDatabase} database
-                * @memberOf IConfig
-                */
-            database?: IDatabase;
-            /**
                 * routes
                 *
                 * @desc the config for generating routes.

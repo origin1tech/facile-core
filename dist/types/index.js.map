@@ -1,1 +1,1 @@
-{"version":3,"file":"index.js","sourceRoot":"/Volumes/DATA/Projects/WebNode/facile/facile-core/src/","sources":["types/index.ts"],"names":[],"mappings":";;;;AAAA,iBAAc,WAAW,CAAC,EAAA;AAC1B,iBAAc,UAAU,CAAC,EAAA;AACzB,iBAAc,SAAS,CAAC,EAAA;AACxB,iBAAc,cAAc,CAAC,EAAA"}
+{"version":3,"file":"index.js","sourceRoot":"","sources":["../../src/types/index.ts"],"names":[],"mappings":";;;;AAAA,iBAAc,WAAW,CAAC,EAAA;AAC1B,iBAAc,UAAU,CAAC,EAAA;AACzB,iBAAc,SAAS,CAAC,EAAA;AACxB,iBAAc,cAAc,CAAC,EAAA"}
