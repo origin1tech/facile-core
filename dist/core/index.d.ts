@@ -134,19 +134,20 @@ export declare class Facile extends Core implements IFacile {
      *
      * @memberOf Facile
      */
-    registerMiddleware(name: string, fn: IRequestHandler, order?: number): Facile;
+    registerMiddleware(name: string, fn: IRequestHandler | IErrorRequestHandler, order?: number): Facile;
     /**
-     * registerMiddleware
+     * regusterMethod
      *
-     * @method registerMiddleware
-     * @param {string} name
-     * @param {IErrorRequestHandler} fn
-     * @param {number} [order]
+     * @description wrapper for app[METHOD](* arguments *)
+     * @method registerMethod
+     *
+     * @param {string} method
+     * @param {...any[]} args
      * @returns {Facile}
      *
      * @memberOf Facile
      */
-    registerMiddleware(name: string, fn: IErrorRequestHandler, order?: number): Facile;
+    registerMethod(method: string, ...args: any[]): Facile;
     /**
      * registerRoute
      *

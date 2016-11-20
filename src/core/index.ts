@@ -2,10 +2,8 @@
 // External Dependencies.
 import { resolve, join } from 'path';
 import * as express from 'express';
-import * as Boom from 'boom';
 import { series as asyncSeries } from 'async';
 import { LoggerInstance, Logger, transports, TransportInstance } from 'winston';
-import { wrap, create, badRequest, unauthorized, forbidden, notFound, notImplemented } from 'boom';
 import { Server, Socket } from 'net';
 import { readFileSync } from 'fs';
 import { extend, isPlainObject, each, isFunction, assign,
@@ -88,18 +86,6 @@ export class Facile extends Core implements IFacile {
 		// Add default logger to map 
 		// and set as "log" instance.
 		this.log = defaultLogger;
-
-		// Expose common Boom events to framework.
-		this._errors = {
-			wrap: Boom.wrap,
-			create: Boom.create,
-			badRequest: Boom.badRequest,
-			unauthorized: Boom.unauthorized,
-			forbidden: Boom.forbidden,
-			notFound: Boom.notFound,
-			notImplemented: Boom.notImplemented,
-			badGateway: Boom.badGateway
-		};
 
 		// Create Express app.
 		this.express = express;
@@ -616,20 +602,7 @@ export class Facile extends Core implements IFacile {
 	 *
 	 * @memberOf Facile
 	 */
-	registerMiddleware(name: string, fn: IRequestHandler, order?: number): Facile;
-
-	/**
-	 * registerMiddleware
-	 *
-	 * @method registerMiddleware
-	 * @param {string} name
-	 * @param {IErrorRequestHandler} fn
-	 * @param {number} [order]
-	 * @returns {Facile}
-	 *
-	 * @memberOf Facile
-	 */
-	registerMiddleware(name: string, fn: IErrorRequestHandler, order?: number): Facile;
+	registerMiddleware(name: string, fn: IRequestHandler | IErrorRequestHandler, order?: number): Facile;
 
 	registerMiddleware(name: string | IMiddlewares, fn?: IRequestHandler | IErrorRequestHandler, order?: number): Facile {
 
@@ -674,6 +647,27 @@ export class Facile extends Core implements IFacile {
 			this._middlewares[k] = v;
 
 		});
+
+		return this;
+
+	}
+
+	/**
+	 * regusterMethod
+	 *
+	 * @description wrapper for app[METHOD](* arguments *)
+	 * @method registerMethod
+	 *
+	 * @param {string} method
+	 * @param {...any[]} args
+	 * @returns {Facile}
+	 *
+	 * @memberOf Facile
+	 */
+	registerMethod(method: string, ...args: any[]): Facile {
+
+		if (this.app[method])
+			this.app[method].apply(this.app, args);
 
 		return this;
 

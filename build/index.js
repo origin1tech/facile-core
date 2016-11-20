@@ -90,8 +90,8 @@ if (argv.indexOf('--docs') !== -1) {
 // Otherwise compile and watch for changes.
 else {
 
-// Create directory watcher.
-let watcher = watch('src', { recursive: true });
+	// Create directory watcher.
+	let watcher = watch('src', { recursive: true });
 
 	// Watch for changes.
 	watcher.on('change', (f) => {

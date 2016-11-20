@@ -119,19 +119,20 @@ declare module 'facile/core' {
                 *
                 * @memberOf Facile
                 */
-            registerMiddleware(name: string, fn: IRequestHandler, order?: number): Facile;
+            registerMiddleware(name: string, fn: IRequestHandler | IErrorRequestHandler, order?: number): Facile;
             /**
-                * registerMiddleware
+                * regusterMethod
                 *
-                * @method registerMiddleware
-                * @param {string} name
-                * @param {IErrorRequestHandler} fn
-                * @param {number} [order]
+                * @description wrapper for app[METHOD](* arguments *)
+                * @method registerMethod
+                *
+                * @param {string} method
+                * @param {...any[]} args
                 * @returns {Facile}
                 *
                 * @memberOf Facile
                 */
-            registerMiddleware(name: string, fn: IErrorRequestHandler, order?: number): Facile;
+            registerMethod(method: string, ...args: any[]): Facile;
             /**
                 * registerRoute
                 *
@@ -359,7 +360,7 @@ declare module 'facile/interfaces' {
     import { EventEmitter } from 'events';
     import { Router, RequestHandler, NextFunction, ErrorRequestHandler, Request, Response, Express } from 'express';
     import { Socket, Server } from 'net';
-    import { BoomError, Output } from 'boom';
+    import { BoomError } from 'boom';
     import { LoggerInstance } from 'winston';
     export interface IRequestHandler extends RequestHandler {
     }
@@ -369,11 +370,89 @@ declare module 'facile/interfaces' {
     }
     export interface IRequest extends Request {
     }
+    /**
+        * Extends express Response with Boom errors.
+        *
+        * @export
+        * @interface IResponse
+        * @extends {IErrors}
+        */
     export interface IResponse extends Response {
+            errors: IErrors;
     }
-    export interface IBoomError extends BoomError {
+    /**
+        * Boom wrap event signature interface.
+        *
+        * @export
+        * @interface IBoomWrap
+        */
+    export interface IBoomWrap {
+            (error: Error, statusCode?: number, message?: string): BoomError;
     }
-    export interface IBoomOutput extends Output {
+    /**
+        * Boom create signature interface.
+        *
+        * @export
+        * @interface IBoomCreate
+        */
+    export interface IBoomCreate {
+            (statusCode: number, message?: string, data?: any): BoomError;
+    }
+    /**
+        * Boom event signature interface.
+        *
+        * @export
+        * @interface IBoomEvent
+        */
+    export interface IBoomEvent {
+            (message?: string, data?: any): BoomError;
+    }
+    /**
+        * Boom scheme signature interface.
+        *
+        * @export
+        * @interface IBoomScheme
+        */
+    export interface IBoomScheme {
+            (message?: string, scheme?: any, attributes?: any): BoomError;
+    }
+    /**
+        * Interface used to extend framework with
+        * standard Boom error events.
+        *
+        * @export
+        * @interface IBoom
+        */
+    export interface IErrors {
+            wrap?: IBoomWrap;
+            create?: IBoomCreate;
+            badRequest?: IBoomEvent;
+            unauthorized?: IBoomScheme;
+            forbidden?: IBoomEvent;
+            notFound?: IBoomEvent;
+            methodNotAllowed?: IBoomEvent;
+            notAcceptable?: IBoomEvent;
+            proxyAuthRequired?: IBoomEvent;
+            clientTimeout?: IBoomEvent;
+            conflict?: IBoomEvent;
+            resourceGone?: IBoomEvent;
+            lengthRequired?: IBoomEvent;
+            preconditionFailed?: IBoomEvent;
+            entityTooLarge?: IBoomEvent;
+            uriTooLong?: IBoomEvent;
+            unsupportedMediaType?: IBoomEvent;
+            rangeNotSatisfiable?: IBoomEvent;
+            expectationFailed?: IBoomEvent;
+            badData?: IBoomEvent;
+            locked?: IBoomEvent;
+            preconditionRequired?: IBoomEvent;
+            tooManyRequests?: IBoomEvent;
+            illegal?: IBoomEvent;
+            badImplementation?: IBoomEvent;
+            notImplemented?: IBoomEvent;
+            badGateway?: IBoomEvent;
+            serverUnavailable?: IBoomEvent;
+            gatewayTimeout?: IBoomEvent;
     }
     /**
         * IUtils
@@ -587,9 +666,9 @@ declare module 'facile/interfaces' {
             registerConfig(configs: IConfigs, ...extend: any[]): IFacile;
             registerConfig(name: string, config: IConfig): IFacile;
             registerMiddleware(middlewares: IMiddlewares): IFacile;
-            registerMiddleware(name: string, fn: IRequestHandler, order?: number): IFacile;
-            registerMiddleware(name: string, fn: IErrorRequestHandler, order?: number): IFacile;
+            registerMiddleware(name: string, fn: IRequestHandler | IErrorRequestHandler, order?: number): IFacile;
             registerMiddleware(name: string | IMiddlewares, fn?: IRequestHandler | IErrorRequestHandler, order?: number): IFacile;
+            registerMethod(method: string, ...args: any[]): IFacile;
             registerRoute(routes: IRoutes): IFacile;
             registerRoute(routes: Array<IRoute>): IFacile;
             registerRoute(route: IRoute): IFacile;
@@ -792,6 +871,14 @@ declare module 'facile/interfaces' {
                 * @memberOf IConfig
                 */
             routes?: IRoutesConfig;
+            /**
+                * boom
+                *
+                * @desc when not false express.response is extended with Boom error hanlders.
+                * @member {IRoutesConfig} boom
+                * @memberOf IConfig
+                */
+            boom?: boolean;
     }
     /**
         * Map of Configs.
@@ -838,50 +925,6 @@ declare module 'facile/interfaces' {
         */
     export interface IMiddlewares {
             [name: string]: IMiddleware;
-    }
-    /**
-        * Boom wrap event signature interface.
-        *
-        * @export
-        * @interface IBoomWrap
-        */
-    export interface IBoomWrap {
-            (error: Error, statusCode?: number, message?: string): BoomError;
-    }
-    /**
-        * Boom create signature interface.
-        *
-        * @export
-        * @interface IBoomCreate
-        */
-    export interface IBoomCreate {
-            (statusCode: number, message?: string, data?: any): BoomError;
-    }
-    /**
-        * Boom event signature interface.
-        *
-        * @export
-        * @interface IBoomEvent
-        */
-    export interface IBoomEvent {
-            (message?: string, data?: any): BoomError;
-    }
-    /**
-        * Interface used to extend framework with
-        * standard Boom error events.
-        *
-        * @export
-        * @interface IBoom
-        */
-    export interface IErrors {
-            wrap: IBoomWrap;
-            create: IBoomCreate;
-            badRequest: IBoomEvent;
-            unauthorized: IBoomEvent;
-            forbidden: IBoomEvent;
-            notFound: IBoomEvent;
-            notImplemented: IBoomEvent;
-            badGateway: IBoomEvent;
     }
     /**
         * Router Interface Map.

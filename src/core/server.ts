@@ -1,7 +1,9 @@
 import { IFacile, IInit, IMiddleware } from '../interfaces';
 import { createServer } from 'http';
 import { createServer as createServerHttps } from 'https';
-import { each, sortBy, isString, isFunction } from 'lodash';
+import * as Boom from 'boom';
+import * as httpext from './httpext';
+import { each, sortBy, isString, isFunction, includes } from 'lodash';
 import { red, cyan } from 'chalk';
 import { Server, Socket } from 'net';
 import * as cons from 'consolidate';
@@ -53,6 +55,13 @@ export function init(facile: Facile): any {
 					facile.app.set('views', viewConfig.views);
 
 			}
+
+			////////////////////////////////
+			// Configure Response
+			////////////////////////////////
+
+			// Extend with Boom errors.
+			facile.app.use(httpext.response(this));
 
 			////////////////////////////////
 			// Configure Middleware

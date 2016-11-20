@@ -5,7 +5,6 @@ var __extends = (this && this.__extends) || function (d, b) {
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var express = require('express');
-var Boom = require('boom');
 var winston_1 = require('winston');
 var lodash_1 = require('lodash');
 var chalk_1 = require('chalk');
@@ -60,17 +59,6 @@ var Facile = (function (_super) {
         // Add default logger to map 
         // and set as "log" instance.
         this.log = defaultLogger;
-        // Expose common Boom events to framework.
-        this._errors = {
-            wrap: Boom.wrap,
-            create: Boom.create,
-            badRequest: Boom.badRequest,
-            unauthorized: Boom.unauthorized,
-            forbidden: Boom.forbidden,
-            notFound: Boom.notFound,
-            notImplemented: Boom.notImplemented,
-            badGateway: Boom.badGateway
-        };
         // Create Express app.
         this.express = express;
         this.app = express();
@@ -461,6 +449,27 @@ var Facile = (function (_super) {
             // Update the middlewares object.
             _this._middlewares[k] = v;
         });
+        return this;
+    };
+    /**
+     * regusterMethod
+     *
+     * @description wrapper for app[METHOD](* arguments *)
+     * @method registerMethod
+     *
+     * @param {string} method
+     * @param {...any[]} args
+     * @returns {Facile}
+     *
+     * @memberOf Facile
+     */
+    Facile.prototype.registerMethod = function (method) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        if (this.app[method])
+            this.app[method].apply(this.app, args);
         return this;
     };
     Facile.prototype.registerRoute = function (route) {

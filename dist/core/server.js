@@ -1,6 +1,7 @@
 "use strict";
 var http_1 = require('http');
 var https_1 = require('https');
+var httpext = require('./httpext');
 var lodash_1 = require('lodash');
 var cons = require('consolidate');
 function init(facile) {
@@ -36,6 +37,11 @@ function init(facile) {
                 if (viewConfig.views)
                     facile.app.set('views', viewConfig.views);
             }
+            ////////////////////////////////
+            // Configure Response
+            ////////////////////////////////
+            // Extend with Boom errors.
+            facile.app.use(httpext.response(this));
             ////////////////////////////////
             // Configure Middleware
             ////////////////////////////////
